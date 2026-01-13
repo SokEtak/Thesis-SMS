@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('telegram_chat_id')->nullable();
             $table->string('avatar')->nullable();
+            $table->string('phone')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

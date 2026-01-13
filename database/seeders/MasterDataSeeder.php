@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class MasterDataSeeder extends Seeder
@@ -12,6 +11,11 @@ class MasterDataSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        $this->call([
+            SubjectSeeder::class,
+            RoleSeeder::class,
+            PermissionSeeder::class,
+            UserSeeder::class,
+        ]);
     }
 }

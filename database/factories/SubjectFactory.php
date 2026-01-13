@@ -18,7 +18,7 @@ class SubjectFactory extends Factory
     {
         return [
             'code' => $this->faker->unique()->bothify('SUBJ-###??'),
-            'name' => $this->faker->sentence(3),
+            'name' => $this->faker->sentence(2),
             'created_at' => now(),
         ];
     }

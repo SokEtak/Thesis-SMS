@@ -21,7 +21,7 @@ class SubjectController extends Controller
 
     public function index(Request $request)
     {
-        // $this->authorize('viewAny', Subject::class);
+        $this->authorize('viewAny', Subject::class);
 
         $data = $this->service->list($request->all());
 
@@ -33,7 +33,8 @@ class SubjectController extends Controller
 
     public function show(Subject $subject)
     {
-        // $this->authorize('view', $subject);
+        // dd();
+        $this->authorize('view', $subject);
 
         $model = $this->service->show($subject);
 
@@ -42,7 +43,7 @@ class SubjectController extends Controller
 
     public function store(SubjectStoreRequest $request)
     {
-        // $this->authorize('create', Subject::class);
+        $this->authorize('create', Subject::class);
 
         $subject = $this->service->store($request->validated());
 
@@ -51,7 +52,7 @@ class SubjectController extends Controller
 
     public function update(SubjectUpdateRequest $request, Subject $subject)
     {
-        // $this->authorize('update', $subject);
+        $this->authorize('update', $subject);
 
         $updated = $this->service->update($subject, $request->validated());
 
@@ -60,7 +61,7 @@ class SubjectController extends Controller
 
     public function destroy(Subject $subject)
     {
-        // $this->authorize('delete', $subject);
+        $this->authorize('delete', $subject);
 
         $this->service->delete($subject);
 
@@ -69,7 +70,7 @@ class SubjectController extends Controller
 
     public function trashed(Request $request)
     {
-        // $this->authorize('viewAny', Subject::class);
+        $this->authorize('viewAny', Subject::class);
 
         $params = $request->all();
         $params['trashed'] = 'only';
@@ -85,7 +86,7 @@ class SubjectController extends Controller
     public function findTrashed($id)
     {
         $subject = $this->service->findTrashed((int) $id);
-        // $this->authorize('view', $subject);
+        $this->authorize('view', $subject);
 
         return ApiResponse::ok(new SubjectResource($subject));
     }
@@ -93,7 +94,7 @@ class SubjectController extends Controller
     public function restore($id)
     {
         $subject = $this->service->findTrashed((int) $id);
-        // $this->authorize('restore', $subject);
+        $this->authorize('restore', $subject);
 
         $restored = $this->service->restore((int) $id);
 
@@ -102,17 +103,17 @@ class SubjectController extends Controller
 
     public function forceDelete($id)
     {
-        $subject = $this->service->findTrashed((int) $id);
-        // $this->authorize('forceDelete', $subject);
+        $subject = $this->service->findTrashed($id);
+        $this->authorize('forceDelete', $subject);
 
-        $this->service->forceDelete((int) $id);
+        $this->service->forceDelete($id);
 
         return ApiResponse::deleted();
     }
 
     public function import(SubjectImportRequest $request)
     {
-        // $this->authorize('import', Subject::class);
+        $this->authorize('import', Subject::class);
 
         $file = $request->file('file');
 
@@ -123,7 +124,7 @@ class SubjectController extends Controller
 
     public function exportCsv()
     {
-        // $this->authorize('export', Subject::class);
+        $this->authorize('export', Subject::class);
 
         return $this->service->exportCsv();
     }
