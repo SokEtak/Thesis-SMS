@@ -3,101 +3,75 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\Subject;
 use Illuminate\Auth\Access\Response;
 
-class SubjectPolicy
+class UserPolicy
 {
-  /**
-   * Listing all subjects
-   * - Admin/Super-Admin or users with 'subjects.view-any'
-   */
-  public function viewAny(User $user): bool|Response
-  {
-    if ($user->hasRole('Super-Admin') || $user->hasRole('Admin')) {
-      return true;
-    }
-    return $user->can('subjects.view-any')
-      ? true
-      : Response::deny('You are not allowed to view the subject list.');
-  }
+    /** @var string[] Only Admin/Super-Admin can manage users by default */
+    private array $elevatedRoles = ['Super-Admin', 'Admin'];
 
-  /**
-   * View a single subject
-   */
-  public function view(User $user, Subject $subject): bool|Response
-  {
-    if ($user->hasRole('Super-Admin') || $user->hasRole('Admin')) {
-      return true;
+    private function allow(User $user, string $permission): bool|Response
+    {
+        if ($user->hasAnyRole($this->elevatedRoles) || $user->can($permission)) {
+            return true;
+        }
+        return Response::deny('You are not allowed to perform this action on users.');
     }
-    return $user->can('subjects.view')
-      ? true
-      : Response::deny('You are not allowed to view this subject.');
-  }
 
-  /**
-   * Create a subject
-   */
-  public function create(User $user): bool|Response
-  {
-    if ($user->hasRole('Super-Admin') || $user->hasRole('Admin')) {
-      return true;
+    public function viewAny(User $user): bool|Response
+    {
+        return $this->allow($user, 'users.view-any');
     }
-    return $user->can('subjects.create')
-      ? true
-      : Response::deny('You are not allowed to create subjects.');
-  }
 
-  /**
-   * Update a subject
-   */
-  public function update(User $user, Subject $subject): bool|Response
-  {
-    if ($user->hasRole('Super-Admin') || $user->hasRole('Admin')) {
-      return true;
+    public function view(User $user, User $model): bool|Response
+    {
+        // Allow self-view OR permission/role
+        if ($user->id === $model->id) {
+            return true;
+        }
+        return $this->allow($user, 'users.view');
     }
-    return $user->can('subjects.update')
-      ? true
-      : Response::deny('You are not allowed to update this subject.');
-  }
 
-  /**
-   * Soft delete a subject
-   */
-  public function delete(User $user, Subject $subject): bool|Response
-  {
-    if ($user->hasRole('Super-Admin') || $user->hasRole('Admin')) {
-      return true;
+    public function create(User $user): bool|Response
+    {
+        return $this->allow($user, 'users.create');
     }
-    return $user->can('subjects.delete')
-      ? true
-      : Response::deny('You are not allowed to delete this subject.');
-  }
 
-  /**
-   * Restore a soft-deleted subject
-   */
-  public function restore(User $user, Subject $subject): bool|Response
-  {
-    if ($user->hasRole('Super-Admin') || $user->hasRole('Admin')) {
-      return true;
+    public function update(User $user, User $model): bool|Response
+    {
+        // Allow self-update OR permission/role
+        if ($user->id === $model->id) {
+            return true;
+        }
+        return $this->allow($user, 'users.update');
     }
-    return $user->can('subjects.restore')
-      ? true
-      : Response::deny('You are not allowed to restore this subject.');
-  }
 
-  /**
-   * Force delete (permanent)
-   */
-  public function forceDelete(User $user, Subject $subject): bool|Response
-  {
-    if ($user->hasRole('Super-Admin')) {
-      return true;
+    public function delete(User $user, User $model): bool|Response
+    {
+        // Typically prevent deleting self
+        if ($user->id === $model->id) {
+            return Response::deny('You cannot delete your own account.');
+        }
+        return $this->allow($user, 'users.delete');
     }
-    return $user->can('subjects.force-delete')
-      ? true
-      : Response::deny('You are not allowed to permanently delete this subject.');
-  }
+
+    public function restore(User $user, User $model): bool|Response
+    {
+        return $this->allow($user, 'users.restore');
+    }
+
+    public function forceDelete(User $user, User $model): bool|Response
+    {
+        return $this->allow($user, 'users.force-delete');
+    }
+
+    public function import(User $user): bool|Response
+    {
+        return $this->allow($user, 'users.import');
+    }
+
+    public function export(User $user): bool|Response
+    {
+        return $this->allow($user, 'users.export');
+    }
 }
-

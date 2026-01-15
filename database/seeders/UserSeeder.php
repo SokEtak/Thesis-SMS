@@ -12,14 +12,18 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory(10)->create();
+        // User::factory(10)->create();
 
         $user = User::firstOrCreate(
-            ['email' => 'test@example.com'],
             [
+                'email' => 'test@example.com',
                 'name' => 'Test User',
                 'password' => 'password',
-                'avatar' => null,
+                'avatar' => "https://i.pravatar.cc/300",
+                'phone' => "1234567890",
+                'gender' => 'male',
+                'dob' => '1990-01-01',
+                'telegram_chat_id' => "123456789",
             ]
         );
 

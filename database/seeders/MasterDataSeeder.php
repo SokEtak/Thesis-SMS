@@ -12,9 +12,10 @@ class MasterDataSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            SubjectSeeder::class,
             RoleSeeder::class,
+            SubjectSeeder::class,
             PermissionSeeder::class,
+            ClassroomSeeder::class,
             UserSeeder::class,
         ]);
     }

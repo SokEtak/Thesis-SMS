@@ -16,7 +16,6 @@ Route::prefix('subjects')->name('subjects.')->group(function () {
     // CRUD
     Route::apiResource('/', SubjectController::class)->parameters(['' => 'subject']); 
 
-
     // Import/Export
     Route::post('import', [SubjectController::class, 'import'])->name('import');
     Route::get('export/csv', [SubjectController::class, 'exportCsv'])->name('export.csv');

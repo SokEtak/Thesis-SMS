@@ -19,7 +19,18 @@ return new class extends Migration
             $table->string('telegram_chat_id')->nullable();
             $table->string('avatar')->nullable();
             $table->string('phone')->nullable();
+            $table->enum('gender', ['male', 'female'])->nullable();
+            $table->date('dob')->nullable();
+            $table->string('position', 50)->nullable(); // e.g. IT Manager, Principal
+            $table->string('address')->nullable();
+
+            // student & family(add later)
+            $table->foreignId('class_id')->nullable(); // FK added later to avoid cycle
+            $table->foreignId('parent_id')->nullable()
+                ->constrained('users')->nullOnDelete(); // guardian user
+
             $table->rememberToken();
+            $table->softDeletes();
             $table->timestamps();
         });
 
