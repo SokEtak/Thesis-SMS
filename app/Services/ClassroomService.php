@@ -31,6 +31,11 @@ class ClassroomService
     public function store(array $data): Classroom
     {
         return DB::transaction(function () use ($data) {
+            // Map `class_name` to DB `name` if present (compatibility)
+            if (isset($data['class_name']) && ! isset($data['name'])) {
+                $data['name'] = $data['class_name'];
+            }
+
             $classroom = $this->repo->create($data);
             return $classroom;
         });
@@ -39,6 +44,9 @@ class ClassroomService
     public function update(Classroom $classroom, array $data): Classroom
     {
         return DB::transaction(function () use ($classroom, $data) {
+            if (isset($data['class_name']) && ! isset($data['name'])) {
+                $data['name'] = $data['class_name'];
+            }
             return $this->repo->update($classroom, $data);
         });
     }

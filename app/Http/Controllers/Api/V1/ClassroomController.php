@@ -7,8 +7,9 @@ use Illuminate\Http\Request;
 use App\Helpers\ApiResponse;
 use App\Services\ClassroomService;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreClassroomRequest;
-use App\Http\Requests\UpdateClassroomRequest;
+use App\Http\Requests\Classroom\StoreClassroomRequest;
+use App\Http\Requests\Classroom\UpdateClassroomRequest;
+use App\Http\Requests\Classroom\ClassroomImportRequest;
 use App\Http\Resources\Classroom\ClassroomCollection;
 use App\Http\Resources\Classroom\ClassroomResource;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -107,6 +108,17 @@ class ClassroomController extends Controller
         $this->service->forceDelete((int) $id);
 
         return ApiResponse::deleted();
+    }
+
+    public function import(ClassroomImportRequest $request)
+    {
+        $this->authorize('import', Classroom::class);
+
+        $file = $request->file('file');
+
+        $this->service->import($file);
+
+        return ApiResponse::ok(['message' => 'Import queued']);
     }
 
     public function exportCsv()

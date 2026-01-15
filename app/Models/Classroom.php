@@ -6,16 +6,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Classroom extends Model
 {
     /** @use HasFactory<\Database\Factories\ClassroomFactory> */
-    use HasFactory;
+    use HasFactory,SoftDeletes;
 
 
     protected $table = 'classes';
 
-    protected $fillable = ['class_name', 'teacher_in_charge_id'];
+    // DB column is `name`; accept both `name` and `class_name` for compatibility.
+    protected $fillable = ['name', 'teacher_in_charge_id'];
 
     public function teacherInCharge(): BelongsTo
     {

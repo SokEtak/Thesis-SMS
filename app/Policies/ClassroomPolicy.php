@@ -8,59 +8,59 @@ use Illuminate\Auth\Access\Response;
 
 class ClassroomPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    /** @var string[] Only Admin/Super-Admin can manage classrooms by default */
+    private array $elevatedRoles = ['Super-Admin', 'Admin'];
+
+    private function allow(User $user, string $permission): bool|Response
     {
-        return false;
+        if ($user->hasAnyRole($this->elevatedRoles) || $user->can($permission)) {
+            return true;
+        }
+        return Response::deny('You are not allowed to perform this action on classrooms.');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Classroom $classroom): bool
+    public function viewAny(User $user): bool|Response
     {
-        return false;
+        return $this->allow($user, 'classrooms.view-any');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function view(User $user, Classroom $classroom): bool|Response
     {
-        return false;
+        return $this->allow($user, 'classrooms.view');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Classroom $classroom): bool
+    public function create(User $user): bool|Response
     {
-        return false;
+        return $this->allow($user, 'classrooms.create');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Classroom $classroom): bool
+    public function update(User $user, Classroom $classroom): bool|Response
     {
-        return false;
+        return $this->allow($user, 'classrooms.update');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Classroom $classroom): bool
+    public function delete(User $user, Classroom $classroom): bool|Response
     {
-        return false;
+        return $this->allow($user, 'classrooms.delete');
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Classroom $classroom): bool
+    public function restore(User $user, Classroom $classroom): bool|Response
     {
-        return false;
+        return $this->allow($user, 'classrooms.restore');
+    }
+
+    public function forceDelete(User $user, Classroom $classroom): bool|Response
+    {
+        return $this->allow($user, 'classrooms.force-delete');
+    }
+
+    public function import(User $user): bool|Response
+    {
+        return $this->allow($user, 'classrooms.import');
+    }
+
+    public function export(User $user): bool|Response
+    {
+        return $this->allow($user, 'classrooms.export');
     }
 }

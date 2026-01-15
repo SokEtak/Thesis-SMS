@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('classes', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 50);
+            $table->string('name', 50)->unique();
             $table->foreignId('teacher_in_charge_id')->nullable()
                   ->constrained('users')->nullOnDelete(); // expects role=Teacher
             $table->softDeletes();
