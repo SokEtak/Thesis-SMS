@@ -147,9 +147,15 @@ class Handler extends ExceptionHandler
     }
 
     /** Utility: detect JSON/API request */
+    
     protected function wantsJson($request): bool
     {
-        return $request->expectsJson() ||
-               str_starts_with($request->path(), 'api/');
+        // Force JSON for anything under /api
+        if (str_starts_with($request->path(), 'api/')) {
+            return true;
+        }
+
+        // Otherwise, honor the request headers
+        return $request->expectsJson();
     }
 }

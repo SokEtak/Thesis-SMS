@@ -20,21 +20,12 @@ class SubjectImport implements
 {
     public function model(array $row)
     {
-        // Normalize header keys to handle variations (BOM, capitalization)
-        $normalized = [];
-        foreach ($row as $key => $value) {
-            $cleanKey = preg_replace('/^\x{FEFF}/u', '', $key); // strip BOM
-            $cleanKey = trim($cleanKey);
-            $normalized[strtolower($cleanKey)] = $value;
-        }
-
-        if (empty($normalized['code']) || empty($normalized['name'])) {
-            return null; // skip invalid/empty rows
-        }
-
         return new Subject([
-            'code' => $normalized['code'],
-            'name' => $normalized['name'],
+            'code'       => $row['code'],
+            'name'       => $row['name'],
+            // 'created_at' => $row['created_at'] ?? now(),
+            // 'updated_at' => $row['updated_at'] ?? now(),
+            // 'deleted_at' => $row['deleted_at'] ?: null,
         ]);
     }
 

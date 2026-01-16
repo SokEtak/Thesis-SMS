@@ -35,10 +35,10 @@ class SubjectCreatedNotification extends Notification implements ShouldQueue
     {
         $channels = ['database', 'broadcast'];
 
-        // Add Telegram only if user has chat ID
-        if (!empty($notifiable->telegram_chat_id)) {
-            $channels[] = 'telegram';
-        }
+        // Add Telegram only if user has chat ID(temp Disabled)
+        // if (!empty($notifiable->telegram_chat_id)) {
+        //     $channels[] = 'telegram';
+        // }
 
         return $channels;
     }

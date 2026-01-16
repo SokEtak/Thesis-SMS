@@ -16,8 +16,18 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     { 
         $this->app->bind(
-        \App\Repositories\Interfaces\SubjectRepoInterf::class,
-        \App\Repositories\Eloquent\SubjectRepo::class
+            \App\Repositories\Interfaces\SubjectRepoInterf::class,
+            \App\Repositories\Eloquent\SubjectRepo::class
+        );
+
+        $this->app->bind(
+            \App\Repositories\Interfaces\UserRepoInterf::class,
+            \App\Repositories\Eloquent\UserRepo::class
+        );
+
+        $this->app->bind(
+            \App\Repositories\Interfaces\ClassroomRepoInterf::class,
+            \App\Repositories\Eloquent\ClassroomRepo::class
         );
 
     }
@@ -28,8 +38,9 @@ class AppServiceProvider extends ServiceProvider
     */
     public function boot(): void
     {
+        //comment to disable observer
         User::observe(UserObserver::class);
-        Subject::observe(SubjectObserver::class);
+        // Subject::observe(SubjectObserver::class);
         
     }
 }

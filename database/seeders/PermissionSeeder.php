@@ -24,6 +24,17 @@ class PermissionSeeder extends Seeder
             'subjects.force-delete',
             'subjects.import',
             'subjects.export',
+
+            // User Permissions
+            'users.view-any',
+            'users.view',
+            'users.create',
+            'users.update',
+            'users.delete',
+            'users.restore',
+            'users.force-delete',
+            'users.import',
+            'users.export',
         ];
 
         foreach ($permissions as $permission) {

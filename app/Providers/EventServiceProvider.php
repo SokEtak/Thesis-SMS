@@ -3,9 +3,10 @@
 namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use App\Events\UserCreated;
 use App\Events\Subject\SubjectCreated;
 use App\Listeners\NotifySubjectCreated;
-
+use App\Listeners\OnUserCreated;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -17,6 +18,9 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         SubjectCreated::class => [
             NotifySubjectCreated::class,
+        ],
+        UserCreated::class => [
+            OnUserCreated::class,
         ],
     ];
 
