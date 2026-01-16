@@ -5,7 +5,7 @@ namespace App\Policies;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class UserPolicy
+class SubjectPolicy
 {
     /** @var string[] Only Admin/Super-Admin can manage users by default */
     private array $elevatedRoles = ['Super-Admin', 'Admin'];
