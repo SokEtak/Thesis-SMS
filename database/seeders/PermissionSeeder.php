@@ -35,6 +35,28 @@ class PermissionSeeder extends Seeder
             'users.force-delete',
             'users.import',
             'users.export',
+
+            // Classroom Permissions
+            'classrooms.view-any',
+            'classrooms.view',
+            'classrooms.create',
+            'classrooms.update',
+            'classrooms.delete',
+            'classrooms.restore',
+            'classrooms.force-delete',
+            'classrooms.import',
+            'classrooms.export',
+
+            // Timetable Permissions
+            'timetables.view-any',
+            'timetables.view',
+            'timetables.create',
+            'timetables.update',
+            'timetables.delete',
+            'timetables.restore',
+            'timetables.force-delete',
+            'timetables.import',
+            'timetables.export',
         ];
 
         foreach ($permissions as $permission) {

@@ -87,6 +87,17 @@ class User extends Authenticatable
             });
     }
 
+    public function toSearchableArray()
+    {
+       return [
+           'id' => $this->id,
+           'name' => $this->name,
+           'email' => $this->email,
+           'phone' => $this->phone,
+           'class_id' => $this->class_id,
+       ];
+    }
+
     // Relationships
     public function class(): BelongsTo
     {
@@ -103,10 +114,10 @@ class User extends Authenticatable
         return $this->hasMany(User::class, 'parent_id');
     }
 
-    // public function timetablesTeaching(): HasMany
-    // {
-    //     return $this->hasMany(Timetable::class, 'teacher_id');
-    // }
+    public function timetablesTeaching(): HasMany
+    {
+        return $this->hasMany(Timetable::class, 'teacher_id');
+    }
 
     // public function attendances(): HasMany
     // {

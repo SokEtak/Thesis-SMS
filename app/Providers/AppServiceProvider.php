@@ -7,6 +7,15 @@ use App\Models\User;
 use App\Models\Subject;
 use App\Observers\UserObserver;
 use App\Observers\SubjectObserver;
+use App\Repositories\Interfaces\SubjectRepoInterf;
+use App\Repositories\Eloquent\SubjectRepo;
+use App\Repositories\Interfaces\UserRepoInterf;
+use App\Repositories\Eloquent\UserRepo;
+use App\Repositories\Interfaces\ClassroomRepoInterf;
+use App\Repositories\Eloquent\ClassroomRepo;
+use App\Repositories\Interfaces\TimetableRepoInterf;
+use App\Repositories\Eloquent\TimetableRepo;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,20 +24,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     { 
-        $this->app->bind(
-            \App\Repositories\Interfaces\SubjectRepoInterf::class,
-            \App\Repositories\Eloquent\SubjectRepo::class
-        );
+        $bindings = [
+            SubjectRepoInterf::class => SubjectRepo::class,
+            UserRepoInterf::class => UserRepo::class,
+            ClassroomRepoInterf::class => ClassroomRepo::class,
+            TimetableRepoInterf::class => TimetableRepo::class,
+        ];
 
-        $this->app->bind(
-            \App\Repositories\Interfaces\UserRepoInterf::class,
-            \App\Repositories\Eloquent\UserRepo::class
-        );
-
-        $this->app->bind(
-            \App\Repositories\Interfaces\ClassroomRepoInterf::class,
-            \App\Repositories\Eloquent\ClassroomRepo::class
-        );
+        foreach ($bindings as $abstract => $concrete) {
+            $this->app->bind($abstract, $concrete);
+        }
 
     }
 

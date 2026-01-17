@@ -20,6 +20,12 @@ class Subject extends Model
   // protected $guarded = [];
 
   //relationships
+
+  public function subjects()
+  {
+    return $this->hasMany(Timetable::class, 'subject_id');
+  }
+  
   public function toSearchableArray(): array
   {
     return [

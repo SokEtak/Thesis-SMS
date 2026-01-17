@@ -16,7 +16,6 @@ class Classroom extends Model
 
     protected $table = 'classes';
 
-    // DB column is `name`; accept both `name` and `class_name` for compatibility.
     protected $fillable = ['name', 'teacher_in_charge_id'];
 
     public function teacherInCharge(): BelongsTo
@@ -31,10 +30,10 @@ class Classroom extends Model
         });
     }
 
-    // public function timetables(): HasMany
-    // {
-    //     return $this->hasMany(Timetable::class, 'class_id');
-    // }
+    public function timetables(): HasMany
+    {
+        return $this->hasMany(Timetable::class, 'class_id');
+    }
 
     // public function homeworks(): HasMany
     // {

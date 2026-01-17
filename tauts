@@ -1,0 +1,41 @@
+[33mcommit 911f91bbd2147c648525ef4b2d510a989c7d7a68[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mauth[m[33m)[m
+Author: Sok Etak <taktakcars123467@gmail.com>
+Date:   Thu Jan 15 16:50:20 2026 +0700
+
+    Complete User Set-Up and releted model(classroom) to adapt with user model
+
+[33mcommit efbf5d396412863a02ca7c5286d94d62d8f4e195[m
+Author: Sok Etak <taktakcars123467@gmail.com>
+Date:   Thu Jan 15 16:49:55 2026 +0700
+
+    Complete User Set-Up and releted model(classroom) to adapt with user model
+
+[33mcommit a0035fc52425eb918e5c0dda5d2d187c57993bcf[m
+Author: Sok Etak <taktakcars123467@gmail.com>
+Date:   Tue Jan 13 13:48:31 2026 +0700
+
+    fix routing(auth,subject) ,Seeder(user,master,subject,DB,add auth(controll,serv,repo,form req),update handler logic, dirtied Subject Related
+
+[33mcommit 8269900480fd234ed4490d86b2186d25ee5fc768[m[33m ([m[1;31morigin/auth[m[33m)[m
+Author: Sok Etak <taktakcars123467@gmail.com>
+Date:   Mon Jan 12 10:02:23 2026 +0700
+
+    add log activity package and  table ,also  simply test with user table
+
+[33mcommit 1281eeffd54f65cca2d840a61069979db6fb6107[m
+Author: Sok Etak <taktakcars123467@gmail.com>
+Date:   Sun Jan 11 18:23:01 2026 +0700
+
+    completely finish eveyting that related to Subject
+
+[33mcommit 47d32cf243711189c78b972415039a67c53277f1[m[33m ([m[1;32muse[m[33m)[m
+Author: Sok Etak <taktakcars123467@gmail.com>
+Date:   Sun Jan 4 23:45:49 2026 +0700
+
+    finish adding Stardard Directory
+
+[33mcommit 97454338abf1d2a40e55f79f50011354bd79227a[m
+Author: Sok Etak <taktakcars123467@gmail.com>
+Date:   Sun Jan 4 22:16:42 2026 +0700
+
+    beggining of the project
