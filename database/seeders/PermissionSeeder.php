@@ -57,6 +57,18 @@ class PermissionSeeder extends Seeder
             'timetables.force-delete',
             'timetables.import',
             'timetables.export',
+
+            // Attendance Permissions
+            'attendance.view-any',
+            'attendance.view',
+            'attendance.create',
+            'attendance.update',
+            'attendance.delete',
+            'attendance.restore',
+            'attendance.force-delete',
+            'attendance.import',
+            'attendance.export',
+
         ];
 
         foreach ($permissions as $permission) {

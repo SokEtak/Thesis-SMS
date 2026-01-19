@@ -16,9 +16,9 @@ return new class extends Migration {
             $table->enum('status', ['Pending', 'Approved', 'Rejected'])->default('Pending');
 
             $table->foreignId('approved_by')->nullable()
-                  ->constrained('users')->nullOnDelete();
-
+                ->constrained('users')->nullOnDelete();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

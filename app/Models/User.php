@@ -75,7 +75,6 @@ class User extends Authenticatable
         ];
     }
 
-
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -119,55 +118,50 @@ class User extends Authenticatable
         return $this->hasMany(Timetable::class, 'teacher_id');
     }
 
-    // public function attendances(): HasMany
-    // {
-    //     return $this->hasMany(Attendance::class, 'student_id');
-    // }
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class, 'student_id');
+    }
 
-    // public function recordedAttendances(): HasMany
-    // {
-    //     return $this->hasMany(Attendance::class, 'recorded_by');
-    // }
+    public function recordedAttendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class, 'recorded_by');
+    }
 
-    // public function leaveRequests(): HasMany
-    // {
-    //     return $this->hasMany(LeaveRequest::class, 'student_id');
-    // }
+    public function leaveRequests(): HasMany
+    {
+        return $this->hasMany(LeaveRequest::class, 'student_id');
+    }
 
-    // public function approvedLeaveRequests(): HasMany
-    // {
-    //     return $this->hasMany(LeaveRequest::class, 'approved_by');
-    // }
+    public function approvedLeaveRequests(): HasMany
+    {
+        return $this->hasMany(LeaveRequest::class, 'approved_by');
+    }
 
-    // public function homeworkGiven(): HasMany
-    // {
-    //     return $this->hasMany(Homework::class, 'teacher_id');
-    // }
+    public function homeworkGiven(): HasMany
+    {
+        return $this->hasMany(Homework::class, 'teacher_id');
+    }
 
-    // public function homeworkSubmissions(): HasMany
-    // {
-    //     return $this->hasMany(HomeworkSubmission::class, 'student_id');
-    // }
+    public function homeworkSubmissions(): HasMany
+    {
+        return $this->hasMany(HomeworkSubmission::class, 'student_id');
+    }
 
-    // public function examResults(): HasMany
-    // {
-    //     return $this->hasMany(ExamResult::class, 'student_id');
-    // }
+    public function examResults(): HasMany
+    {
+        return $this->hasMany(ExamResult::class, 'student_id');
+    }
 
-    // public function messagesSent(): HasMany
-    // {
-    //     return $this->hasMany(Message::class, 'sender_id');
-    // }
+    public function messagesSent(): HasMany
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
 
-    // public function messagesReceived(): HasMany
-    // {
-    //     return $this->hasMany(Message::class, 'receiver_id');
-    // }
-
-    // public function activityLogs(): HasMany
-    // {
-    //     return $this->hasMany(ActivityLog::class, 'user_id');
-    // }
+    public function messagesReceived(): HasMany
+    {
+        return $this->hasMany(Message::class, 'receiver_id');
+    }
 
     // Convenient scopes via Spatie
     public function scopeStudents($query)

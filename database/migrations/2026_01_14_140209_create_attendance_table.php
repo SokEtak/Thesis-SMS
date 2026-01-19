@@ -7,18 +7,17 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('attendance', function (Blueprint $table) {
+        Schema::create('attendances', function (Blueprint $table) {
             $table->id();
 
             $table->foreignId('student_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('class_id')->constrained('classes')->cascadeOnDelete();
             $table->date('date');
-            $table->enum('status', ['Present', 'Absent', 'Permission', 'Late']);
-
+            $table->enum('status', ['pre', 'a', 'per', 'l']);
             $table->foreignId('recorded_by')->nullable()
-                  ->constrained('users')->nullOnDelete(); // teacher
-
+                ->constrained('users')->nullOnDelete(); // teacher
             $table->timestamps();
+            $table->softDeletes();
 
             $table->unique(['student_id', 'class_id', 'date']);
         });

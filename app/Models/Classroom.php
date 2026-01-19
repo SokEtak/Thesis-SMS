@@ -40,8 +40,8 @@ class Classroom extends Model
     //     return $this->hasMany(Homework::class, 'class_id');
     // }
 
-    // public function attendances(): HasMany
-    // {
-    //     return $this->hasMany(Attendance::class, 'class_id');
-    // }
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class, 'class_id');
+    }
 }

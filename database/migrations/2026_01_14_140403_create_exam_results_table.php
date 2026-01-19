@@ -16,8 +16,8 @@ return new class extends Migration {
             $table->string('exam_type', 50)->nullable();
             $table->decimal('score', 5, 2)->nullable();
             $table->string('month_year', 20)->nullable();
-
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

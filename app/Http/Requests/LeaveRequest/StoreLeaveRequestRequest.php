@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Http\Requests\LeaveRequest;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreLeaveRequestRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'student_id' => ['required', 'exists:users,id'],
+            'request_date' => ['required', 'date'],
+            'reason' => ['nullable', 'string'],
+            'status' => ['sometimes', 'nullable', 'in:Pending,Approved,Rejected'],
+            'approved_by' => ['nullable', 'exists:users,id'],
+        ];
+    }
+}

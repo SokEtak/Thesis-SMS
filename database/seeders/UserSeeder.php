@@ -27,7 +27,9 @@ class UserSeeder extends Seeder
                     'phone' => '1234567890',
                     'gender' => 'male',
                     'dob' => '1990-01-01',
-
+                    'class_id'=>rand(1,10),
+                    'parent_id'=>rand(1,10),
+                    'address' => '123 Main St, Anytown, USA',
                 ]
             );
 

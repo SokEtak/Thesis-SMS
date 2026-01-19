@@ -7,6 +7,8 @@ use App\Events\UserCreated;
 use App\Events\Subject\SubjectCreated;
 use App\Listeners\NotifySubjectCreated;
 use App\Listeners\OnUserCreated;
+use App\Events\Attendace\AttendanceCreated;
+use App\Listeners\NotifyParentOfAttendance;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -18,9 +20,10 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         SubjectCreated::class => [
             NotifySubjectCreated::class,
-        ],
-        UserCreated::class => [
-            OnUserCreated::class,
+        ]
+        ,
+        AttendanceCreated::class => [
+            NotifyParentOfAttendance::class,
         ],
     ];
 

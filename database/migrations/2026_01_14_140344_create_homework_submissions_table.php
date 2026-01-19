@@ -17,8 +17,8 @@ return new class extends Migration {
             $table->timestamp('submitted_at')->useCurrent();
             $table->integer('score')->nullable();
             $table->text('feedback')->nullable();
-
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

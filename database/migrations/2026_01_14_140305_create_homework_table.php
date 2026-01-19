@@ -19,8 +19,8 @@ return new class extends Migration {
             $table->text('description')->nullable();
             $table->string('file_url', 255)->nullable();
             $table->dateTime('deadline')->nullable();
-
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

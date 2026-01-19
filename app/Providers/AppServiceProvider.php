@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Attendance;
 use Illuminate\Support\ServiceProvider;
 use App\Models\User;
 use App\Models\Subject;
 use App\Observers\UserObserver;
 use App\Observers\SubjectObserver;
+use App\Observers\AttendanceObserver;
 use App\Repositories\Interfaces\SubjectRepoInterf;
 use App\Repositories\Eloquent\SubjectRepo;
 use App\Repositories\Interfaces\UserRepoInterf;
@@ -15,6 +17,10 @@ use App\Repositories\Interfaces\ClassroomRepoInterf;
 use App\Repositories\Eloquent\ClassroomRepo;
 use App\Repositories\Interfaces\TimetableRepoInterf;
 use App\Repositories\Eloquent\TimetableRepo;
+use App\Repositories\Interfaces\ExamResultRepoInterf;
+use App\Repositories\Eloquent\ExamResultRepo;
+use App\Repositories\Interfaces\AttendanceRepoInterf;
+use App\Repositories\Eloquent\AttendanceRepo;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -29,6 +35,8 @@ class AppServiceProvider extends ServiceProvider
             UserRepoInterf::class => UserRepo::class,
             ClassroomRepoInterf::class => ClassroomRepo::class,
             TimetableRepoInterf::class => TimetableRepo::class,
+            ExamResultRepoInterf::class => ExamResultRepo::class,
+            AttendanceRepoInterf::class => AttendanceRepo::class,
         ];
 
         foreach ($bindings as $abstract => $concrete) {
@@ -43,8 +51,9 @@ class AppServiceProvider extends ServiceProvider
     */
     public function boot(): void
     {
-        //comment to disable observer
+        //comment to disable observer(no need to modify)
         User::observe(UserObserver::class);
+        Attendance::observe(AttendanceObserver::class);
         // Subject::observe(SubjectObserver::class);
         
     }

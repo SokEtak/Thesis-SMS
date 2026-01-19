@@ -21,12 +21,15 @@ class SubjectCreated
 
     public function broadcastOn()
     {
-        return [];
+        return [
+            //'subjects' //example of private channel
+            'public-subjects' //example of public channel
+        ];
     }
 
     public function broadcastAs()
     {
-        return 'subject.created';//public channel
+        return 'subject.created';//alias for the event
     }
 
     public function broadcastWith()
