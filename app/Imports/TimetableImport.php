@@ -30,7 +30,12 @@ class TimetableImport implements
             'start_time' => $row['start_time'] ?? null,
             'end_time' => $row['end_time'] ?? null,
             'subject_id' => isset($row['subject_id']) && $row['subject_id'] !== '' ? (int) $row['subject_id'] : null,
-            'classroom_id' => isset($row['classroom_id']) && $row['classroom_id'] !== '' ? (int) $row['classroom_id'] : null,
+            // accept either 'classroom_id' (from exported files) or 'class_id' and map to model's `class_id`
+            'class_id' => (
+                isset($row['classroom_id']) && $row['classroom_id'] !== ''
+            ) ? (int) $row['classroom_id'] : (
+                (isset($row['class_id']) && $row['class_id'] !== '') ? (int) $row['class_id'] : null
+            ),
             'teacher_id' => isset($row['teacher_id']) && $row['teacher_id'] !== '' ? (int) $row['teacher_id'] : null,
         ]);
     }

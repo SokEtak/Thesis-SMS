@@ -11,12 +11,12 @@ class TimetableCollection extends ResourceCollection
         return $this->collection->transform(function ($item) {
             return [
                 'id' => $item->id,
+                'subject' => $item->subject->only(['id', 'name']),
+                'classroom' => $item->classroom->only(['id', 'name']),
+                'teacher' => $item->teacher->only(['id', 'name']),
                 'day_of_week' => $item->day_of_week,
                 'start_time' => $item->start_time,
                 'end_time' => $item->end_time,
-                'subject_id' => $item->subject_id,
-                'classroom_id' => $item->classroom_id,
-                'teacher_id' => $item->teacher_id,
             ];
         })->all();
     }

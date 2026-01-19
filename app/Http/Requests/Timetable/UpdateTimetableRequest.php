@@ -18,7 +18,7 @@ class UpdateTimetableRequest extends FormRequest
             'start_time' => ['sometimes', 'nullable', 'date_format:H:i'],
             'end_time' => ['sometimes', 'nullable', 'date_format:H:i'],
             'subject_id' => ['nullable', 'exists:subjects,id'],
-            'classroom_id' => ['nullable', 'exists:classes,id'],
+            'class_id' => ['nullable', 'exists:classes,id'],
             'teacher_id' => ['nullable', 'exists:users,id'],
         ];
     }

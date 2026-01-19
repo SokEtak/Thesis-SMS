@@ -17,6 +17,7 @@ class MasterDataSeeder extends Seeder
             PermissionSeeder::class,
             ClassroomSeeder::class,
             UserSeeder::class,
+            TimetableSeeder::class,
         ]);
     }
 }

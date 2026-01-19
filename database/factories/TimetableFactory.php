@@ -3,6 +3,9 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Subject;
+use App\Models\Classroom;
+use App\Models\User;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Timetable>
@@ -20,9 +23,9 @@ class TimetableFactory extends Factory
             'day_of_week' => $this->faker->randomElement(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']),
             'start_time' => $this->faker->time('H:i'),
             'end_time' => $this->faker->time('H:i'),
-            'subject_id' => \App\Models\Subject::factory(),
-            'classroom_id' => \App\Models\Classroom::factory(),
-            'teacher_id' => \App\Models\User::factory(),
+            'subject_id' => Subject::factory(),
+            'classroom_id' => Classroom::factory(),
+            'teacher_id' => User::factory(),
         ];
     }
 }

@@ -19,7 +19,8 @@ class TimetableExport implements FromCollection, WithHeadings
     public function collection(): Collection
     {
         return Timetable::query()
-            ->select(['id','day_of_week','start_time','end_time','subject_id','classroom_id','teacher_id','created_at','updated_at','deleted_at'])
+            // alias database `class_id` to `classroom_id` so exported headings match importer
+            ->select(['id','day_of_week','start_time','end_time','subject_id','class_id as classroom_id','teacher_id','created_at','updated_at','deleted_at'])
             ->orderBy('id')
             ->get();
     }

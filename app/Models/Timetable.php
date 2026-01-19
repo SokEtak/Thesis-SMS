@@ -13,9 +13,9 @@ class Timetable extends Model
     use HasFactory,Searchable,SoftDeletes;
 
     protected $fillable = [
-        'class_id',
         'subject_id',
         'teacher_id',
+        'class_id',
         'day_of_week',
         'start_time',
         'end_time',

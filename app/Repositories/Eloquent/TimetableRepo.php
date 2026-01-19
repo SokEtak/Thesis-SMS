@@ -34,8 +34,11 @@ class TimetableRepo implements TimetableRepoInterf
             ->allowedFilters([
                 AllowedFilter::exact('day_of_week'),
                 AllowedFilter::exact('subject_id'),
-                AllowedFilter::exact('classroom_id'),
+                AllowedFilter::partial('subject.name'),
+                AllowedFilter::exact('class_id'),
+                AllowedFilter::partial('classroom.name'),
                 AllowedFilter::exact('teacher_id'),
+                AllowedFilter::partial('teacher.name'),
             ])
             ->allowedSorts(['id','day_of_week','start_time','end_time','created_at'])
             ->defaultSort('id')

@@ -30,8 +30,8 @@ return new class extends Migration
                 ->constrained('users')->nullOnDelete(); // guardian user
 
             $table->rememberToken();
-            $table->softDeletes();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

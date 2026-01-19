@@ -17,8 +17,8 @@ return new class extends Migration {
             $table->enum('day_of_week', ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']);
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
-            $table->softDeletes();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

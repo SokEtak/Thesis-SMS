@@ -21,7 +21,7 @@ class Subject extends Model
 
   //relationships
 
-  public function subjects()
+  public function timetables()
   {
     return $this->hasMany(Timetable::class, 'subject_id');
   }

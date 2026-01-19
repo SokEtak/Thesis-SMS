@@ -20,7 +20,6 @@ class AuthController extends Controller
   /** POST /api/v1/auth/register */
   public function register(RegisterRequest $request)
   {
-    dd();
     $user = $this->service->register($request->validated());
     return ApiResponse::created([
       'user' => [
