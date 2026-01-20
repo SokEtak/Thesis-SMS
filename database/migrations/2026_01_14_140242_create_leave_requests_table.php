@@ -10,15 +10,41 @@ return new class extends Migration {
         Schema::create('leave_requests', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('student_id')->constrained('users')->cascadeOnDelete();
-            $table->date('request_date');
-            $table->text('reason')->nullable();
-            $table->enum('status', ['Pending', 'Approved', 'Rejected'])->default('Pending');
+            // Student (must be a student user)
+            $table->foreignId('student_id')
+                ->constrained('users')
+                ->cascadeOnDelete();
 
-            $table->foreignId('approved_by')->nullable()
-                ->constrained('users')->nullOnDelete();
+            // Leave period
+            $table->date('start_date');
+            $table->date('end_date');
+
+            // Optional reason
+            $table->text('reason')->nullable();
+
+            // Status
+            $table->enum('status', [
+                'Pending',
+                'Approved',
+                'Rejected',
+                'Cancelled'
+            ])->default('Pending');
+
+            // Approval
+            $table->foreignId('approved_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->timestamp('approved_at')->nullable();
+
+            // Audit
             $table->timestamps();
             $table->softDeletes();
+
+            // Performance
+            $table->index(['student_id', 'status']);
+            $table->index(['start_date', 'end_date']);
         });
     }
 

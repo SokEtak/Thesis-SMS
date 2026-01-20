@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Attendance;
+use App\Models\LeaveRequest;
 use Illuminate\Support\ServiceProvider;
 use App\Models\User;
 use App\Models\Subject;
@@ -21,7 +22,8 @@ use App\Repositories\Interfaces\ExamResultRepoInterf;
 use App\Repositories\Eloquent\ExamResultRepo;
 use App\Repositories\Interfaces\AttendanceRepoInterf;
 use App\Repositories\Eloquent\AttendanceRepo;
-
+use App\Repositories\Interfaces\LeaveRequestRepoInterf;
+use App\Repositories\Eloquent\LeaveRequestRepo;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -37,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
             TimetableRepoInterf::class => TimetableRepo::class,
             ExamResultRepoInterf::class => ExamResultRepo::class,
             AttendanceRepoInterf::class => AttendanceRepo::class,
+            LeaveRequestRepoInterf::class => LeaveRequestRepo::class,
         ];
 
         foreach ($bindings as $abstract => $concrete) {

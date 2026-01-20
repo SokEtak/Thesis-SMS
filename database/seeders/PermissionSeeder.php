@@ -69,6 +69,16 @@ class PermissionSeeder extends Seeder
             'attendance.import',
             'attendance.export',
 
+            // Leave Request Permissions
+            'leaverequests.view-any',
+            'leaverequests.view',
+            'leaverequests.create',
+            'leaverequests.update',
+            'leaverequests.delete',
+            'leaverequests.restore',
+            'leaverequests.force-delete',
+            'leaverequests.import',
+            'leaverequests.export',
         ];
 
         foreach ($permissions as $permission) {

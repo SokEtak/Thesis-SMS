@@ -24,8 +24,9 @@ class TimetableFactory extends Factory
             'start_time' => $this->faker->time('H:i'),
             'end_time' => $this->faker->time('H:i'),
             'subject_id' => Subject::factory(),
-            'classroom_id' => Classroom::factory(),
+            'class_id' => Classroom::factory(),
             'teacher_id' => User::factory(),
         ];
+
     }
 }
