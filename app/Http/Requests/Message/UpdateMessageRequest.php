@@ -14,10 +14,10 @@ class UpdateMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sender_id' => ['sometimes','nullable','exists:users,id'],
-            'receiver_id' => ['sometimes','nullable','exists:users,id'],
-            'message_body' => ['sometimes','nullable','string'],
-            'is_read' => ['sometimes','boolean'],
+            'sender_id' => ['sometimes', 'nullable', 'exists:users,id'],
+            'receiver_id' => ['sometimes', 'nullable', 'exists:users,id'],
+            'message_body' => ['sometimes', 'nullable', 'string'],
+            'is_read' => ['sometimes', 'boolean'],
         ];
     }
 }

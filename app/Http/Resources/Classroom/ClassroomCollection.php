@@ -10,8 +10,8 @@ class ClassroomCollection extends ResourceCollection
     {
         return $this->collection->transform(function ($classroom) {
             return [
-                'id'    => $classroom->id,
-                'name'  => $classroom->name,
+                'id' => $classroom->id,
+                'name' => $classroom->name,
                 'teacher_in_charge_id' => $classroom->teacher_in_charge_id,
             ];
         })->all();

@@ -3,10 +3,10 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Homework;
-use Spatie\QueryBuilder\AllowedFilter;
-use Spatie\QueryBuilder\QueryBuilder;
 use App\Repositories\Interfaces\HomeworkRepoInterf;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class HomeworkRepo implements HomeworkRepoInterf
 {
@@ -40,7 +40,7 @@ class HomeworkRepo implements HomeworkRepoInterf
                 AllowedFilter::exact('teacher.name'),
                 AllowedFilter::partial('title'),
             ])
-            ->allowedSorts(['id','title','deadline','created_at'])
+            ->allowedSorts(['id', 'title', 'deadline', 'created_at'])
             ->defaultSort('id')
             ->paginate($perPage);
     }
@@ -58,6 +58,7 @@ class HomeworkRepo implements HomeworkRepoInterf
     public function update(Homework $model, array $data): Homework
     {
         $model->update($data);
+
         return $model;
     }
 
@@ -70,6 +71,7 @@ class HomeworkRepo implements HomeworkRepoInterf
     {
         $model = Homework::onlyTrashed()->findOrFail($id);
         $model->restore();
+
         return $model;
     }
 

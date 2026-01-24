@@ -6,7 +6,6 @@ use App\Exports\LeaveRequestExport;
 use App\Imports\LeaveRequestImport;
 use App\Models\LeaveRequest;
 use App\Repositories\Interfaces\LeaveRequestRepoInterf;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;

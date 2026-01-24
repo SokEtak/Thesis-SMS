@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 
 class Attendance extends Model
 {
@@ -50,5 +50,4 @@ class Attendance extends Model
     {
         return $this->belongsTo(User::class, 'recorded_by');
     }
-
 }

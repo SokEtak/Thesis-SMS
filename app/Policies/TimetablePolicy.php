@@ -126,6 +126,7 @@ class TimetablePolicy
     {
         return $this->allow($user, 'timetables.import');
     }
+
     public function export(User $user): bool|Response
     {
         return $this->allow($user, 'timetables.export');

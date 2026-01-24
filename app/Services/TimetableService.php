@@ -6,7 +6,6 @@ use App\Exports\TimetableExport;
 use App\Imports\TimetableImport;
 use App\Models\Timetable;
 use App\Repositories\Interfaces\TimetableRepoInterf;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;

@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Models\ExamResult;
-use Illuminate\Http\Request;
 use App\Helpers\ApiResponse;
-use App\Services\ExamResultService;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ExamResult\ExamResultImportRequest;
 use App\Http\Requests\ExamResult\StoreExamResultRequest;
 use App\Http\Requests\ExamResult\UpdateExamResultRequest;
-use App\Http\Requests\ExamResult\ExamResultImportRequest;
 use App\Http\Resources\ExamResult\ExamResultCollection;
 use App\Http\Resources\ExamResult\ExamResultResource;
+use App\Models\ExamResult;
+use App\Services\ExamResultService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class ExamResultController extends Controller
 {

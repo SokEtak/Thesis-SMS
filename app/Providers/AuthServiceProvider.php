@@ -2,22 +2,22 @@
 
 namespace App\Providers;
 
+use App\Models\Attendance;
 use App\Models\Classroom;
 use App\Models\Homework;
-use App\Models\Subject;
-use App\Models\Timetable;
-use App\Policies\SubjectPolicy;
-use App\Models\User;
-use App\Policies\UserPolicy;
-use App\Models\Attendance;
 use App\Models\HomeworkSubmission;
 use App\Models\LeaveRequest;
+use App\Models\Subject;
+use App\Models\Timetable;
+use App\Models\User;
 use App\Policies\AttendancePolicy;
 use App\Policies\ClassroomPolicy;
-use App\Policies\TimetablePolicy;
 use App\Policies\HomeworkPolicy;
-use App\Policies\LeaveRequestPolicy;
 use App\Policies\HomeworkSubmissionPolicy;
+use App\Policies\LeaveRequestPolicy;
+use App\Policies\SubjectPolicy;
+use App\Policies\TimetablePolicy;
+use App\Policies\UserPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 

@@ -12,7 +12,7 @@ class TimetableExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'ID', 'Day Of Week', 'Start Time', 'End Time', 'Subject ID', 'Classroom ID', 'Teacher ID', 'Created At', 'Updated At', 'Deleted At'
+            'ID', 'Day Of Week', 'Start Time', 'End Time', 'Subject ID', 'Classroom ID', 'Teacher ID', 'Created At', 'Updated At', 'Deleted At',
         ];
     }
 
@@ -20,7 +20,7 @@ class TimetableExport implements FromCollection, WithHeadings
     {
         return Timetable::query()
             // alias database `class_id` to `classroom_id` so exported headings match importer
-            ->select(['id','day_of_week','start_time','end_time','subject_id','class_id as classroom_id','teacher_id','created_at','updated_at','deleted_at'])
+            ->select(['id', 'day_of_week', 'start_time', 'end_time', 'subject_id', 'class_id as classroom_id', 'teacher_id', 'created_at', 'updated_at', 'deleted_at'])
             ->orderBy('id')
             ->get();
     }

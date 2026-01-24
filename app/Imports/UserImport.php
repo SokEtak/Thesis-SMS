@@ -3,27 +3,19 @@
 namespace App\Imports;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
-use Maatwebsite\Excel\Concerns\WithBatchInserts;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Maatwebsite\Excel\Concerns\SkipsOnFailure;
-use Maatwebsite\Excel\Concerns\SkipsFailures;
 
-
-class UserImport implements 
-    ToModel,
-    WithHeadingRow,
-    WithValidation,
-    WithChunkReading,
-    WithBatchInserts,
-    ShouldQueue,
-    SkipsOnFailure
+class UserImport implements ShouldQueue, SkipsOnFailure, ToModel, WithBatchInserts, WithChunkReading, WithHeadingRow, WithValidation
 {
     use SkipsFailures;
 
@@ -31,6 +23,7 @@ class UserImport implements
     {
         return ['email'];
     }
+
     /**
      * Expected headings: name, email, password (plain), telegram_chat_id, avatar, phone
      * You can adapt to your sheet structure.
@@ -54,7 +47,7 @@ class UserImport implements
         // Parse dates safely (support 'dob' or 'date_of_birth')
         $dob = null;
         $dobSource = $row['dob'] ?? $row['date_of_birth'] ?? null;
-        if (!empty($dobSource)) {
+        if (! empty($dobSource)) {
             try {
                 $dob = Carbon::parse($dobSource)->toDateString();
             } catch (\Exception $e) {
@@ -63,7 +56,7 @@ class UserImport implements
         }
 
         $createdAt = null;
-        if (!empty($row['created_at'])) {
+        if (! empty($row['created_at'])) {
             try {
                 $createdAt = Carbon::parse($row['created_at'])->toDateTimeString();
             } catch (\Exception $e) {
@@ -72,7 +65,7 @@ class UserImport implements
         }
 
         $updatedAt = null;
-        if (!empty($row['updated_at'])) {
+        if (! empty($row['updated_at'])) {
             try {
                 $updatedAt = Carbon::parse($row['updated_at'])->toDateTimeString();
             } catch (\Exception $e) {
@@ -81,7 +74,7 @@ class UserImport implements
         }
 
         $deletedAt = null;
-        if (!empty($row['deleted_at'])) {
+        if (! empty($row['deleted_at'])) {
             try {
                 $deletedAt = Carbon::parse($row['deleted_at'])->toDateTimeString();
             } catch (\Exception $e) {
@@ -142,24 +135,24 @@ class UserImport implements
             'deleted_at' => $deletedAt,
         ]);
     }
-        
+
     public function rules(): array
     {
         return [
-            '*.name'              => ['required', 'string', 'max:255'],
-            '*.email'             => ['required', 'email:rfc', 'max:255'],
-            '*.password'          => ['nullable', 'string', 'min:8', 'max:64'],
-            '*.gender'            => ['nullable', 'in:male,female'],
-            '*.dob'               => ['nullable', 'date'],
-            '*.date_of_birth'     => ['nullable', 'date'],
-            '*.phone'             => ['nullable', 'string', 'max:32'],
-            '*.telegram_chat_id'  => ['nullable', 'string', 'max:64'],
-            '*.avatar'            => ['nullable', 'url', 'max:1024'],
-            '*.position'          => ['nullable', 'string', 'max:50'],
-            '*.address'           => ['nullable', 'string', 'max:255'],
-            '*.class_id'          => ['nullable', 'integer'],
-            '*.parent_id'         => ['nullable', 'integer'],
-            '*.remember_token'    => ['nullable', 'string', 'max:100'],
+            '*.name' => ['required', 'string', 'max:255'],
+            '*.email' => ['required', 'email:rfc', 'max:255'],
+            '*.password' => ['nullable', 'string', 'min:8', 'max:64'],
+            '*.gender' => ['nullable', 'in:male,female'],
+            '*.dob' => ['nullable', 'date'],
+            '*.date_of_birth' => ['nullable', 'date'],
+            '*.phone' => ['nullable', 'string', 'max:32'],
+            '*.telegram_chat_id' => ['nullable', 'string', 'max:64'],
+            '*.avatar' => ['nullable', 'url', 'max:1024'],
+            '*.position' => ['nullable', 'string', 'max:50'],
+            '*.address' => ['nullable', 'string', 'max:255'],
+            '*.class_id' => ['nullable', 'integer'],
+            '*.parent_id' => ['nullable', 'integer'],
+            '*.remember_token' => ['nullable', 'string', 'max:100'],
         ];
     }
 

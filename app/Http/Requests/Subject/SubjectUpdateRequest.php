@@ -29,7 +29,7 @@ class SubjectUpdateRequest extends FormRequest
                 'max:20',
                 Rule::unique('subjects', 'code')->ignore($this->route('subject')),
             ],
-            'name' => ['sometimes','string','max:255',
+            'name' => ['sometimes', 'string', 'max:255',
                 Rule::unique('subjects', 'name')->ignore($this->route('subject')),
             ],
         ];

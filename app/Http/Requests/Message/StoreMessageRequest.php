@@ -14,10 +14,10 @@ class StoreMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sender_id' => ['required','exists:users,id'],
-            'receiver_id' => ['required','exists:users,id'],
-            'message_body' => ['nullable','string'],
-            'is_read' => ['sometimes','boolean'],
+            'sender_id' => ['required', 'exists:users,id'],
+            'receiver_id' => ['required', 'exists:users,id'],
+            'message_body' => ['nullable', 'string'],
+            'is_read' => ['sometimes', 'boolean'],
         ];
     }
 }

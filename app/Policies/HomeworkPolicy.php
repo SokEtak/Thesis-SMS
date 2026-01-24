@@ -7,13 +7,14 @@ use Illuminate\Auth\Access\Response;
 
 class HomeworkPolicy
 {
-    private array $elevatedRoles = ['Super-Admin', 'Admin','Teacher'];
+    private array $elevatedRoles = ['Super-Admin', 'Admin', 'Teacher'];
 
     private function allow(User $user, string $permission): bool|Response
     {
         if ($user->hasAnyRole($this->elevatedRoles) || $user->can($permission)) {
             return true;
         }
+
         return Response::deny('You are not allowed to perform this action on homeworks.');
     }
 

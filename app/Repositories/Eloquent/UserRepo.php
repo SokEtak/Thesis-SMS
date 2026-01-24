@@ -3,10 +3,10 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\User;
-use Spatie\QueryBuilder\AllowedFilter;
-use Spatie\QueryBuilder\QueryBuilder;
 use App\Repositories\Interfaces\UserRepoInterf;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class UserRepo implements UserRepoInterf
 {
@@ -42,7 +42,7 @@ class UserRepo implements UserRepoInterf
         }
 
         return QueryBuilder::for($query)
-            //partial= means LIKE %value%, exact means =value
+            // partial= means LIKE %value%, exact means =value
             ->allowedFilters([
                 AllowedFilter::partial('name'),
                 AllowedFilter::partial('email'),
@@ -64,14 +64,14 @@ class UserRepo implements UserRepoInterf
 
             ])
             ->allowedSorts(['id',
-                            'name',
-                            'email',
-                            'phone',
-                            'gender',
-                            'dob',
-                            'position',
-                            'created_at'
-                            ])
+                'name',
+                'email',
+                'phone',
+                'gender',
+                'dob',
+                'position',
+                'created_at',
+            ])
             ->defaultSort('id')
             ->paginate($perPage);
     }
@@ -89,6 +89,7 @@ class UserRepo implements UserRepoInterf
     public function update(User $user, array $data): User
     {
         $user->update($data);
+
         return $user;
     }
 
@@ -101,6 +102,7 @@ class UserRepo implements UserRepoInterf
     {
         $user = User::onlyTrashed()->findOrFail($id);
         $user->restore();
+
         return $user;
     }
 

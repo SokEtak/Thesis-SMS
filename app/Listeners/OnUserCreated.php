@@ -13,10 +13,10 @@ class OnUserCreated
         $user = $event->user;
 
         // Notify via mail/database
-        $user->notify(new WelcomeNotification());
+        $user->notify(new WelcomeNotification);
 
         // Optional: Telegram welcome
-        if (!empty($user->telegram_chat_id)) {
+        if (! empty($user->telegram_chat_id)) {
             SendTelegramMessageJob::dispatch(
                 $user->telegram_chat_id,
                 "Welcome, {$user->name}! Your account has been created."

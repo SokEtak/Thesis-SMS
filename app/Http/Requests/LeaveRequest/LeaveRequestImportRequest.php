@@ -14,7 +14,7 @@ class LeaveRequestImportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'mimes:xlsx,csv','max:5120'], // max 5MB
+            'file' => ['required', 'file', 'mimes:xlsx,csv', 'max:5120'], // max 5MB
         ];
     }
 }

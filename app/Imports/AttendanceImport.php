@@ -2,25 +2,21 @@
 
 namespace App\Imports;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Maatwebsite\Excel\Concerns\SkipsOnFailure;
-use Maatwebsite\Excel\Concerns\SkipsFailures;
-use Exception;
 use Carbon\Carbon;
+use Exception;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class AttendanceImport implements 
-    ToCollection,
-    WithHeadingRow,
-    WithChunkReading,
-    ShouldQueue,
-    SkipsOnFailure
+class AttendanceImport implements ShouldQueue, SkipsOnFailure, ToCollection, WithChunkReading, WithHeadingRow
 {
     use SkipsFailures;
+
     public function collection(Collection $rows)
     {
         $now = now();
@@ -32,7 +28,7 @@ class AttendanceImport implements
             $classId = $row['class_id'] ?? null;
             $dateRaw = $row['date'] ?? null;
 
-            if (!$studentId || !$classId || !$dateRaw) {
+            if (! $studentId || ! $classId || ! $dateRaw) {
                 continue;
             }
 
@@ -42,7 +38,7 @@ class AttendanceImport implements
                 $date = $dateRaw;
             }
 
-            $key = $studentId . '|' . $classId . '|' . $date;
+            $key = $studentId.'|'.$classId.'|'.$date;
             if (isset($seen[$key])) {
                 continue;
             }
@@ -59,7 +55,7 @@ class AttendanceImport implements
             ];
         }
 
-        if (!empty($toInsert)) {
+        if (! empty($toInsert)) {
             DB::table('attendances')->insertOrIgnore($toInsert);
         }
     }

@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('timetables', function (Blueprint $table) {
@@ -14,7 +15,7 @@ return new class extends Migration {
             $table->foreignId('subject_id')->constrained('subjects')->cascadeOnDelete();
             $table->foreignId('teacher_id')->constrained('users')->cascadeOnDelete();
 
-            $table->enum('day_of_week', ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']);
+            $table->enum('day_of_week', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']);
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
             $table->timestamps();

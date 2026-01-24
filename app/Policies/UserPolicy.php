@@ -15,6 +15,7 @@ class UserPolicy
         if ($user->hasAnyRole($this->elevatedRoles) || $user->can($permission)) {
             return true;
         }
+
         return Response::deny('You are not allowed to perform this action on users.');
     }
 
@@ -29,6 +30,7 @@ class UserPolicy
         if ($user->id === $model->id) {
             return true;
         }
+
         return $this->allow($user, 'users.view');
     }
 
@@ -43,6 +45,7 @@ class UserPolicy
         if ($user->id === $model->id) {
             return true;
         }
+
         return $this->allow($user, 'users.update');
     }
 
@@ -52,6 +55,7 @@ class UserPolicy
         if ($user->id === $model->id) {
             return Response::deny('You cannot delete your own account.');
         }
+
         return $this->allow($user, 'users.delete');
     }
 

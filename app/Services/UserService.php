@@ -2,12 +2,10 @@
 
 namespace App\Services;
 
-use App\Events\User\UserCreated;
 use App\Exports\UserExport;
 use App\Imports\UserImport;
 use App\Models\User;
 use App\Repositories\Interfaces\UserRepoInterf;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -37,7 +35,7 @@ class UserService
                 $data['password'] = Hash::make($data['password']);
             }
             $user = $this->repo->create($data);
-            
+
             return $user;
         });
     }
@@ -50,6 +48,7 @@ class UserService
                     ? Hash::make($data['password'])
                     : $user->password;
             }
+
             return $this->repo->update($user, $data);
         });
     }

@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Models\Homework;
-use Illuminate\Http\Request;
 use App\Helpers\ApiResponse;
-use App\Services\HomeworkService;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Homework\HomeworkImportRequest;
 use App\Http\Requests\Homework\StoreHomeworkRequest;
 use App\Http\Requests\Homework\UpdateHomeworkRequest;
-use App\Http\Requests\Homework\HomeworkImportRequest;
 use App\Http\Resources\Homework\HomeworkCollection;
 use App\Http\Resources\Homework\HomeworkResource;
+use App\Models\Homework;
+use App\Services\HomeworkService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class HomeworkController extends Controller
 {
@@ -36,14 +36,14 @@ class HomeworkController extends Controller
         $this->authorize('view', $homework);
 
         $model = $this->service->show($homework);
-        
+
         return ApiResponse::ok(new HomeworkResource($model));
     }
 
     public function store(StoreHomeworkRequest $request)
     {
         $data = $request->validated();
-        
+
         $data['teacher_id'] = $request->user()->id;
 
         $item = $this->service->store($data);
@@ -54,7 +54,7 @@ class HomeworkController extends Controller
     public function update(UpdateHomeworkRequest $request, Homework $homework)
     {
         $data['teacher_id'] = $request->user()->id;
-        
+
         $updated = $this->service->update($homework, $request->validated());
 
         return ApiResponse::ok(new HomeworkResource($updated));

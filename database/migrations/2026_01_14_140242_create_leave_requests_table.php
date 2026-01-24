@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('leave_requests', function (Blueprint $table) {
@@ -27,7 +28,7 @@ return new class extends Migration {
                 'Pending',
                 'Approved',
                 'Rejected',
-                'Cancelled'
+                'Cancelled',
             ])->default('Pending');
 
             // Approval

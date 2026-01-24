@@ -9,19 +9,17 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    
-public function up(): void
-  {
-    Schema::create('subjects', function (Blueprint $table) {
-      $table->id();
-      $table->string('code')->unique()->index();
-      $table->string('name')->unique();
-      $table->timestamps();
-      $table->softDeletes();
-      $table->index(['name']);
-    });
-  }
-
+    public function up(): void
+    {
+        Schema::create('subjects', function (Blueprint $table) {
+            $table->id();
+            $table->string('code')->unique()->index();
+            $table->string('name')->unique();
+            $table->timestamps();
+            $table->softDeletes();
+            $table->index(['name']);
+        });
+    }
 
     /**
      * Reverse the migrations.

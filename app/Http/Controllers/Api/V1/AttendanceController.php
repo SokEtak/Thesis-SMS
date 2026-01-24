@@ -1,17 +1,18 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1;
 
-use App\Models\Attendance;
-use Illuminate\Http\Request;
 use App\Helpers\ApiResponse;
-use App\Services\AttendanceService;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Attendance\AttendanceImportRequest;
 use App\Http\Requests\Attendance\StoreAttendanceRequest;
 use App\Http\Requests\Attendance\UpdateAttendanceRequest;
-use App\Http\Requests\Attendance\AttendanceImportRequest;
 use App\Http\Resources\Attendance\AttendanceCollection;
 use App\Http\Resources\Attendance\AttendanceResource;
+use App\Models\Attendance;
+use App\Services\AttendanceService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
 {
@@ -32,7 +33,7 @@ class AttendanceController extends Controller
 
     public function show(Attendance $attendance)
     {
-        //use this concept to alert parent via event
+        // use this concept to alert parent via event
         // dd($attendance->student->parent->only(['id','name']));
         $this->authorize('view', $attendance);
 
@@ -43,8 +44,8 @@ class AttendanceController extends Controller
 
     public function store(StoreAttendanceRequest $request)
     {
-    // dd();    
-    $this->authorize('create', Attendance::class);
+        // dd();
+        $this->authorize('create', Attendance::class);
 
         $attendance = $this->service->store($request->validated());
 

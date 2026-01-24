@@ -22,7 +22,7 @@ class StoreAttendanceRequest extends FormRequest
                 'date',
                 Rule::unique('attendances', 'date')->where(function ($query) {
                     return $query->where('student_id', $this->input('student_id'))
-                                 ->where('class_id', $this->input('class_id'));
+                        ->where('class_id', $this->input('class_id'));
                 }),
             ],
             'status' => 'required|in:pre,a,per,l',

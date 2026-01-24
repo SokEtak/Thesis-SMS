@@ -27,7 +27,7 @@ class AttendanceExport implements FromCollection, WithHeadings
     public function collection(): Collection
     {
         return Attendance::query()
-            ->select(['id','student_id','class_id','date','status','recorded_by','created_at','updated_at','deleted_at'])
+            ->select(['id', 'student_id', 'class_id', 'date', 'status', 'recorded_by', 'created_at', 'updated_at', 'deleted_at'])
             ->orderBy('id')
             ->get();
     }

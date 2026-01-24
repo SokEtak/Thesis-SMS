@@ -2,21 +2,21 @@
 
 namespace App\Exceptions;
 
-use Throwable;
 use App\Helpers\ApiResponse;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Exceptions\PostTooLargeException;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
-use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
@@ -34,7 +34,7 @@ class Handler extends ExceptionHandler
 
         /** Renderable: JSON for API requests */
         $this->renderable(function (Throwable $e, $request) {
-            if (!$this->wantsJson($request)) {
+            if (! $this->wantsJson($request)) {
                 return null; // fall back to default HTML rendering
             }
 
@@ -124,6 +124,7 @@ class Handler extends ExceptionHandler
             // Generic HttpException with custom code
             if ($e instanceof HttpException) {
                 $status = $e->getStatusCode();
+
                 return ApiResponse::error(
                     'http_error',
                     $e->getMessage() ?: 'HTTP error.',
@@ -147,7 +148,6 @@ class Handler extends ExceptionHandler
     }
 
     /** Utility: detect JSON/API request */
-    
     protected function wantsJson($request): bool
     {
         // Force JSON for anything under /api

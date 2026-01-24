@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Models\User;
-use Illuminate\Http\Request;
 use App\Helpers\ApiResponse;
-use App\Services\UserService;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\User\UserImportRequest;
 use App\Http\Requests\User\UserStoreRequest;
 use App\Http\Requests\User\UserUpdateRequest;
-use App\Http\Requests\User\UserImportRequest;
 use App\Http\Resources\User\UserCollection;
 use App\Http\Resources\User\UserResource;
+use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {

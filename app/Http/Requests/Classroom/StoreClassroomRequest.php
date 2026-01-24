@@ -22,8 +22,8 @@ class StoreClassroomRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "name" => ["required", "string", "max:255",'unique:classes,name'],
-            "teacher_in_charge_id" => ["nullable", "exists:users,id"],
+            'name' => ['required', 'string', 'max:255', 'unique:classes,name'],
+            'teacher_in_charge_id' => ['nullable', 'exists:users,id'],
         ];
     }
 }

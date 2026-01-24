@@ -6,7 +6,6 @@ use App\Exports\ExamResultExport;
 use App\Imports\ExamResultImport;
 use App\Models\ExamResult;
 use App\Repositories\Interfaces\ExamResultRepoInterf;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;

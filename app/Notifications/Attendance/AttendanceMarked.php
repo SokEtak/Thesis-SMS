@@ -5,8 +5,6 @@ namespace App\Notifications\Attendance;
 use App\Models\Attendance;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Messages\VonageMessage;
 
 class AttendanceMarked extends Notification
 {
@@ -21,7 +19,7 @@ class AttendanceMarked extends Notification
 
     public function via($notifiable)
     {
-        $channels = ['database','broadcast'];
+        $channels = ['database', 'broadcast'];
 
         return $channels;
     }

@@ -10,7 +10,7 @@ class SubjectCollection extends ResourceCollection
     {
         return $this->collection->transform(function ($subject) {
             return [
-                'id'   => $subject->id,
+                'id' => $subject->id,
                 'code' => $subject->code,
                 'name' => $subject->name,
             ];

@@ -3,10 +3,10 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\ExamResult;
-use Spatie\QueryBuilder\AllowedFilter;
-use Spatie\QueryBuilder\QueryBuilder;
 use App\Repositories\Interfaces\ExamResultRepoInterf;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class ExamResultRepo implements ExamResultRepoInterf
 {
@@ -37,7 +37,7 @@ class ExamResultRepo implements ExamResultRepoInterf
                 AllowedFilter::exact('exam_type'),
                 AllowedFilter::exact('month_year'),
             ])
-            ->allowedSorts(['id','score','created_at'])
+            ->allowedSorts(['id', 'score', 'created_at'])
             ->defaultSort('id')
             ->paginate($perPage);
     }
@@ -55,6 +55,7 @@ class ExamResultRepo implements ExamResultRepoInterf
     public function update(ExamResult $model, array $data): ExamResult
     {
         $model->update($data);
+
         return $model;
     }
 
@@ -67,6 +68,7 @@ class ExamResultRepo implements ExamResultRepoInterf
     {
         $model = ExamResult::onlyTrashed()->findOrFail($id);
         $model->restore();
+
         return $model;
     }
 

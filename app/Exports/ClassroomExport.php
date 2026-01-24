@@ -17,6 +17,7 @@ class ClassroomExport implements FromCollection, WithHeadings
             'Teacher In Charge ID',
         ];
     }
+
     public function collection(): Collection
     {
 
@@ -25,7 +26,7 @@ class ClassroomExport implements FromCollection, WithHeadings
                 'id',
                 'name',
                 'teacher_in_charge_id',
-                
+
             ])
             ->orderBy('id')
             ->get();

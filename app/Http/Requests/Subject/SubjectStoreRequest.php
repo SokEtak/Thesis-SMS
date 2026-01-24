@@ -20,20 +20,18 @@ class SubjectStoreRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-  
     public function rules(): array
     {
         return [
-        'code' => [
+            'code' => [
                 'required',
                 'string',
                 'max:20',
                 Rule::unique('subjects', 'code')->ignore($this->route('subject')),
             ],
-        'name' => ['required','string','max:255',
+            'name' => ['required', 'string', 'max:255',
                 Rule::unique('subjects', 'name')->ignore($this->route('subject')),
             ],
         ];
     }
-
 }

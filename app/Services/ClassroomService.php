@@ -2,15 +2,14 @@
 
 namespace App\Services;
 
+use App\Exports\ClassroomExport;
+use App\Imports\ClassroomImport;
 use App\Models\Classroom;
 use App\Repositories\Interfaces\ClassroomRepoInterf;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use App\Imports\ClassroomImport;
-use App\Exports\ClassroomExport;
 
 class ClassroomService
 {
@@ -37,6 +36,7 @@ class ClassroomService
             }
 
             $classroom = $this->repo->create($data);
+
             return $classroom;
         });
     }
@@ -47,6 +47,7 @@ class ClassroomService
             if (isset($data['class_name']) && ! isset($data['name'])) {
                 $data['name'] = $data['class_name'];
             }
+
             return $this->repo->update($classroom, $data);
         });
     }
@@ -77,7 +78,7 @@ class ClassroomService
         Excel::queueImport(new ClassroomImport, $file);
     }
 
-     public function exportCsv(): BinaryFileResponse
+    public function exportCsv(): BinaryFileResponse
     {
         return Excel::download(new ClassroomExport, 'classrooms.csv', \Maatwebsite\Excel\Excel::CSV);
     }

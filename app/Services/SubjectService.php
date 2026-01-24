@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Exports\SubjectExport;
@@ -18,7 +19,6 @@ class SubjectService
     /**
      * List with filter/sort/paginate params.
      *
-     * @param array $params
      * @return LengthAwarePaginator|mixed
      */
     public function list(array $params)
@@ -86,6 +86,6 @@ class SubjectService
     public function exportCsv(): BinaryFileResponse
     {
         // Could apply filters or scopes before export by passing params into SubjectExport
-        return Excel::download(new SubjectExport, 'subjects.csv',\Maatwebsite\Excel\Excel::CSV);
+        return Excel::download(new SubjectExport, 'subjects.csv', \Maatwebsite\Excel\Excel::CSV);
     }
 }

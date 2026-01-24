@@ -14,6 +14,7 @@ class MessagePolicy
         if ($user->hasAnyRole($this->elevatedRoles) || $user->can($permission)) {
             return true;
         }
+
         return Response::deny('You are not allowed to perform this action on messages.');
     }
 

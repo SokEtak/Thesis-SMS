@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Homework;
 
-use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Homework;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 
 class StoreHomeworkRequest extends FormRequest
@@ -25,14 +25,14 @@ class StoreHomeworkRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'class_id'    => 'required|exists:classes,id',
-            'subject_id'  => 'required|exists:subjects,id',
+            'class_id' => 'required|exists:classes,id',
+            'subject_id' => 'required|exists:subjects,id',
             // Consider NOT accepting teacher_id from client; see note below
-            'teacher_id'  => 'required|exists:users,id',
-            'title'       => 'required|string|max:200',
+            'teacher_id' => 'required|exists:users,id',
+            'title' => 'required|string|max:200',
             'description' => 'nullable|string',
-            'file_url'    => 'nullable|string|max:255',
-            'deadline'    => 'nullable|date',
+            'file_url' => 'nullable|string|max:255',
+            'deadline' => 'nullable|date',
         ];
     }
 }

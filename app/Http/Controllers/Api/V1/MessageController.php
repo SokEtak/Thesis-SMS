@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Models\Message;
-use Illuminate\Http\Request;
 use App\Helpers\ApiResponse;
-use App\Services\MessageService;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Message\MessageImportRequest;
 use App\Http\Requests\Message\StoreMessageRequest;
 use App\Http\Requests\Message\UpdateMessageRequest;
-use App\Http\Requests\Message\MessageImportRequest;
 use App\Http\Resources\Message\MessageCollection;
 use App\Http\Resources\Message\MessageResource;
+use App\Models\Message;
+use App\Services\MessageService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {

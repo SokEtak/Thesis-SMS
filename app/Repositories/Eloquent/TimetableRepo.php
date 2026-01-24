@@ -3,10 +3,10 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Timetable;
-use Spatie\QueryBuilder\AllowedFilter;
-use Spatie\QueryBuilder\QueryBuilder;
 use App\Repositories\Interfaces\TimetableRepoInterf;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class TimetableRepo implements TimetableRepoInterf
 {
@@ -40,7 +40,7 @@ class TimetableRepo implements TimetableRepoInterf
                 AllowedFilter::exact('teacher_id'),
                 AllowedFilter::partial('teacher.name'),
             ])
-            ->allowedSorts(['id','day_of_week','start_time','end_time','created_at'])
+            ->allowedSorts(['id', 'day_of_week', 'start_time', 'end_time', 'created_at'])
             ->defaultSort('id')
             ->paginate($perPage);
     }
@@ -58,6 +58,7 @@ class TimetableRepo implements TimetableRepoInterf
     public function update(Timetable $model, array $data): Timetable
     {
         $model->update($data);
+
         return $model;
     }
 
@@ -70,6 +71,7 @@ class TimetableRepo implements TimetableRepoInterf
     {
         $model = Timetable::onlyTrashed()->findOrFail($id);
         $model->restore();
+
         return $model;
     }
 

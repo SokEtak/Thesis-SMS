@@ -1,16 +1,19 @@
 <?php
-//only teacher and admins can access subjects
-//some action are not allow for teachers
+
+// only teacher and admins can access subjects
+// some action are not allow for teachers
+
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Subject;
+use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
 class SubjectPolicy
 {
     /** @var string[] Roles that bypass explicit permissions */
     private array $elevatedRoles = ['Super-Admin', 'Admin', 'Teacher'];
+
     private array $adminRoles = ['Super-Admin', 'Admin'];
 
     /**
@@ -51,7 +54,7 @@ class SubjectPolicy
     public function create(User $user): bool|Response
     {
         // If Teachers should not create, do not rely on $elevatedRoles:
-        return $this->allow($user,'subjects.create');
+        return $this->allow($user, 'subjects.create');
     }
 
     /**

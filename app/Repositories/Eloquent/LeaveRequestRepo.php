@@ -3,10 +3,10 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\LeaveRequest;
-use Spatie\QueryBuilder\AllowedFilter;
-use Spatie\QueryBuilder\QueryBuilder;
 use App\Repositories\Interfaces\LeaveRequestRepoInterf;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class LeaveRequestRepo implements LeaveRequestRepoInterf
 {
@@ -39,7 +39,7 @@ class LeaveRequestRepo implements LeaveRequestRepoInterf
                 AllowedFilter::exact('approved_by'),
                 AllowedFilter::exact('approved_by.name'),
             ])
-            ->allowedSorts(['id','request_date','status','created_at'])
+            ->allowedSorts(['id', 'request_date', 'status', 'created_at'])
             ->defaultSort('id')
             ->paginate($perPage);
     }
@@ -97,6 +97,7 @@ class LeaveRequestRepo implements LeaveRequestRepoInterf
         }
 
         $model->update($data);
+
         return $model;
     }
 
@@ -109,6 +110,7 @@ class LeaveRequestRepo implements LeaveRequestRepoInterf
     {
         $model = LeaveRequest::onlyTrashed()->findOrFail($id);
         $model->restore();
+
         return $model;
     }
 

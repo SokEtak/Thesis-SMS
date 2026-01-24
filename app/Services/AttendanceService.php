@@ -1,12 +1,13 @@
 <?php
+
 namespace App\Services;
 
-use App\Repositories\Interfaces\AttendanceRepoInterf;
+use App\Imports\AttendanceImport;
 use App\Models\Attendance;
+use App\Repositories\Interfaces\AttendanceRepoInterf;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\AttendanceImport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AttendanceService
@@ -25,12 +26,12 @@ class AttendanceService
 
     public function store(array $data): Attendance
     {
-        return DB::transaction(fn() => $this->repo->create($data));
+        return DB::transaction(fn () => $this->repo->create($data));
     }
 
     public function update(Attendance $attendance, array $data): Attendance
     {
-        return DB::transaction(fn() => $this->repo->update($attendance, $data));
+        return DB::transaction(fn () => $this->repo->update($attendance, $data));
     }
 
     public function delete(Attendance $attendance): void

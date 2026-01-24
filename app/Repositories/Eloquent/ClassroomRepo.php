@@ -3,10 +3,10 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Classroom;
-use Spatie\QueryBuilder\AllowedFilter;
-use Spatie\QueryBuilder\QueryBuilder;
 use App\Repositories\Interfaces\ClassroomRepoInterf;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class ClassroomRepo implements ClassroomRepoInterf
 {
@@ -53,6 +53,7 @@ class ClassroomRepo implements ClassroomRepoInterf
     public function update(Classroom $classroom, array $data): Classroom
     {
         $classroom->update($data);
+
         return $classroom;
     }
 
@@ -65,6 +66,7 @@ class ClassroomRepo implements ClassroomRepoInterf
     {
         $classroom = Classroom::onlyTrashed()->findOrFail($id);
         $classroom->restore();
+
         return $classroom;
     }
 

@@ -10,7 +10,6 @@ class LeaveRequestPolicy
 {
     private array $adminRoles = ['Super-Admin', 'Admin'];
 
-    
     private function allow(User $user, ?string $permission = null): bool|Response
     {
         // Admin roles always allowed
@@ -32,7 +31,7 @@ class LeaveRequestPolicy
 
         return $this->deny();
     }
-    
+
     private function deny(): Response
     {
         return Response::deny('You are not allowed to perform this action on this leave request.');
@@ -143,6 +142,7 @@ class LeaveRequestPolicy
     {
         return $this->allow($user, 'leave_requests.import');
     }
+
     public function export(User $user): bool|Response
     {
         return $this->allow($user, 'leave_requests.export');

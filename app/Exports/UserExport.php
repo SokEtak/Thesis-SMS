@@ -30,6 +30,7 @@ class UserExport implements FromCollection, WithHeadings
             'Deleted At',
         ];
     }
+
     public function collection(): Collection
     {
         // Do NOT export sensitive fields (password, remember_token)

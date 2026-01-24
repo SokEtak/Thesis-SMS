@@ -16,9 +16,9 @@ class StoreExamResultRequest extends FormRequest
         return [
             'student_id' => ['required', 'exists:users,id'],
             'subject_id' => ['required', 'exists:subjects,id'],
-            'exam_type' => ['sometimes','nullable','string','max:50'],
-            'score' => ['sometimes','nullable','numeric'],
-            'month_year' => ['sometimes','nullable','string','max:20'],
+            'exam_type' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'score' => ['sometimes', 'nullable', 'numeric'],
+            'month_year' => ['sometimes', 'nullable', 'string', 'max:20'],
         ];
     }
 }

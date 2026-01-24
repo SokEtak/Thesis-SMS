@@ -6,7 +6,6 @@ use App\Exports\MessageExport;
 use App\Imports\MessageImport;
 use App\Models\Message;
 use App\Repositories\Interfaces\MessageRepoInterf;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;

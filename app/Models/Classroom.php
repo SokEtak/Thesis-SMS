@@ -13,7 +13,6 @@ class Classroom extends Model
     /** @use HasFactory<\Database\Factories\ClassroomFactory> */
     use HasFactory,SoftDeletes;
 
-
     protected $table = 'classes';
 
     protected $fillable = ['name', 'teacher_in_charge_id'];

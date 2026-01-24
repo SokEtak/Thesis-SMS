@@ -12,14 +12,14 @@ class HomeworkSubmissionExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'ID', 'Homework ID', 'Student ID', 'File URL', 'Submitted At', 'Score', 'Feedback', 'Created At', 'Updated At', 'Deleted At'
+            'ID', 'Homework ID', 'Student ID', 'File URL', 'Submitted At', 'Score', 'Feedback', 'Created At', 'Updated At', 'Deleted At',
         ];
     }
 
     public function collection(): Collection
     {
         return HomeworkSubmission::query()
-            ->select(['id','homework_id','student_id','file_url','submitted_at','score','feedback','created_at','updated_at','deleted_at'])
+            ->select(['id', 'homework_id', 'student_id', 'file_url', 'submitted_at', 'score', 'feedback', 'created_at', 'updated_at', 'deleted_at'])
             ->orderBy('id')
             ->get();
     }

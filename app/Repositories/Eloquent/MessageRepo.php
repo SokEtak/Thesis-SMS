@@ -3,10 +3,10 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Message;
-use Spatie\QueryBuilder\AllowedFilter;
-use Spatie\QueryBuilder\QueryBuilder;
 use App\Repositories\Interfaces\MessageRepoInterf;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class MessageRepo implements MessageRepoInterf
 {
@@ -36,7 +36,7 @@ class MessageRepo implements MessageRepoInterf
                 AllowedFilter::exact('receiver_id'),
                 AllowedFilter::exact('is_read'),
             ])
-            ->allowedSorts(['id','created_at'])
+            ->allowedSorts(['id', 'created_at'])
             ->defaultSort('id')
             ->paginate($perPage);
     }
@@ -54,6 +54,7 @@ class MessageRepo implements MessageRepoInterf
     public function update(Message $model, array $data): Message
     {
         $model->update($data);
+
         return $model;
     }
 
@@ -66,6 +67,7 @@ class MessageRepo implements MessageRepoInterf
     {
         $model = Message::onlyTrashed()->findOrFail($id);
         $model->restore();
+
         return $model;
     }
 

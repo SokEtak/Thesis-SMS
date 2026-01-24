@@ -2,18 +2,19 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 use App\Models\Subject;
 use App\Models\User;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Notifications\Notification;
 
 class SubjectCreatedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     protected Subject $subject;
+
     protected ?User $user;
 
     /**
@@ -28,7 +29,7 @@ class SubjectCreatedNotification extends Notification implements ShouldQueue
     /**
      * Determine which channels to send the notification through.
      *
-     * @param mixed $notifiable
+     * @param  mixed  $notifiable
      * @return array<string>
      */
     public function via($notifiable): array
@@ -46,16 +47,16 @@ class SubjectCreatedNotification extends Notification implements ShouldQueue
     /**
      * Common payload for all channels.
      *
-     * @param mixed $notifiable
+     * @param  mixed  $notifiable
      * @return array<string, mixed>
      */
     protected function payload($notifiable): array
     {
         return [
-            'type'       => 'subject_created',
+            'type' => 'subject_created',
             'subject_id' => $this->subject->id,
-            'code'       => $this->subject->code,
-            'name'       => $this->subject->name,
+            'code' => $this->subject->code,
+            'name' => $this->subject->name,
             'created_by' => $this->user?->name ?? 'System',
         ];
     }
@@ -82,9 +83,9 @@ class SubjectCreatedNotification extends Notification implements ShouldQueue
     public function toTelegram($notifiable)
     {
         return [
-            'chat_id'   => $notifiable->telegram_chat_id,
-            'text'      => "*New Subject Created*\nCode: {$this->subject->code}\nName: {$this->subject->name}",
-            'parse_mode'=> 'Markdown',
+            'chat_id' => $notifiable->telegram_chat_id,
+            'text' => "*New Subject Created*\nCode: {$this->subject->code}\nName: {$this->subject->name}",
+            'parse_mode' => 'Markdown',
         ];
     }
 

@@ -14,11 +14,11 @@ class UpdateExamResultRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'student_id' => ['sometimes','nullable','exists:users,id'],
-            'subject_id' => ['sometimes','nullable','exists:subjects,id'],
-            'exam_type' => ['sometimes','nullable','string','max:50'],
-            'score' => ['sometimes','nullable','numeric'],
-            'month_year' => ['sometimes','nullable','string','max:20'],
+            'student_id' => ['sometimes', 'nullable', 'exists:users,id'],
+            'subject_id' => ['sometimes', 'nullable', 'exists:subjects,id'],
+            'exam_type' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'score' => ['sometimes', 'nullable', 'numeric'],
+            'month_year' => ['sometimes', 'nullable', 'string', 'max:20'],
         ];
     }
 }

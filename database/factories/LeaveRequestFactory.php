@@ -15,7 +15,7 @@ class LeaveRequestFactory extends Factory
             'student_id' => \App\Models\User::factory(),
             'request_date' => $this->faker->date(),
             'reason' => $this->faker->sentence(),
-            'status' => $this->faker->randomElement(['Pending','Approved','Rejected']),
+            'status' => $this->faker->randomElement(['Pending', 'Approved', 'Rejected']),
             'approved_by' => null,
         ];
     }

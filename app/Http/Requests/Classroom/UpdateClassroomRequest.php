@@ -22,8 +22,8 @@ class UpdateClassroomRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "name" => ["sometimes", "string", "max:255"],
-            "teacher_in_charge_id" => ["sometimes", "nullable", "exists:users,id"],
+            'name' => ['sometimes', 'string', 'max:255'],
+            'teacher_in_charge_id' => ['sometimes', 'nullable', 'exists:users,id'],
         ];
     }
 }

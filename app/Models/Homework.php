@@ -4,15 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Laravel\Scout\Searchable;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Homework extends Model
 {
     /** @use HasFactory<\\Database\\Factories\\HomeworkFactory> */
-    use HasFactory, Searchable, SoftDeletes,logsActivity;
+    use HasFactory, logsActivity, Searchable,SoftDeletes;
 
     protected $fillable = [
         'class_id',
@@ -48,7 +48,7 @@ class Homework extends Model
             });
     }
 
-    //relations
+    // relations
     public function classroom()
     {
         return $this->belongsTo(Classroom::class, 'class_id');
@@ -63,5 +63,4 @@ class Homework extends Model
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
-
 }

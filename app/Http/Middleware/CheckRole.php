@@ -11,10 +11,7 @@ class CheckRole
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
      * @param  string  $roles  Pipe-separated roles (e.g., "Super-Admin|Admin|Teacher")
-     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function handle(Request $request, Closure $next, string $roles): Response
     {
@@ -22,12 +19,12 @@ class CheckRole
 
         // Ensure user is authenticated
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
         // Check if user has any of the allowed roles
-        if (!$user->hasAnyRole($allowedRoles)) {
+        if (! $user->hasAnyRole($allowedRoles)) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 

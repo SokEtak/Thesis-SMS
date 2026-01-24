@@ -3,28 +3,28 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
+use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
-use Spatie\Activitylog\LogOptions;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory,
-        Notifiable,
+    use HasApiTokens,
+        HasFactory,
         HasRoles,
-        HasApiTokens,
         LogsActivity,
-        SoftDeletes,
+        Notifiable,
         Searchable,
+        SoftDeletes,
         TwoFactorAuthenticatable;
 
     /**
@@ -45,7 +45,7 @@ class User extends Authenticatable
         'parent_id',
         'address',
         'position',
-        
+
     ];
 
     /**
@@ -88,13 +88,13 @@ class User extends Authenticatable
 
     public function toSearchableArray()
     {
-       return [
-           'id' => $this->id,
-           'name' => $this->name,
-           'email' => $this->email,
-           'phone' => $this->phone,
-           'class_id' => $this->class_id,
-       ];
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'phone' => $this->phone,
+            'class_id' => $this->class_id,
+        ];
     }
 
     // Relationships
@@ -168,14 +168,17 @@ class User extends Authenticatable
     {
         return $query->role('Student');
     }
+
     public function scopeTeachers($query)
     {
         return $query->role('Teacher');
     }
+
     public function scopeGuardians($query)
     {
         return $query->role('Guardian');
     }
+
     public function scopeAdmins($query)
     {
         return $query->role(['Admin', 'Super-Admin']);

@@ -2,89 +2,92 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Repositories\Eloquent\AuthRepo;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Models\User;
 
 class AuthService
 {
-  public function __construct(private AuthRepo $repo) {}
+    public function __construct(private AuthRepo $repo) {}
 
-  /** Registration (assign role if provided) */
-  public function register(array $data): User
-  {
-    return DB::transaction(function () use ($data) {
-      $user = $this->repo->createUser($data);
-      if (!empty($data['role'])) {
-        $user->assignRole($data['role']);     // Spatie
-      }
-      return $user;
-    });
-  }
+    /** Registration (assign role if provided) */
+    public function register(array $data): User
+    {
+        return DB::transaction(function () use ($data) {
+            $user = $this->repo->createUser($data);
+            if (! empty($data['role'])) {
+                $user->assignRole($data['role']);     // Spatie
+            }
 
-  /** SPA login (session cookie) */
-  public function loginSpa(array $data): User
-  {
-    if (!Auth::attempt(['email' => $data['email'], 'password' => $data['password']])) {
-      abort(401, 'Invalid credentials.');
+            return $user;
+        });
     }
-    request()->session()->regenerate();
-    return Auth::user();
-  }
 
-  /** Mobile/API login (PAT) */
-  public function loginMobile(array $data): array
-  {
-    $user = $this->repo->findByEmail($data['email']);
-    abort_unless($user && password_verify($data['password'], $user->password), 401, 'Invalid credentials.');
+    /** SPA login (session cookie) */
+    public function loginSpa(array $data): User
+    {
+        if (! Auth::attempt(['email' => $data['email'], 'password' => $data['password']])) {
+            abort(401, 'Invalid credentials.');
+        }
+        request()->session()->regenerate();
 
-    $token = $this->repo->createPersonalAccessToken(
-      $user,
-      $data['device_name'] ?? 'mobile',
-      $this->defaultAbilitiesFor($user) // map roles->abilities
-    );
-
-    return ['user' => $user, 'token' => $token];
-  }
-
-  /** logout (current token or session) */
-  public function logout(): void
-  {
-    if (auth()->guard('web')->check()) {
-      auth()->guard('web')->logout();
-      request()->session()->invalidate();
-      request()->session()->regenerateToken();
-    } elseif (auth('sanctum')->check()) {
-      $this->repo->revokeCurrentToken(auth()->user());
+        return Auth::user();
     }
-  }
 
-  /** Logout from all devices (all tokens + session) */
-public function logoutAllDevices(): void
-{
-    $user = auth()->user();
+    /** Mobile/API login (PAT) */
+    public function loginMobile(array $data): array
+    {
+        $user = $this->repo->findByEmail($data['email']);
+        abort_unless($user && password_verify($data['password'], $user->password), 401, 'Invalid credentials.');
 
-    // Revoke ALL Sanctum tokens
-    $this->repo->revokeAllTokens($user);
+        $token = $this->repo->createPersonalAccessToken(
+            $user,
+            $data['device_name'] ?? 'mobile',
+            $this->defaultAbilitiesFor($user) // map roles->abilities
+        );
 
-    // If current request is web/session based
-    if (auth()->guard('web')->check()) {
-        auth()->guard('web')->logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
+        return ['user' => $user, 'token' => $token];
     }
-}
 
-  protected function defaultAbilitiesFor(User $user): array
-  {
-    // map role->abilities for token (examples)
-    if ($user->hasRole('Teacher')) {
-      return ['subjects.view-any','lessons.view-any','attendances.manage'];
+    /** logout (current token or session) */
+    public function logout(): void
+    {
+        if (auth()->guard('web')->check()) {
+            auth()->guard('web')->logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+        } elseif (auth('sanctum')->check()) {
+            $this->repo->revokeCurrentToken(auth()->user());
+        }
     }
-    if ($user->hasRole('Student')) {
-      return ['subjects.view-any','attendances.view-own'];
+
+    /** Logout from all devices (all tokens + session) */
+    public function logoutAllDevices(): void
+    {
+        $user = auth()->user();
+
+        // Revoke ALL Sanctum tokens
+        $this->repo->revokeAllTokens($user);
+
+        // If current request is web/session based
+        if (auth()->guard('web')->check()) {
+            auth()->guard('web')->logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+        }
     }
-    return ['*']; // Admin/Super Admin unrestricted (or enumerate carefully)
-  }
+
+    protected function defaultAbilitiesFor(User $user): array
+    {
+        // map role->abilities for token (examples)
+        if ($user->hasRole('Teacher')) {
+            return ['subjects.view-any', 'lessons.view-any', 'attendances.manage'];
+        }
+        if ($user->hasRole('Student')) {
+            return ['subjects.view-any', 'attendances.view-own'];
+        }
+
+        return ['*']; // Admin/Super Admin unrestricted (or enumerate carefully)
+    }
 }

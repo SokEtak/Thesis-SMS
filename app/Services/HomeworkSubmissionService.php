@@ -6,7 +6,6 @@ use App\Exports\HomeworkSubmissionExport;
 use App\Imports\HomeworkSubmissionImport;
 use App\Models\HomeworkSubmission;
 use App\Repositories\Interfaces\HomeworkSubmissionRepoInterf;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;

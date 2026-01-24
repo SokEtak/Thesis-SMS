@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Homework;
 
-use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Homework;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 
 class UpdateHomeworkRequest extends FormRequest

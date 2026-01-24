@@ -11,9 +11,10 @@ class SubjectCreated
     use Dispatchable, SerializesModels;
 
     public $subject;
+
     public $user;
 
-    public function __construct(Subject $subject, $user = null) 
+    public function __construct(Subject $subject, $user = null)
     {
         $this->subject = $subject;
         $this->user = $user;
@@ -22,14 +23,14 @@ class SubjectCreated
     public function broadcastOn()
     {
         return [
-            //'subjects' //example of private channel
-            'public-subjects' //example of public channel
+            // 'subjects' //example of private channel
+            'public-subjects', // example of public channel
         ];
     }
 
     public function broadcastAs()
     {
-        return 'subject.created';//alias for the event
+        return 'subject.created'; // alias for the event
     }
 
     public function broadcastWith()

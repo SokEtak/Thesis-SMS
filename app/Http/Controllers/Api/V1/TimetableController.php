@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Models\Timetable;
-use Illuminate\Http\Request;
 use App\Helpers\ApiResponse;
-use App\Services\TimetableService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Timetable\StoreTimetableRequest;
-use App\Http\Requests\Timetable\UpdateTimetableRequest;
 use App\Http\Requests\Timetable\TimetableImportRequest;
+use App\Http\Requests\Timetable\UpdateTimetableRequest;
 use App\Http\Resources\Timetable\TimetableCollection;
 use App\Http\Resources\Timetable\TimetableResource;
+use App\Models\Timetable;
+use App\Services\TimetableService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class TimetableController extends Controller
 {
