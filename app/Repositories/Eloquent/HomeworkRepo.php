@@ -32,12 +32,15 @@ class HomeworkRepo implements HomeworkRepoInterf
 
         return QueryBuilder::for($query)
             ->allowedFilters([
-                AllowedFilter::exact('day_of_week'),
+                AllowedFilter::exact('class_id'),
+                AllowedFilter::partial('class.name'),
                 AllowedFilter::exact('subject_id'),
-                AllowedFilter::exact('classroom_id'),
+                AllowedFilter::exact('subject.name'),
                 AllowedFilter::exact('teacher_id'),
+                AllowedFilter::exact('teacher.name'),
+                AllowedFilter::partial('title'),
             ])
-            ->allowedSorts(['id','day_of_week','start_time','end_time','created_at'])
+            ->allowedSorts(['id','title','deadline','created_at'])
             ->defaultSort('id')
             ->paginate($perPage);
     }

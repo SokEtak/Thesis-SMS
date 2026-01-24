@@ -24,14 +24,14 @@ class HomeworkImport implements
 
     public function model(array $row)
     {
-        // Map minimal fields — adapt as needed
         return new Homework([
-            'day_of_week' => $row['day_of_week'] ?? null,
-            'start_time' => $row['start_time'] ?? null,
-            'end_time' => $row['end_time'] ?? null,
-            'subject_id' => isset($row['subject_id']) && $row['subject_id'] !== '' ? (int) $row['subject_id'] : null,
-            'classroom_id' => isset($row['classroom_id']) && $row['classroom_id'] !== '' ? (int) $row['classroom_id'] : null,
-            'teacher_id' => isset($row['teacher_id']) && $row['teacher_id'] !== '' ? (int) $row['teacher_id'] : null,
+            'class_id'    => $row['class_id'] ?? null,
+            'subject_id'  => $row['subject_id'] ?? null,
+            'teacher_id'  => $row['teacher_id'] ?? null,
+            'title'       => $row['title']?? null,
+            'description' => $row['description'] ?? null,
+            'file_url'    => $row['file_url'] ?? null,
+            'deadline'    => isset($row['deadline']) ? date('Y-m-d H:i:s', strtotime($row['deadline'])) : null,
         ]);
     }
 

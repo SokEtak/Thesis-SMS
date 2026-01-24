@@ -36,23 +36,25 @@ class HomeworkController extends Controller
         $this->authorize('view', $homework);
 
         $model = $this->service->show($homework);
-
+        
         return ApiResponse::ok(new HomeworkResource($model));
     }
 
     public function store(StoreHomeworkRequest $request)
     {
-        $this->authorize('create', Homework::class);
+        $data = $request->validated();
+        
+        $data['teacher_id'] = $request->user()->id;
 
-        $item = $this->service->store($request->validated());
+        $item = $this->service->store($data);
 
         return ApiResponse::created(new HomeworkResource($item));
     }
 
     public function update(UpdateHomeworkRequest $request, Homework $homework)
     {
-        $this->authorize('update', $homework);
-
+        $data['teacher_id'] = $request->user()->id;
+        
         $updated = $this->service->update($homework, $request->validated());
 
         return ApiResponse::ok(new HomeworkResource($updated));

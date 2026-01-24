@@ -6,19 +6,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Homework extends Model
 {
     /** @use HasFactory<\\Database\\Factories\\HomeworkFactory> */
-    use HasFactory, Searchable, SoftDeletes;
+    use HasFactory, Searchable, SoftDeletes,logsActivity;
 
     protected $fillable = [
         'class_id',
         'subject_id',
         'teacher_id',
-        'day_of_week',
-        'start_time',
-        'end_time',
+        'title',
+        'description',
+        'file_url',
+        'deadline',
     ];
 
     protected $casts = [
@@ -28,13 +31,21 @@ class Homework extends Model
     {
         return [
             'id' => $this->id,
-            'subject_id' => $this->subject_id,
-            'teacher_id' => $this->teacher_id,
-            'class_id' => $this->class_id,
-            'day_of_week' => $this->day_of_week,
-            'start_time' => $this->start_time,
-            'end_time' => $this->end_time,
+            'title' => $this->title,
+            'description' => $this->description,
+            'deadline' => $this->deadline,
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable() // log only attributes in $fillable
+            ->logOnlyDirty() // only log changed attributes
+            ->useLogName('users') // sets log_name column
+            ->setDescriptionForEvent(function (string $eventName) {
+                return "User model has been {$eventName}";
+            });
     }
 
     //relations

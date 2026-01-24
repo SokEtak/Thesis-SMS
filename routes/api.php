@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-// v1 group
+//v1
 Route::prefix('v1')
     ->as('api.v1.')
     ->middleware(
@@ -17,9 +17,9 @@ Route::prefix('v1')
         require __DIR__ . '/api/v1/timetableRoute.php';
         require __DIR__ . '/api/v1/classroomRoute.php';
         require __DIR__ . '/api/v1/subjectRoute.php';
+        require __DIR__ . '/api/v1/homeworkRoute.php';
     });
 
-// Separate group for leave requests with its own middleware (includes students)
 Route::prefix('v1')
     ->as('api.v1.')
     ->middleware([
@@ -30,3 +30,4 @@ Route::prefix('v1')
         require __DIR__ . '/api/v1/leaveRequestRoute.php';
     });
 require __DIR__ . '/api/v1/authRoute.php';
+//end v1

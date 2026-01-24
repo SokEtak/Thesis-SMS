@@ -35,10 +35,10 @@ class Classroom extends Model
         return $this->hasMany(Timetable::class, 'class_id');
     }
 
-    // public function homeworks(): HasMany
-    // {
-    //     return $this->hasMany(Homework::class, 'class_id');
-    // }
+    public function homeworks(): HasMany
+    {
+        return $this->hasMany(Homework::class, 'class_id');
+    }
 
     public function attendances(): HasMany
     {

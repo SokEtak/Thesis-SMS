@@ -24,6 +24,8 @@ use App\Repositories\Interfaces\AttendanceRepoInterf;
 use App\Repositories\Eloquent\AttendanceRepo;
 use App\Repositories\Interfaces\LeaveRequestRepoInterf;
 use App\Repositories\Eloquent\LeaveRequestRepo;
+use App\Repositories\Interfaces\HomeworkRepoInterf;
+use App\Repositories\Eloquent\HomeworkRepo;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -40,6 +42,7 @@ class AppServiceProvider extends ServiceProvider
             ExamResultRepoInterf::class => ExamResultRepo::class,
             AttendanceRepoInterf::class => AttendanceRepo::class,
             LeaveRequestRepoInterf::class => LeaveRequestRepo::class,
+            HomeworkRepoInterf::class => HomeworkRepo::class,
         ];
 
         foreach ($bindings as $abstract => $concrete) {

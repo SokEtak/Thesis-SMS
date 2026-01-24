@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('homework', function (Blueprint $table) {
+        Schema::create('homeworks', function (Blueprint $table) {
             $table->id();
 
             $table->foreignId('class_id')->constrained('classes')->cascadeOnDelete();
@@ -26,6 +26,6 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::dropIfExists('homework');
+        Schema::dropIfExists('homeworks');
     }
 };

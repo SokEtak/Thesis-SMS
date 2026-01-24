@@ -3,23 +3,36 @@
 namespace App\Http\Requests\Homework;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Homework;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Gate;
 
 class StoreHomeworkRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        // Either approach below is fine:
+        // return $this->user()->can('create', Homework::class);
+        return Gate::allows('create', Homework::class);
+    }
+
+    protected function failedAuthorization()
+    {
+        // Optional: customize the 403 message
+        throw new AuthorizationException('You are not allowed to create homeworks.');
     }
 
     public function rules(): array
     {
         return [
-            'day_of_week' => ['required', 'string', 'in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday'],
-            'start_time' => ['required', 'date_format:H:i'],
-            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
-            'subject_id' => ['nullable', 'exists:subjects,id'],
-            'classroom_id' => ['nullable', 'exists:classes,id'],
-            'teacher_id' => ['nullable', 'exists:users,id'],
+            'class_id'    => 'required|exists:classes,id',
+            'subject_id'  => 'required|exists:subjects,id',
+            // Consider NOT accepting teacher_id from client; see note below
+            'teacher_id'  => 'required|exists:users,id',
+            'title'       => 'required|string|max:200',
+            'description' => 'nullable|string',
+            'file_url'    => 'nullable|string|max:255',
+            'deadline'    => 'nullable|date',
         ];
     }
 }

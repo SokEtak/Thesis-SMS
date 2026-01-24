@@ -25,6 +25,11 @@ class Subject extends Model
   {
     return $this->hasMany(Timetable::class, 'subject_id');
   }
+
+  public function homeworks()
+  {
+    return $this->hasMany(Homework::class, 'subject_id');
+  }
   
   public function toSearchableArray(): array
   {

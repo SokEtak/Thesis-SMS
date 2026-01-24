@@ -11,12 +11,15 @@ class HomeworkCollection extends ResourceCollection
         return $this->collection->transform(function ($item) {
             return [
                 'id' => $item->id,
-                'day_of_week' => $item->day_of_week,
-                'start_time' => $item->start_time,
-                'end_time' => $item->end_time,
-                'subject_id' => $item->subject_id,
-                'classroom_id' => $item->classroom_id,
-                'teacher_id' => $item->teacher_id,
+                'class' => $item->classroom->only('id', 'name'),
+                'subject' => $item->subject->only('id', 'name'),
+                'teacher' => $item->teacher->only('id', 'name', 'email'),
+                'title' => $item->title,
+                'description' => $item->description,
+                'file_url' => $item->file_url,
+                'deadline' => $item->deadline,
+                'created_at' => $item->created_at,
+                'updated_at' => $item->updated_at,
             ];
         })->all();
     }

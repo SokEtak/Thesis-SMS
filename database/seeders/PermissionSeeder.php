@@ -79,6 +79,18 @@ class PermissionSeeder extends Seeder
             'leaverequests.force-delete',
             'leaverequests.import',
             'leaverequests.export',
+
+            // Homework Permissions
+            'homeworks.view-any',
+            'homeworks.view',
+            'homeworks.create',
+            'homeworks.update',
+            'homeworks.delete',
+            'homeworks.restore',
+            'homeworks.force-delete',
+            'homeworks.import',
+            'homeworks.export',
+
         ];
 
         foreach ($permissions as $permission) {

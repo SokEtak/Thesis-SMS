@@ -7,7 +7,7 @@ use Illuminate\Auth\Access\Response;
 
 class HomeworkPolicy
 {
-    private array $elevatedRoles = ['Super-Admin', 'Admin'];
+    private array $elevatedRoles = ['Super-Admin', 'Admin','Teacher'];
 
     private function allow(User $user, string $permission): bool|Response
     {

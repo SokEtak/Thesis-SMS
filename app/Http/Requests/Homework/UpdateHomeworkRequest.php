@@ -3,23 +3,25 @@
 namespace App\Http\Requests\Homework;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Homework;
+use Illuminate\Support\Facades\Gate;
 
 class UpdateHomeworkRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return Gate::allows('create', Homework::class);
     }
 
     public function rules(): array
     {
         return [
-            'day_of_week' => ['sometimes', 'nullable', 'string', 'in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday'],
-            'start_time' => ['sometimes', 'nullable', 'date_format:H:i'],
-            'end_time' => ['sometimes', 'nullable', 'date_format:H:i'],
-            'subject_id' => ['nullable', 'exists:subjects,id'],
-            'classroom_id' => ['nullable', 'exists:classes,id'],
-            'teacher_id' => ['nullable', 'exists:users,id'],
+            'class_id' => 'sometimes|exists:classes,id',
+            'subject_id' => 'sometimes|exists:subjects,id',
+            'title' => 'sometimes|string|max:200',
+            'description' => 'sometimes|string|nullable',
+            'file_url' => 'sometimes|string|max:255|nullable',
+            'deadline' => 'sometimes|date|nullable',
         ];
     }
 }
