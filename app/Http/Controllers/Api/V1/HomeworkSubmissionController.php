@@ -42,8 +42,7 @@ class HomeworkSubmissionController extends Controller
 
     public function store(StoreHomeworkSubmissionRequest $request)
     {
-        $this->authorize('create', HomeworkSubmission::class);
-
+    
         $item = $this->service->store($request->validated());
 
         return ApiResponse::created(new HomeworkSubmissionResource($item));
@@ -51,7 +50,6 @@ class HomeworkSubmissionController extends Controller
 
     public function update(UpdateHomeworkSubmissionRequest $request, HomeworkSubmission $homeworkSubmission)
     {
-        $this->authorize('update', $homeworkSubmission);
 
         $updated = $this->service->update($homeworkSubmission, $request->validated());
 

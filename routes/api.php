@@ -28,6 +28,7 @@ Route::prefix('v1')
     ])
     ->group(function () {
         require __DIR__.'/api/v1/leaveRequestRoute.php';
+        require __DIR__.'/api/v1/homeworkSubmissionRoute.php';
     });
 require __DIR__.'/api/v1/authRoute.php';
 // end v1

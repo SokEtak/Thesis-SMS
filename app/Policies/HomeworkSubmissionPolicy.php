@@ -9,9 +9,20 @@ class HomeworkSubmissionPolicy
 {
     private array $elevatedRoles = ['Super-Admin', 'Admin'];
 
-    private function allow(User $user, string $permission): bool|Response
+    private function allow(User $user, string $permission, $model = null): bool|Response
     {
-        if ($user->hasAnyRole($this->elevatedRoles) || $user->can($permission)) {
+        // Admins and Super-Admins can do anything
+        if ($user->hasAnyRole($this->elevatedRoles)) {
+            return true;
+        }
+
+        // Students can only manage their own submissions
+        if ($user->hasRole('Student') && $model && $model->student_id === $user->id) {
+            return true;
+        }
+
+        // Otherwise, check permission
+        if ($user->can($permission)) {
             return true;
         }
 
@@ -22,10 +33,10 @@ class HomeworkSubmissionPolicy
     {
         return $this->allow($user, 'homework_submissions.view-any');
     }
-
+    
     public function view(User $user, $model): bool|Response
     {
-        return $this->allow($user, 'homework_submissions.view');
+        return $this->allow($user, 'homework_submissions.view', $model);
     }
 
     public function create(User $user): bool|Response
@@ -35,22 +46,22 @@ class HomeworkSubmissionPolicy
 
     public function update(User $user, $model): bool|Response
     {
-        return $this->allow($user, 'homework_submissions.update');
+        return $this->allow($user, 'homework_submissions.update', $model);
     }
 
     public function delete(User $user, $model): bool|Response
     {
-        return $this->allow($user, 'homework_submissions.delete');
+        return $this->allow($user, 'homework_submissions.delete', $model);
     }
 
     public function restore(User $user, $model): bool|Response
     {
-        return $this->allow($user, 'homework_submissions.restore');
+        return $this->allow($user, 'homework_submissions.restore', $model);
     }
 
     public function forceDelete(User $user, $model): bool|Response
     {
-        return $this->allow($user, 'homework_submissions.force-delete');
+        return $this->allow($user, 'homework_submissions.force-delete', $model);
     }
 
     public function import(User $user): bool|Response

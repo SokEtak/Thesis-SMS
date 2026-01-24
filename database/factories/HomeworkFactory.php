@@ -3,6 +3,9 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Classroom;
+use App\Models\Subject;
+use App\Models\User;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Homework>
@@ -17,12 +20,13 @@ class HomeworkFactory extends Factory
     public function definition(): array
     {
         return [
-            'day_of_week' => $this->faker->randomElement(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']),
-            'start_time' => $this->faker->time('H:i'),
-            'end_time' => $this->faker->time('H:i'),
-            'subject_id' => \App\Models\Subject::factory(),
-            'classroom_id' => \App\Models\Classroom::factory(),
-            'teacher_id' => \App\Models\User::factory(),
+            'class_id' => Classroom::inRandomOrder()->value('id'),
+            'subject_id' => Subject::inRandomOrder()->value('id'),
+            'teacher_id' => User::role('Teacher')->inRandomOrder()->value('id'),
+            'title' => $this->faker->sentence,
+            'description' => $this->faker->paragraph,
+            'file_url' => $this->faker->url,
+            'deadline' => $this->faker->dateTimeBetween('now', '+1 month'),
         ];
     }
 }

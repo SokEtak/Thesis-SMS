@@ -2,13 +2,15 @@
 
 namespace App\Http\Requests\HomeworkSubmission;
 
+use App\Models\HomeworkSubmission;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateHomeworkSubmissionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return  Gate::allows('create', HomeworkSubmission::class);
     }
 
     public function rules(): array
