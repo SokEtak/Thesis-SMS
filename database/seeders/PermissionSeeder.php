@@ -101,7 +101,16 @@ class PermissionSeeder extends Seeder
             'homework_submissions.import',
             'homework_submissions.export',
 
-
+            // Exam Result Permissions
+            'exam_results.view-any',
+            'exam_results.view',
+            'exam_results.create',
+            'exam_results.update',
+            'exam_results.delete',
+            'exam_results.restore',
+            'exam_results.force-delete',
+            'exam_results.import',
+            'exam_results.export',
         ];
 
         foreach ($permissions as $permission) {

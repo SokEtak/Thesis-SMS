@@ -12,6 +12,7 @@ use App\Repositories\Eloquent\AttendanceRepo;
 use App\Repositories\Eloquent\ClassroomRepo;
 use App\Repositories\Eloquent\ExamResultRepo;
 use App\Repositories\Eloquent\HomeworkRepo;
+use App\Repositories\Eloquent\HomeworkSubmissionRepo;
 use App\Repositories\Eloquent\LeaveRequestRepo;
 use App\Repositories\Eloquent\SubjectRepo;
 use App\Repositories\Eloquent\TimetableRepo;
@@ -20,13 +21,11 @@ use App\Repositories\Interfaces\AttendanceRepoInterf;
 use App\Repositories\Interfaces\ClassroomRepoInterf;
 use App\Repositories\Interfaces\ExamResultRepoInterf;
 use App\Repositories\Interfaces\HomeworkRepoInterf;
+use App\Repositories\Interfaces\HomeworkSubmissionRepoInterf;
 use App\Repositories\Interfaces\LeaveRequestRepoInterf;
 use App\Repositories\Interfaces\SubjectRepoInterf;
 use App\Repositories\Interfaces\TimetableRepoInterf;
 use App\Repositories\Interfaces\UserRepoInterf;
-use App\Repositories\Interfaces\HomeworkSubmissionRepoInterf;
-use App\Repositories\Eloquent\HomeworkSubmissionRepo;
-
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider

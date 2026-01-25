@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests\HomeworkSubmission;
 
-use Illuminate\Auth\Access\Gate;
-use App\Models\HomeworkSubmission;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreHomeworkSubmissionRequest extends FormRequest
@@ -11,6 +9,7 @@ class StoreHomeworkSubmissionRequest extends FormRequest
     public function authorize(): bool
     {
         $user = $this->user();
+
         return $user && ($user->hasRole('Student') || $user->can('homework_submissions.create'));
     }
 

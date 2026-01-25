@@ -33,7 +33,7 @@ class HomeworkSubmissionPolicy
     {
         return $this->allow($user, 'homework_submissions.view-any');
     }
-    
+
     public function view(User $user, $model): bool|Response
     {
         return $this->allow($user, 'homework_submissions.view', $model);

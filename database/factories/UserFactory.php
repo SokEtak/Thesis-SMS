@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\ClassRoom;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -11,6 +13,27 @@ use Illuminate\Support\Str;
  */
 class UserFactory extends Factory
 {
+    /**
+     * Assign a role to the user after creation.
+     */
+    public function withRole(string $role): static
+    {
+        return $this->afterCreating(function ($user) use ($role) {
+            $user->assignRole($role);
+        });
+    }
+
+    /**
+     * Assign either 'Student' or 'Gurdian' role to the user after creation.
+     */
+    public function studentOrGurdian(): static
+    {
+        return $this->afterCreating(function ($user) {
+            $role = fake()->randomElement(['Student', 'Gurdian']);
+            $user->assignRole($role);
+        });
+    }
+
     /**
      * The current password being used by the factory.
      */
@@ -32,8 +55,8 @@ class UserFactory extends Factory
             'dob' => fake()->date(),
             'telegram_chat_id' => fake()->numberBetween(100000, 999999),
             'avatar' => fake()->imageUrl(300, 300, 'people'),
-            'class_id' => null,
-            'parent_id' => null,
+            'class_id' => ClassRoom::inRandomOrder()->value('id'),
+            'parent_id' => User::role('Gurdian')->inRandomOrder()->value('id'),
             'remember_token' => Str::random(10),
             'two_factor_secret' => Str::random(10),
             'two_factor_recovery_codes' => Str::random(10),

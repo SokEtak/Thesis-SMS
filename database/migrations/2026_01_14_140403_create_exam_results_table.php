@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('student_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('subject_id')->constrained('subjects')->cascadeOnDelete();
 
-            $table->string('exam_type', 50)->nullable();
+            $table->string('exam_type', 50)->nullable(); // e.g., monthly, Midterm, Final
             $table->decimal('score', 5, 2)->nullable();
             $table->string('month_year', 20)->nullable();
             $table->timestamps();

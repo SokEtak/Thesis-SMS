@@ -14,6 +14,8 @@ class Homework extends Model
     /** @use HasFactory<\\Database\\Factories\\HomeworkFactory> */
     use HasFactory, logsActivity, Searchable,SoftDeletes;
 
+    protected $table = 'homeworks';
+
     protected $fillable = [
         'class_id',
         'subject_id',

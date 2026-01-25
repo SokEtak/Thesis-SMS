@@ -42,7 +42,7 @@ class HomeworkSubmissionController extends Controller
 
     public function store(StoreHomeworkSubmissionRequest $request)
     {
-    
+
         $item = $this->service->store($request->validated());
 
         return ApiResponse::created(new HomeworkSubmissionResource($item));

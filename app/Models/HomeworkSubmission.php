@@ -6,13 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class HomeworkSubmission extends Model
 {
     /** @use HasFactory<\Database\Factories\HomeworkSubmissionFactory> */
-    use HasFactory,SoftDeletes,LogsActivity,Searchable;
+    use HasFactory,LogsActivity,Searchable,SoftDeletes;
 
     protected $fillable = [
         'homework_id',

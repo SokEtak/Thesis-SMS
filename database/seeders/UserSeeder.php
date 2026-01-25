@@ -1,5 +1,7 @@
 <?php
 
+// for seeding users with roles
+
 namespace Database\Seeders;
 
 use App\Models\User;
@@ -13,7 +15,13 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $roles = ['Super-Admin', 'Admin', 'Teacher', 'Student', 'Gurdian']; // change to gurdian next seeding
+        $roles = ['Super-Admin', 'Admin', 'Teacher', 'Student', 'Gurdian'];
+
+        // generate 50 random users with either Student or Gurdian role
+        User::factory()
+            ->count(50)
+            ->studentOrGurdian()
+            ->create();
 
         foreach ($roles as $role) {
             $email = strtolower(str_replace(' ', '.', $role)).'@gmail.com';
@@ -33,9 +41,7 @@ class UserSeeder extends Seeder
                 ]
             );
 
-            if (method_exists($user, 'assignRole')) {
-                $user->assignRole($role);
-            }
+            $user->assignRole($role);
         }
     }
 }
