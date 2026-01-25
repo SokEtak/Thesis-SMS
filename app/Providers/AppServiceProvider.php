@@ -45,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
             LeaveRequestRepoInterf::class => LeaveRequestRepo::class,
             HomeworkRepoInterf::class => HomeworkRepo::class,
             HomeworkSubmissionRepoInterf::class => HomeworkSubmissionRepo::class,
+            ExamResultRepoInterf::class => ExamResultRepo::class,
         ];
 
         foreach ($bindings as $abstract => $concrete) {

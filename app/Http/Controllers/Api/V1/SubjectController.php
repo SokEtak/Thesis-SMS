@@ -34,7 +34,6 @@ class SubjectController extends Controller
 
     public function show(Subject $subject)
     {
-        // dd();
         $this->authorize('view', $subject);
 
         $model = $this->service->show($subject);

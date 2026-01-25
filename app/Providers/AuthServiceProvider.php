@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Attendance;
 use App\Models\Classroom;
+use App\Models\ExamResult;
 use App\Models\Homework;
 use App\Models\HomeworkSubmission;
 use App\Models\LeaveRequest;
@@ -12,6 +13,7 @@ use App\Models\Timetable;
 use App\Models\User;
 use App\Policies\AttendancePolicy;
 use App\Policies\ClassroomPolicy;
+use App\Policies\ExamResultPolicy;
 use App\Policies\HomeworkPolicy;
 use App\Policies\HomeworkSubmissionPolicy;
 use App\Policies\LeaveRequestPolicy;
@@ -44,5 +46,6 @@ class AuthServiceProvider extends ServiceProvider
         Gate::policy(Timetable::class, TimetablePolicy::class);
         Gate::policy(Homework::class, HomeworkPolicy::class);
         Gate::policy(HomeworkSubmission::class, HomeworkSubmissionPolicy::class);
+        Gate::policy(ExamResult::class, ExamResultPolicy::class);
     }
 }

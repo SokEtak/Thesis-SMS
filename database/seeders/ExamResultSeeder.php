@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ExamResult;
 use Illuminate\Database\Seeder;
 
 class ExamResultSeeder extends Seeder
@@ -11,6 +12,6 @@ class ExamResultSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\ExamResult::factory()->count(10)->create();
+        ExamResult::factory()->count(10)->create();
     }
 }

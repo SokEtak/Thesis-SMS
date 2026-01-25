@@ -15,19 +15,26 @@ class ExamResult extends Model
         'student_id',
         'subject_id',
         'exam_type',
+        'exam_date',
         'score',
-        'month_year',
+        'recorded_by',
+        'remark',
+        'status',
+    ];
+
+    protected $casts = [
+        'exam_date' => 'date',
     ];
 
     public function toSearchableArray()
     {
         return [
-            'id' => $this->id,
             'student_id' => $this->student_id,
             'subject_id' => $this->subject_id,
             'exam_type' => $this->exam_type,
+            'exam_date' => $this->exam_date->toDateString(),
             'score' => $this->score,
-            'month_year' => $this->month_year,
+            'status' => $this->status,
         ];
     }
 

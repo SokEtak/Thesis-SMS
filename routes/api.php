@@ -18,6 +18,7 @@ Route::prefix('v1')
         require __DIR__.'/api/v1/classroomRoute.php';
         require __DIR__.'/api/v1/subjectRoute.php';
         require __DIR__.'/api/v1/homeworkRoute.php';
+        require __DIR__.'/api/v1/examResultRoute.php';
     });
 
 Route::prefix('v1')

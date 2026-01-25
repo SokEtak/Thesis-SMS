@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Subject;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,10 +20,10 @@ class ExamResultFactory extends Factory
     {
         return [
             'exam_type' => $this->faker->randomElement(['Midterm', 'Final', 'Quiz', 'Assignment']),
-            'score' => $this->faker->randomFloat(2, 0, 100),
-            'month_year' => $this->faker->date('F Y'),
-            'subject_id' => \App\Models\Subject::factory(),
-            'student_id' => \App\Models\User::factory(),
+            'score' => $this->faker->randomFloat(2, 1, 125),
+            'exam_date' => $this->faker->date('Y-m-d'),
+            'subject_id' => Subject::factory(),
+            'student_id' => User::factory(),
         ];
     }
 }

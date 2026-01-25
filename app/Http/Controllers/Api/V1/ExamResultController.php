@@ -33,29 +33,30 @@ class ExamResultController extends Controller
 
     public function show(ExamResult $examResult)
     {
-        $this->authorize('view', $examResult);
-
         $model = $this->service->show($examResult);
 
-        return ApiResponse::ok(new ExamResultResource($model));
+        return ApiResponse::ok(
+            new ExamResultResource($model)
+        );
     }
 
     public function store(StoreExamResultRequest $request)
     {
-        $this->authorize('create', ExamResult::class);
+        $examResult = $this->service->store($request->validated());
 
-        $item = $this->service->store($request->validated());
-
-        return ApiResponse::created(new ExamResultResource($item));
+        return ApiResponse::created(new ExamResultResource($examResult));
     }
 
-    public function update(UpdateExamResultRequest $request, ExamResult $examResult)
-    {
-        $this->authorize('update', $examResult);
+    public function update(
+        UpdateExamResultRequest $request,
+        ExamResult $examResult
+    ) {
+        $updated = $this->service->update(
+            $examResult,
+            $request->validated()
+        );
 
-        $updated = $this->service->update($examResult, $request->validated());
-
-        return ApiResponse::ok(new ExamResultResource($updated));
+        return ApiResponse::ok(new ExamResultResource($updated) );
     }
 
     public function destroy(ExamResult $examResult)
@@ -75,34 +76,27 @@ class ExamResultController extends Controller
         $params['trashed'] = 'only';
 
         $data = $this->service->list($params);
-
         $data->appends($request->query());
 
         return ApiResponse::paginated(new ExamResultCollection($data));
     }
 
-    public function findTrashed($id)
-    {
-        $timetable = $this->service->findTrashed((int) $id);
-        $this->authorize('view', $timetable);
-
-        return ApiResponse::ok(new ExamResultResource($timetable));
-    }
-
     public function restore($id)
     {
-        $timetable = $this->service->findTrashed((int) $id);
-        $this->authorize('restore', $timetable);
+        $examResult = $this->service->findTrashed((int) $id);
 
-        $restored = $this->service->restore((int) $id);
+        $this->authorize('restore', $examResult);
 
-        return ApiResponse::ok(new ExamResultResource($restored));
+        $examResult = $this->service->restore((int) $id);
+
+        return ApiResponse::ok(new ExamResultResource($examResult));
     }
 
     public function forceDelete($id)
     {
-        $timetable = $this->service->findTrashed((int) $id);
-        $this->authorize('forceDelete', $timetable);
+        $examResult = $this->service->findTrashed((int) $id);
+
+        $this->authorize('forceDelete', $examResult);
 
         $this->service->forceDelete((int) $id);
 
@@ -113,9 +107,7 @@ class ExamResultController extends Controller
     {
         $this->authorize('import', ExamResult::class);
 
-        $file = $request->file('file');
-
-        $this->service->import($file);
+        $this->service->import($request->file('file'));
 
         return ApiResponse::ok(['message' => 'Import queued']);
     }

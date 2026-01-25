@@ -31,6 +31,11 @@ class Subject extends Model
         return $this->hasMany(Homework::class, 'subject_id');
     }
 
+    public function examResults()
+    {
+        return $this->hasMany(ExamResult::class, 'subject_id');
+    }
+
     public function toSearchableArray(): array
     {
         return [

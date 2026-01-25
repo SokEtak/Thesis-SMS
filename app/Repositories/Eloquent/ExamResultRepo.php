@@ -33,9 +33,13 @@ class ExamResultRepo implements ExamResultRepoInterf
         return QueryBuilder::for($query)
             ->allowedFilters([
                 AllowedFilter::exact('student_id'),
+                AllowedFilter::exact('student.name'),
+                AllowedFilter::exact('student.class_id'),
                 AllowedFilter::exact('subject_id'),
+                AllowedFilter::exact('subject.name'),
                 AllowedFilter::exact('exam_type'),
-                AllowedFilter::exact('month_year'),
+                AllowedFilter::exact('score'),
+                AllowedFilter::exact('exam_date'),
             ])
             ->allowedSorts(['id', 'score', 'created_at'])
             ->defaultSort('id')
@@ -52,29 +56,29 @@ class ExamResultRepo implements ExamResultRepoInterf
         return ExamResult::create($data);
     }
 
-    public function update(ExamResult $model, array $data): ExamResult
+    public function update($examResult, array $data): ExamResult
     {
-        $model->update($data);
+        $examResult->update($data);
 
-        return $model;
+        return $examResult;
     }
 
-    public function delete(ExamResult $model): void
+    public function delete($examResult): void
     {
-        $model->delete();
+        $examResult->delete();
     }
 
     public function restore(int $id): ?ExamResult
     {
-        $model = ExamResult::onlyTrashed()->findOrFail($id);
-        $model->restore();
+        $examResult = ExamResult::onlyTrashed()->findOrFail($id);
+        $examResult->restore();
 
-        return $model;
+        return $examResult;
     }
 
     public function forceDelete(int $id): void
     {
-        $model = ExamResult::onlyTrashed()->findOrFail($id);
-        $model->forceDelete();
+        $examResult = ExamResult::onlyTrashed()->findOrFail($id);
+        $examResult->forceDelete();
     }
 }

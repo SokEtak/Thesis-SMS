@@ -11,15 +11,45 @@ return new class extends Migration
         Schema::create('exam_results', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('student_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('subject_id')->constrained('subjects')->cascadeOnDelete();
+            // Relations
+            $table->foreignId('student_id')
+                ->constrained('users')
+                ->cascadeOnDelete();
 
-            $table->string('exam_type', 50)->nullable(); // e.g., monthly, Midterm, Final
-            $table->decimal('score', 5, 2)->nullable();
-            $table->string('month_year', 20)->nullable();
+            $table->foreignId('subject_id')
+                ->constrained('subjects')
+                ->cascadeOnDelete();
+
+            // Exam metadata
+            $table->string('exam_type', 30); // quiz, monthly, semester, midterm, final
+
+            $table->date('exam_date');
+
+            // Score
+            $table->unsignedTinyInteger('score')->nullable();
+            // $table->check('score between 1 and 125');
+
+            // Audit
+            $table->foreignId('recorded_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->text('remark')->nullable();
+
+            // Status
+            $table->enum('status', ['draft', 'final'])->default('draft');
+
+            // Indexes
+            $table->unique(
+                ['student_id', 'subject_id', 'exam_type', 'exam_date'],
+                'unique_exam_per_student_subject'
+            );
+
             $table->timestamps();
             $table->softDeletes();
         });
+
     }
 
     public function down(): void

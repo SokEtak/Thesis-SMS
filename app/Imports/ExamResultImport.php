@@ -22,7 +22,7 @@ class ExamResultImport implements ShouldQueue, SkipsOnFailure, ToModel, WithBatc
             'subject_id' => isset($row['subject_id']) && $row['subject_id'] !== '' ? (int) $row['subject_id'] : null,
             'exam_type' => $row['exam_type'] ?? null,
             'score' => isset($row['score']) && $row['score'] !== '' ? (float) $row['score'] : null,
-            'month_year' => $row['month_year'] ?? null,
+            'exam_date' => $row['exam_date'] ?? null,
         ]);
     }
 
