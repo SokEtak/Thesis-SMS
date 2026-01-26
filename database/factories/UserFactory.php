@@ -29,7 +29,7 @@ class UserFactory extends Factory
     public function studentOrGurdian(): static
     {
         return $this->afterCreating(function ($user) {
-            $role = fake()->randomElement(['Student', 'Gurdian']);
+            $role = fake()->randomElement(['Student', 'Guardian']);
             $user->assignRole($role);
         });
     }
