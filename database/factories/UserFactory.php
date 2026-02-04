@@ -24,9 +24,9 @@ class UserFactory extends Factory
     }
 
     /**
-     * Assign either 'Student' or 'Gurdian' role to the user after creation.
+     * Assign either 'Student' or 'Guardian' role to the user after creation.
      */
-    public function studentOrGurdian(): static
+    public function studentOrGuardian(): static
     {
         return $this->afterCreating(function ($user) {
             $role = fake()->randomElement(['Student', 'Guardian']);
@@ -56,7 +56,7 @@ class UserFactory extends Factory
             'telegram_chat_id' => fake()->numberBetween(100000, 999999),
             'avatar' => fake()->imageUrl(300, 300, 'people'),
             'class_id' => ClassRoom::inRandomOrder()->value('id'),
-            'parent_id' => User::role('Gurdian')->inRandomOrder()->value('id'),
+            'parent_id' => User::role('Guardian')->inRandomOrder()->value('id'),
             'remember_token' => Str::random(10),
             'two_factor_secret' => Str::random(10),
             'two_factor_recovery_codes' => Str::random(10),

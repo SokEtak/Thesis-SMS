@@ -56,7 +56,7 @@ class ExamResultController extends Controller
             $request->validated()
         );
 
-        return ApiResponse::ok(new ExamResultResource($updated) );
+        return ApiResponse::ok(new ExamResultResource($updated));
     }
 
     public function destroy(ExamResult $examResult)

@@ -15,12 +15,12 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $roles = ['Super-Admin', 'Admin', 'Teacher', 'Student', 'Gurdian'];
+        $roles = ['Super-Admin', 'Admin', 'Teacher', 'Student', 'Guardian'];
 
-        // generate 50 random users with either Student or Gurdian role
+        // generate 50 random users with either Student or Guardian role
         User::factory()
             ->count(50)
-            ->studentOrGurdian()
+            ->studentOrGuardian()
             ->create();
 
         foreach ($roles as $role) {

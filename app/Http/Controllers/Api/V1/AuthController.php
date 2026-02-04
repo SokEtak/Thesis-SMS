@@ -50,7 +50,7 @@ class AuthController extends Controller
             'user' => [
                 'id' => $data['user']->id,
                 'name' => $data['user']->name,
-                'roles' => $data['user']->getRoleNames(),
+                'role' => $data['user']->roles->first()->only('id', 'name'),
             ],
         ]);
     }

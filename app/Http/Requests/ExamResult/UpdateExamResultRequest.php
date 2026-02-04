@@ -3,14 +3,13 @@
 namespace App\Http\Requests\ExamResult;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\ExamResult;
 
 class UpdateExamResultRequest extends FormRequest
 {
-   public function authorize(): bool
-{
-    return $this->user()->id === $this->input('recorded_by');
-}
+    public function authorize(): bool
+    {
+        return $this->user()->id === $this->input('recorded_by');
+    }
 
     public function rules(): array
     {

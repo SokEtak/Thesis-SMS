@@ -31,10 +31,23 @@ class UserService
     public function store(array $data): User
     {
         return DB::transaction(function () use ($data) {
+            // Extract single role (if provided) and remove from mass-assignment data
+            $role = null;
+            if (isset($data['role'])) {
+                $role = is_string($data['role']) ? trim($data['role']) : null;
+                unset($data['role']);
+            }
+
             if (isset($data['password'])) {
                 $data['password'] = Hash::make($data['password']);
             }
+
             $user = $this->repo->create($data);
+
+            // Assign single role if provided. Use syncRoles to ensure only one role.
+            if (! empty($role)) {
+                $user->syncRoles([$role]);
+            }
 
             return $user;
         });
@@ -43,13 +56,27 @@ class UserService
     public function update(User $user, array $data): User
     {
         return DB::transaction(function () use ($user, $data) {
+            // Extract single role (if provided) and remove from mass-assignment data
+            $role = null;
+            if (array_key_exists('role', $data)) {
+                $role = is_string($data['role']) ? trim($data['role']) : null;
+                unset($data['role']);
+            }
+
             if (array_key_exists('password', $data)) {
                 $data['password'] = $data['password']
                     ? Hash::make($data['password'])
                     : $user->password;
             }
 
-            return $this->repo->update($user, $data);
+            $updated = $this->repo->update($user, $data);
+
+            // Assign/replace role if provided
+            if (! empty($role)) {
+                $updated->syncRoles([$role]);
+            }
+
+            return $updated;
         });
     }
 

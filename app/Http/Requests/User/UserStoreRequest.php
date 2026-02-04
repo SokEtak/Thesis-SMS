@@ -26,6 +26,8 @@ class UserStoreRequest extends FormRequest
             'address' => ['nullable', 'string', 'max:255'],
             'class_id' => ['nullable', 'exists:classes,id'],
             'parent_id' => ['nullable', 'exists:users,id'],
+            // Single role name (for Spatie roles). Keep UX simple: one role only.
+            'role' => ['nullable', 'string', 'exists:roles,name'],
         ];
     }
 
@@ -45,6 +47,11 @@ class UserStoreRequest extends FormRequest
         $input['address'] = isset($input['address']) ? trim($input['address']) : null;
         $input['gender'] = isset($input['gender']) ? strtolower(trim($input['gender'])) : null;
         $input['dob'] = isset($input['dob']) ? trim($input['dob']) : null;
+
+        // Normalize single role input
+        if (isset($input['role']) && is_string($input['role'])) {
+            $input['role'] = trim($input['role']);
+        }
 
         $this->merge($input);
     }
