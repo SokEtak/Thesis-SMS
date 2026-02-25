@@ -1,49 +1,37 @@
-import BatchActionBar from '@/components/BatchActionBar';
-import DataTable from '@/components/DataTable';
-import LiveSearchInput, { type SearchSuggestion } from '@/components/LiveSearchInput';
+import { type SearchSuggestion } from '@/components/LiveSearchInput';
+import { type SearchableSelectOption } from '@/components/SearchableSelect';
 import ResourcePageLayout from '@/components/ResourcePageLayout';
-import SearchableSelect from '@/components/SearchableSelect';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
 import { route } from '@/lib/route';
 import { type PaginatedData } from '@/types';
 import { type Classroom, type TeacherOption } from '@/types/models';
-import { Head, Link, router } from '@inertiajs/react';
-import {
-  ArrowUpDown,
-  Download,
-  Eye,
-  FilePlus2,
-  Info,
-  Pencil,
-  Plus,
-  RotateCcw,
-  Search,
-  Trash2,
-  Upload,
-} from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { cn } from '@/lib/utils';
+
+import ClassroomBatchCreateActionDialog from './index-actions/ClassroomBatchCreateActionDialog';
+import ClassroomBatchDeleteActionDialog from './index-actions/ClassroomBatchDeleteActionDialog';
+import ClassroomBatchEditTeacherActionDialog from './index-actions/ClassroomBatchEditTeacherActionDialog';
+import ClassroomBatchPreviewActionDialog from './index-actions/ClassroomBatchPreviewActionDialog';
+import ClassroomCreateActionDialog from './index-actions/ClassroomCreateActionDialog';
+import ClassroomEditActionDialog from './index-actions/ClassroomEditActionDialog';
+import ClassroomFilterActionPanel from './index-actions/ClassroomFilterActionPanel';
+import ClassroomPageActionToolbar from './index-actions/ClassroomPageActionToolbar';
+import ClassroomRecordsSection from './index-actions/ClassroomRecordsSection';
+import ClassroomSearchResultActionDialog from './index-actions/ClassroomSearchResultActionDialog';
+import ClassroomStatsOverview from './index-actions/ClassroomStatsOverview';
+import ClassroomViewActionDialog from './index-actions/ClassroomViewActionDialog';
+import {
+  type BatchCreateItemState,
+  type ClassroomFormState,
+  type SearchAlertState,
+  type SortBy,
+  type TablePaginationState,
+  classroomMatchesCase,
+  formatDate,
+  normalizeSortBy,
+  toPositiveNumber,
+} from './index-actions/classroom-index-types';
 
 interface Props {
   classrooms: PaginatedData<Classroom>;
@@ -58,85 +46,26 @@ interface ClassroomSuggestionApiResponse {
   }>;
 }
 
-interface ClassroomFormState {
-  name: string;
-  teacher_in_charge_id: string;
-}
-
-interface BatchCreateItemState {
-  key: number;
-  name: string;
-  teacher_in_charge_id: string;
-}
-
-interface SearchAlertState {
-  term: string;
-  count: number;
-  matches: SearchSuggestion[];
-}
-
-interface TablePaginationState {
-  per_page: number;
-  current_page: number;
-  last_page: number;
-  total: number;
-}
-
-const SORTABLE_FIELDS = ['id', 'name', 'created_at'] as const;
-type SortBy = (typeof SORTABLE_FIELDS)[number];
-
-const formatDate = (value: unknown): string => {
-  if (typeof value !== 'string' || value.length === 0) {
-    return '-';
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return '-';
-  }
-
-  return date.toLocaleString();
-};
-
-const toPositiveNumber = (value: unknown, fallback: number): number => {
-  const number = Number(value);
-  if (Number.isFinite(number) && number > 0) {
-    return number;
-  }
-
-  return fallback;
-};
-
-const normalizeSortBy = (value: unknown): SortBy => {
-  if (typeof value === 'string' && SORTABLE_FIELDS.includes(value as SortBy)) {
-    return value as SortBy;
-  }
-
-  return 'id';
-};
-
-const classroomMatchesCase = (item: Classroom, term: string): boolean => {
-  if (!term) {
-    return true;
-  }
-
-  return [
-    item.id,
-    item.name,
-    item.teacher_name,
-    item.teacher_in_charge_id,
-    item.created_at,
-    item.updated_at,
-  ]
-    .map((value) => String(value ?? ''))
-    .some((value) => value.includes(term));
-};
-
 export default function Index({ classrooms, teachers, query }: Props) {
-  const initialSearch = typeof query.q === 'string' ? query.q : '';
+  const queryFilter = typeof query.filter === 'object' && query.filter !== null
+    ? (query.filter as Record<string, unknown>)
+    : null;
+  const initialSearch = typeof query.q === 'string'
+    ? query.q
+    : typeof queryFilter?.q === 'string'
+      ? queryFilter.q
+      : '';
+  const teacherFilterQueryValue = query.teacher_in_charge_id ?? queryFilter?.teacher_in_charge_id;
+  const initialTeacherFilter = typeof teacherFilterQueryValue === 'string'
+    ? teacherFilterQueryValue
+    : typeof teacherFilterQueryValue === 'number'
+      ? String(teacherFilterQueryValue)
+      : '';
   const initialSortBy = normalizeSortBy(query.sort_by);
   const initialSortDir = query.sort_dir === 'desc' ? 'desc' : 'asc';
+
   const [searchValue, setSearchValue] = useState<string>(initialSearch);
+  const [teacherFilterValue, setTeacherFilterValue] = useState<string>(initialTeacherFilter);
   const [sortBy, setSortBy] = useState<SortBy>(initialSortBy);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(initialSortDir);
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
@@ -169,11 +98,13 @@ export default function Index({ classrooms, teachers, query }: Props) {
     count: 0,
     matches: [],
   });
+
   const searchBootstrapped = useRef(false);
   const skipNextAutoSearch = useRef(false);
   const nextBatchCreateKeyRef = useRef(2);
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const queryRef = useRef<Record<string, unknown>>(query);
+  const teacherFilterRef = useRef<string>(initialTeacherFilter);
   const sortByRef = useRef<SortBy>(initialSortBy);
   const sortDirRef = useRef<'asc' | 'desc'>(initialSortDir);
 
@@ -189,6 +120,10 @@ export default function Index({ classrooms, teachers, query }: Props) {
   }, [initialSearch]);
 
   useEffect(() => {
+    setTeacherFilterValue((previous) => (previous === initialTeacherFilter ? previous : initialTeacherFilter));
+  }, [initialTeacherFilter]);
+
+  useEffect(() => {
     setSortBy((previous) => (previous === initialSortBy ? previous : initialSortBy));
     setSortDir((previous) => (previous === initialSortDir ? previous : initialSortDir));
   }, [initialSortBy, initialSortDir]);
@@ -196,6 +131,10 @@ export default function Index({ classrooms, teachers, query }: Props) {
   useEffect(() => {
     queryRef.current = query;
   }, [query]);
+
+  useEffect(() => {
+    teacherFilterRef.current = teacherFilterValue;
+  }, [teacherFilterValue]);
 
   useEffect(() => {
     sortByRef.current = sortBy;
@@ -238,6 +177,7 @@ export default function Index({ classrooms, teachers, query }: Props) {
     perPageOverride?: number,
     sortByOverride?: SortBy,
     sortDirOverride?: 'asc' | 'desc',
+    teacherFilterOverride?: string,
     replace = true,
   ) => {
     const nextPage = Number.isFinite(page) && page > 0 ? page : 1;
@@ -256,6 +196,13 @@ export default function Index({ classrooms, teachers, query }: Props) {
       nextQuery.q = normalized;
     } else {
       delete nextQuery.q;
+    }
+
+    const normalizedTeacherFilter = (teacherFilterOverride ?? teacherFilterRef.current).trim();
+    if (normalizedTeacherFilter.length > 0) {
+      nextQuery.teacher_in_charge_id = normalizedTeacherFilter;
+    } else {
+      delete nextQuery.teacher_in_charge_id;
     }
 
     const nextSortBy = sortByOverride ?? sortByRef.current;
@@ -310,17 +257,20 @@ export default function Index({ classrooms, teachers, query }: Props) {
         }
 
         const payload = (await response.json()) as ClassroomSuggestionApiResponse;
+        const normalizedLower = normalized.toLowerCase();
         const mapped = payload.data.map((item) => ({
           id: item.id,
           label: item.name,
         }));
-        const apiMatches = mapped.filter((item) => item.label.includes(normalized));
+        const apiMatches = mapped.filter((item) => (
+          item.label.toLowerCase().includes(normalizedLower)
+        ));
         const localMatches = classrooms.data
           .map((item) => ({
             id: item.id,
             label: item.name ?? '',
           }))
-          .filter((item) => item.label.includes(normalized));
+          .filter((item) => item.label.toLowerCase().includes(normalizedLower));
 
         const merged = [...apiMatches, ...localMatches].filter((item, index, items) => (
           items.findIndex((entry) => entry.id === item.id) === index
@@ -341,23 +291,41 @@ export default function Index({ classrooms, teachers, query }: Props) {
     };
   }, [classrooms.data, searchValue]);
 
-  const teacherOptions = useMemo(
-    () => teachers.map((teacher) => ({
-      value: String(teacher.id),
-      label: teacher.name,
-      description: teacher.email ?? undefined,
-    })),
+  const teacherOptions = useMemo<SearchableSelectOption[]>(
+    () => [
+      {
+        value: 'none',
+        label: 'Unassigned teacher',
+      },
+      ...teachers.map((teacher) => ({
+        value: String(teacher.id),
+        label: teacher.name,
+        description: teacher.email ?? undefined,
+      })),
+    ],
     [teachers],
   );
 
   const filteredRows = useMemo(() => {
+    const normalizedTeacherFilter = teacherFilterValue.trim().toLowerCase();
     const term = searchValue.trim();
-    if (!term) {
-      return classrooms.data;
+    let rows = classrooms.data;
+
+    if (normalizedTeacherFilter === 'none') {
+      rows = rows.filter((item) => item.teacher_in_charge_id === null || item.teacher_in_charge_id === undefined);
+    } else if (normalizedTeacherFilter.length > 0) {
+      const teacherId = Number(normalizedTeacherFilter);
+      if (Number.isInteger(teacherId) && teacherId > 0) {
+        rows = rows.filter((item) => Number(item.teacher_in_charge_id) === teacherId);
+      }
     }
 
-    return classrooms.data.filter((item) => classroomMatchesCase(item, term));
-  }, [classrooms.data, searchValue]);
+    if (!term) {
+      return rows;
+    }
+
+    return rows.filter((item) => classroomMatchesCase(item, term));
+  }, [classrooms.data, searchValue, teacherFilterValue]);
 
   const activeTeacherCount = useMemo(() => {
     return new Set(
@@ -376,21 +344,30 @@ export default function Index({ classrooms, teachers, query }: Props) {
     ? Math.round((assignedOnPage / filteredRows.length) * 100)
     : 0;
 
-  const hasActiveFilter = searchValue.trim().length > 0 || sortBy !== 'id' || sortDir !== 'asc';
+  const hasActiveFilter = (
+    searchValue.trim().length > 0
+    || teacherFilterValue.trim().length > 0
+    || sortBy !== 'id'
+    || sortDir !== 'asc'
+  );
+
   const selectedIds = useMemo(
     () => selectedRowKeys
       .map((value) => Number(value))
       .filter((value) => Number.isInteger(value) && value > 0),
     [selectedRowKeys],
   );
+
   const selectedClassrooms = useMemo(() => {
     const idSet = new Set(selectedIds);
     return filteredRows.filter((item) => idSet.has(item.id));
   }, [filteredRows, selectedIds]);
+
   const allBatchCreateRowsSelected = useMemo(() => {
     return batchCreateItems.length > 0
       && batchCreateItems.every((item) => batchCreateSelectedRowKeys.includes(item.key));
   }, [batchCreateItems, batchCreateSelectedRowKeys]);
+
   const batchDeleteLimitOptions = useMemo(() => {
     const options: Array<{ value: string; label: string }> = [];
     if (selectedIds.length <= 0) {
@@ -413,6 +390,7 @@ export default function Index({ classrooms, teachers, query }: Props) {
 
     return options;
   }, [selectedIds.length]);
+
   const batchDeleteIds = useMemo(() => {
     if (batchDeleteLimit === 'all') {
       return selectedIds;
@@ -425,13 +403,16 @@ export default function Index({ classrooms, teachers, query }: Props) {
 
     return selectedIds.slice(0, limit);
   }, [batchDeleteLimit, selectedIds]);
+
   const batchDeleteClassrooms = useMemo(() => {
     const idSet = new Set(batchDeleteIds);
     return filteredRows.filter((item) => idSet.has(item.id));
   }, [batchDeleteIds, filteredRows]);
-  const liveMatchCount = useMemo(() => {
-    return filteredRows.length;
-  }, [filteredRows]);
+
+  const liveMatchCount = useMemo(
+    () => filteredRows.length,
+    [filteredRows],
+  );
 
   const resetForm = () => {
     setFormState({
@@ -457,11 +438,6 @@ export default function Index({ classrooms, teachers, query }: Props) {
 
     setIsBatchCreateOpen(false);
     resetBatchCreateForm();
-  };
-
-  const openCreateModal = () => {
-    resetForm();
-    setIsCreateOpen(true);
   };
 
   const openViewModal = (classroom: Classroom) => {
@@ -799,10 +775,12 @@ export default function Index({ classrooms, teachers, query }: Props) {
   const resetFilters = () => {
     skipNextAutoSearch.current = true;
     setSearchValue('');
+    setTeacherFilterValue('');
+    teacherFilterRef.current = '';
     setSortBy('id');
     setSortDir('asc');
     setIsSearchAlertOpen(false);
-    applySearch('', 1, activePerPage, 'id', 'asc');
+    applySearch('', 1, activePerPage, 'id', 'asc', '');
   };
 
   const handleManualSearch = () => {
@@ -813,130 +791,21 @@ export default function Index({ classrooms, teachers, query }: Props) {
       setIsSearchAlertOpen(false);
       return;
     }
-
-    const matchedRows = filteredRows;
+    const normalizedTerm = term.toLowerCase();
 
     const matches = (suggestions.length > 0
       ? suggestions
       : filteredRows.map((item) => ({ id: item.id, label: item.name ?? '' })))
-      .filter((item) => item.label.includes(term))
+      .filter((item) => item.label.toLowerCase().includes(normalizedTerm))
       .slice(0, 6);
 
     setSearchAlert({
       term,
-      count: matchedRows.length,
+      count: filteredRows.length,
       matches,
     });
     setIsSearchAlertOpen(true);
   };
-
-  const filterControls = (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
-      <div className="space-y-3 rounded-2xl border border-sky-200/70 bg-gradient-to-br from-sky-50/80 via-background to-cyan-50/60 p-4 shadow-sm dark:border-border dark:from-background dark:via-background dark:to-background">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold tracking-[0.15em] uppercase text-sky-700 dark:text-muted-foreground">
-            Search & Discover
-          </p>
-          {searchValue.trim().length > 0 && (
-            <Badge variant="secondary">
-              Live ({liveMatchCount})
-            </Badge>
-          )}
-        </div>
-        <LiveSearchInput
-          value={searchValue}
-          placeholder="Search class or teacher..."
-          suggestions={suggestions}
-          loading={isLoadingSuggestions}
-          className="w-full"
-          onChange={setSearchValue}
-          onSelectSuggestion={(suggestion) => {
-            skipNextAutoSearch.current = true;
-            setSearchValue(suggestion.label);
-            applySearch(suggestion.label, 1, undefined, sortBy, sortDir);
-          }}
-          onSubmit={handleManualSearch}
-        />
-        <div className="flex flex-wrap items-center gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                className="size-9 border-sky-200/70 bg-white/80 p-0 hover:bg-sky-100/70 dark:border-border dark:bg-background dark:hover:bg-accent"
-                aria-label="Search"
-                onClick={handleManualSearch}
-              >
-                <Search className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" align="center">Search</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                className="size-9 border-sky-200/70 bg-white/80 p-0 hover:bg-sky-100/70 dark:border-border dark:bg-background dark:hover:bg-accent"
-                aria-label="Reset"
-                onClick={resetFilters}
-              >
-                <RotateCcw className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" align="center">Reset</TooltipContent>
-          </Tooltip>
-        </div>
-      </div>
-
-      <div className="space-y-3 rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/80 via-background to-teal-50/60 p-4 shadow-sm dark:border-border dark:from-background dark:via-background dark:to-background">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <ArrowUpDown className="size-4" />
-          Sort & Status
-        </div>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-          <Select
-            value={sortBy}
-            onValueChange={(nextValue) => {
-              const value = normalizeSortBy(nextValue);
-              setSortBy(value);
-              applySearch(searchValue, 1, undefined, value, sortDir);
-            }}
-          >
-            <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="id">ID</SelectItem>
-              <SelectItem value="name">Name</SelectItem>
-              <SelectItem value="created_at">Created At</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={sortDir}
-            onValueChange={(nextValue) => {
-              const value = nextValue === 'desc' ? 'desc' : 'asc';
-              setSortDir(value);
-              applySearch(searchValue, 1, undefined, sortBy, value);
-            }}
-          >
-            <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm">
-              <SelectValue placeholder="Direction" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="asc">Asc</SelectItem>
-              <SelectItem value="desc">Desc</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline">Total {pagination.total}</Badge>
-          <Badge variant="outline">Page {pagination.current_page}/{pagination.last_page}</Badge>
-          <Badge variant="outline">{activePerPage} per page</Badge>
-          <Badge variant="outline">Teachers {activeTeacherCount}</Badge>
-          <Badge variant="outline">{hasActiveFilter ? 'Filtered' : 'Default'}</Badge>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <AppLayout>
@@ -946,189 +815,100 @@ export default function Index({ classrooms, teachers, query }: Props) {
         title="Classrooms"
         description="Centralize classroom operations with fast search, teacher assignment, and inline actions."
         actions={(
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="size-9 p-0"
-                  asChild
-                >
-                  <a href={route('classrooms.export.csv')} aria-label="Export CSV">
-                    <Download className="size-4" />
-                  </a>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Export CSV</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="size-9 p-0"
-                  aria-label="Import"
-                  onClick={() => importInputRef.current?.click()}
-                >
-                  <Upload className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Import</TooltipContent>
-            </Tooltip>
-            <input
-              ref={importInputRef}
-              type="file"
-              accept=".csv,.xlsx,.xls"
-              className="hidden"
-              onChange={handleImportFile}
-            />
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="size-9 p-0"
-                  aria-label="Trashed"
-                  asChild
-                >
-                  <Link href={route('classrooms.trashed')}>
-                    <Trash2 className="size-4" />
-                  </Link>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Trashed</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="size-9 p-0"
-                  aria-label="Batch Create"
-                  onClick={() => {
-                    resetBatchCreateForm();
-                    setIsBatchCreateOpen(true);
-                  }}
-                >
-                  <FilePlus2 className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Batch Create</TooltipContent>
-            </Tooltip>
-          </>
+          <ClassroomPageActionToolbar
+            importInputRef={importInputRef}
+            onImportFileChange={handleImportFile}
+            onOpenBatchCreate={() => {
+              resetBatchCreateForm();
+              setIsBatchCreateOpen(true);
+            }}
+          />
         )}
       >
         <div className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <Card className="gap-0 overflow-hidden border-sky-200/70 bg-gradient-to-br from-sky-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Total Classes</p>
-                    <p className="mt-1 text-2xl font-semibold">{pagination.total}</p>
-                  </div>
-                  <span className="rounded-full border border-sky-200 bg-white p-2 text-sky-600 dark:border-border dark:bg-muted dark:text-muted-foreground">
-                    <Info className="size-4" />
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="gap-0 overflow-hidden border-emerald-200/70 bg-gradient-to-br from-emerald-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Teachers On Page</p>
-                    <p className="mt-1 text-2xl font-semibold">{activeTeacherCount}</p>
-                  </div>
-                  <span className="rounded-full border border-emerald-200 bg-white p-2 text-emerald-600 dark:border-border dark:bg-muted dark:text-muted-foreground">
-                    <Pencil className="size-4" />
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="gap-0 overflow-hidden border-amber-200/70 bg-gradient-to-br from-amber-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Assignment Rate</p>
-                    <p className="mt-1 text-2xl font-semibold">{teacherCoverageOnPage}%</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{assignedOnPage}/{filteredRows.length || 0} rows assigned</p>
-                  </div>
-                  <span className="rounded-full border border-amber-200 bg-white p-2 text-amber-600 dark:border-border dark:bg-muted dark:text-muted-foreground">
-                    <ArrowUpDown className="size-4" />
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="gap-0 overflow-hidden border-violet-200/70 bg-gradient-to-br from-violet-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Filter Mode</p>
-                    <p className="mt-1 text-2xl font-semibold">{hasActiveFilter ? 'Active' : 'Idle'}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{searchValue.trim() || 'No keyword'}</p>
-                  </div>
-                  <span className="rounded-full border border-violet-200 bg-white p-2 text-violet-600 dark:border-border dark:bg-muted dark:text-muted-foreground">
-                    <Search className="size-4" />
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <ClassroomStatsOverview
+            totalClasses={pagination.total}
+            activeTeacherCount={activeTeacherCount}
+            teacherCoverageOnPage={teacherCoverageOnPage}
+            assignedOnPage={assignedOnPage}
+            filteredRowsCount={filteredRows.length}
+            hasActiveFilter={hasActiveFilter}
+            searchValue={searchValue}
+          />
 
           <section>
-            {filterControls}
+            <ClassroomFilterActionPanel
+              searchValue={searchValue}
+              teacherFilterValue={teacherFilterValue}
+              teacherFilterOptions={teacherOptions}
+              liveMatchCount={liveMatchCount}
+              suggestions={suggestions}
+              isLoadingSuggestions={isLoadingSuggestions}
+              sortBy={sortBy}
+              sortDir={sortDir}
+              pagination={pagination}
+              activePerPage={activePerPage}
+              activeTeacherCount={activeTeacherCount}
+              hasActiveFilter={hasActiveFilter}
+              onSearchChange={setSearchValue}
+              onTeacherFilterChange={(value) => {
+                setTeacherFilterValue(value);
+                teacherFilterRef.current = value;
+                applySearch(searchValue, 1, undefined, sortBy, sortDir, value);
+              }}
+              onSelectSuggestion={(suggestion) => {
+                skipNextAutoSearch.current = true;
+                setSearchValue(suggestion.label);
+                applySearch(suggestion.label, 1, undefined, sortBy, sortDir);
+              }}
+              onSearchSubmit={handleManualSearch}
+              onReset={resetFilters}
+              onSortByChange={(nextValue) => {
+                const value = normalizeSortBy(nextValue);
+                setSortBy(value);
+                applySearch(searchValue, 1, undefined, value, sortDir);
+              }}
+              onSortDirChange={(nextValue) => {
+                const value = nextValue === 'desc' ? 'desc' : 'asc';
+                setSortDir(value);
+                applySearch(searchValue, 1, undefined, sortBy, value);
+              }}
+            />
           </section>
 
-          <section className="space-y-2">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">Classroom Records</h2>
-              <p className="text-sm text-muted-foreground">
-                Manage results directly from this table with range selection support.
-              </p>
-            </div>
-            <BatchActionBar
-              selectedCount={selectedIds.length}
-              onViewSelected={() => setIsBatchShowOpen(true)}
-              onEditSelected={() => {
-                setBatchTeacherId('');
-                setIsBatchEditOpen(true);
-              }}
-              onDeleteSelected={handleBatchDelete}
-              onClearSelection={() => setSelectedRowKeys([])}
-              shiftModeEnabled={isShiftRangeMode}
-              onToggleShiftMode={() => setIsShiftRangeMode((current) => !current)}
-            />
-            <div className="rounded-2xl border border-border/70 bg-card/90 p-3 shadow-sm">
-              <DataTable
-                tableId="classrooms-index"
-                columns={columns}
-                data={filteredRows}
-                actions={tableActions}
-                rowKey="id"
-                selectableRows
-                selectedRowKeys={selectedRowKeys}
-                onSelectedRowKeysChange={(keys) => {
-                  setSelectedRowKeys(
-                    keys.filter((key): key is string | number => (
-                      typeof key === 'string' || typeof key === 'number'
-                    )),
-                  );
-                }}
-                rangeSelectMode={isShiftRangeMode}
-                pagination={pagination}
-                perPage={activePerPage}
-                perPageOptions={[10, 15, 25, 50, 100]}
-                onPerPageChange={(value) => applySearch(searchValue, 1, value, sortBy, sortDir)}
-                onPageChange={(page) => applySearch(searchValue, page, undefined, sortBy, sortDir)}
-              />
-            </div>
-          </section>
+          <ClassroomRecordsSection
+            selectedCount={selectedIds.length}
+            onViewSelected={() => setIsBatchShowOpen(true)}
+            onEditSelected={() => {
+              setBatchTeacherId('');
+              setIsBatchEditOpen(true);
+            }}
+            onDeleteSelected={handleBatchDelete}
+            onClearSelection={() => setSelectedRowKeys([])}
+            shiftModeEnabled={isShiftRangeMode}
+            onToggleShiftMode={() => setIsShiftRangeMode((current) => !current)}
+            columns={columns}
+            rows={filteredRows}
+            actions={tableActions}
+            selectedRowKeys={selectedRowKeys}
+            onSelectedRowKeysChange={setSelectedRowKeys}
+            rangeSelectMode={isShiftRangeMode}
+            pagination={pagination}
+            perPage={activePerPage}
+            onPerPageChange={(value) => applySearch(searchValue, 1, value, sortBy, sortDir)}
+            onPageChange={(page) => applySearch(searchValue, page, undefined, sortBy, sortDir)}
+          />
         </div>
       </ResourcePageLayout>
 
-      <Dialog
+      <ClassroomBatchCreateActionDialog
         open={isBatchCreateOpen}
+        isSubmitting={isSubmitting}
+        batchCreateItems={batchCreateItems}
+        batchCreateSelectedRowKeys={batchCreateSelectedRowKeys}
+        batchCreateAutoAddCount={batchCreateAutoAddCount}
+        teacherOptions={teacherOptions}
+        allBatchCreateRowsSelected={allBatchCreateRowsSelected}
         onOpenChange={(open) => {
           if (open) {
             setIsBatchCreateOpen(true);
@@ -1141,424 +921,99 @@ export default function Index({ classrooms, teachers, query }: Props) {
 
           closeBatchCreateDialog();
         }}
-      >
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Batch Create Classrooms</DialogTitle>
-            <DialogDescription>
-              Add multiple classrooms at once. Select a number to auto-add rows quickly.
-            </DialogDescription>
-          </DialogHeader>
-          <form className="space-y-4" onSubmit={submitBatchCreate}>
-            <div className="rounded-2xl border border-border/70 bg-background/60 p-4 shadow-sm">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{batchCreateItems.length} rows</Badge>
-                  <Badge variant="outline">Quick add: {batchCreateAutoAddCount}</Badge>
-                  <Badge variant="outline">Selected: {batchCreateSelectedRowKeys.length}</Badge>
-                </div>
+        onSubmit={submitBatchCreate}
+        onAutoAddCountChange={setBatchCreateAutoAddCount}
+        onAddRows={addBatchCreateRows}
+        onDeleteSelectedRows={deleteSelectedBatchCreateRows}
+        onToggleSelectAll={toggleBatchCreateSelectAll}
+        onToggleRowSelection={toggleBatchCreateRowSelection}
+        onUpdateRow={updateBatchCreateRow}
+        onCancel={() => closeBatchCreateDialog()}
+      />
 
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={batchCreateAutoAddCount}
-                    onValueChange={(value) => {
-                      setBatchCreateAutoAddCount(value);
-                      const count = Number(value);
-                      if (Number.isFinite(count) && count > 0) {
-                        addBatchCreateRows(count);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="h-9 w-28">
-                      <SelectValue placeholder="Rows" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">+1</SelectItem>
-                      <SelectItem value="5">+5</SelectItem>
-                      <SelectItem value="10">+10</SelectItem>
-                      <SelectItem value="20">+20</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => addBatchCreateRows(Number(batchCreateAutoAddCount))}>
-                    <Plus className="size-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    disabled={batchCreateSelectedRowKeys.length === 0}
-                    onClick={deleteSelectedBatchCreateRows}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="mt-3 flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Fill names and optionally assign a teacher.</p>
-                <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    className="size-4 cursor-pointer rounded border border-input align-middle accent-primary"
-                    checked={allBatchCreateRowsSelected}
-                    onChange={(event) => toggleBatchCreateSelectAll(event.target.checked)}
-                  />
-                  Select all
-                </label>
-              </div>
-
-              <div className="mt-4 space-y-3 max-h-[56vh] overflow-y-auto pr-2">
-                {batchCreateItems.map((item, index) => (
-                  <div
-                    key={item.key}
-                    className={cn(
-                      'grid gap-3 items-center rounded-lg border p-3 transition-colors',
-                      batchCreateSelectedRowKeys.includes(item.key)
-                        ? 'border-rose-300/70 bg-rose-50/50 dark:border-rose-900/70 dark:bg-rose-950/20'
-                        : 'border-border/70 bg-background/90',
-                    )}
-                    style={{ gridTemplateColumns: '40px 1fr 240px 56px' }}
-                  >
-                    <div className="flex items-center justify-center">
-                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-xs font-semibold">{index + 1}</span>
-                    </div>
-
-                    <div>
-                      <Label className="text-xs">Class Name</Label>
-                      <Input
-                        id={`batch-create-name-${item.key}`}
-                        value={item.name}
-                        onChange={(event) => updateBatchCreateRow(item.key, { name: event.target.value })}
-                        placeholder="e.g. Grade 11A"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-xs">Teacher (optional)</Label>
-                      <SearchableSelect
-                        value={item.teacher_in_charge_id}
-                        options={teacherOptions}
-                        placeholder="Select teacher"
-                        searchPlaceholder="Search teacher..."
-                        clearLabel="No teacher assigned"
-                        onChange={(value) => updateBatchCreateRow(item.key, { teacher_in_charge_id: value })}
-                      />
-                    </div>
-
-                    <div className="flex items-start justify-center">
-                      <input
-                        type="checkbox"
-                        className="size-4 mt-3 cursor-pointer rounded border border-input align-middle accent-primary"
-                        checked={batchCreateSelectedRowKeys.includes(item.key)}
-                        onChange={(event) => toggleBatchCreateRowSelection(item.key, event.target.checked)}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="sticky bottom-0 z-30 mt-2 flex justify-end gap-2 bg-gradient-to-t from-background/80 to-transparent p-3">
-              <Button type="button" variant="outline" onClick={() => closeBatchCreateDialog()}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                <FilePlus2 className="size-4" />
-                Create {batchCreateItems.length}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
+      <ClassroomBatchEditTeacherActionDialog
         open={isBatchEditOpen}
+        selectedCount={selectedIds.length}
+        batchTeacherId={batchTeacherId}
+        teacherOptions={teacherOptions}
+        isSubmitting={isSubmitting}
         onOpenChange={(open) => {
           setIsBatchEditOpen(open);
           if (!open) {
             setBatchTeacherId('');
           }
         }}
-      >
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Batch Edit Teacher</DialogTitle>
-            <DialogDescription>
-              Update teacher for selected classrooms only.
-            </DialogDescription>
-          </DialogHeader>
-          <form className="space-y-4" onSubmit={submitBatchEditTeacher}>
-            <div className="space-y-4 rounded-xl border border-border/70 bg-muted/20 p-4">
-              <Badge variant="secondary">{selectedIds.length} selected</Badge>
-              <div className="space-y-2">
-                <Label>Teacher In Charge</Label>
-                <SearchableSelect
-                  value={batchTeacherId}
-                  options={teacherOptions}
-                  placeholder="Select teacher or clear assignment"
-                  searchPlaceholder="Search teacher name or email..."
-                  clearLabel="Set teacher to none"
-                  onChange={setBatchTeacherId}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-1">
-              <Button type="button" variant="outline" onClick={() => setIsBatchEditOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting || selectedIds.length === 0}>
-                <Pencil className="size-4" />
-                Apply
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+        onBatchTeacherIdChange={setBatchTeacherId}
+        onSubmit={submitBatchEditTeacher}
+        onCancel={() => setIsBatchEditOpen(false)}
+      />
 
-      <Dialog
+      <ClassroomBatchDeleteActionDialog
         open={isBatchDeleteOpen}
+        selectedCount={selectedIds.length}
+        batchDeleteLimit={batchDeleteLimit}
+        batchDeleteLimitOptions={batchDeleteLimitOptions}
+        batchDeleteClassrooms={batchDeleteClassrooms}
+        batchDeleteIdsCount={batchDeleteIds.length}
+        isSubmitting={isSubmitting}
         onOpenChange={setIsBatchDeleteOpen}
-      >
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Batch Delete Classrooms</DialogTitle>
-            <DialogDescription>
-              {selectedIds.length} row(s) selected. Choose how many rows to delete now.
-            </DialogDescription>
-          </DialogHeader>
+        onBatchDeleteLimitChange={setBatchDeleteLimit}
+        onConfirmDelete={submitBatchDelete}
+        onCancel={() => setIsBatchDeleteOpen(false)}
+      />
 
-          <div className="space-y-4">
-            <div className="grid gap-3 rounded-xl border border-border/70 bg-muted/20 p-4 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-center">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{selectedIds.length} row(s) selected</Badge>
-                <Badge variant="outline">{batchDeleteIds.length} row(s) pending delete</Badge>
-              </div>
-              <Select
-                value={batchDeleteLimit}
-                onValueChange={setBatchDeleteLimit}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Delete amount" />
-                </SelectTrigger>
-                <SelectContent>
-                  {batchDeleteLimitOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="max-h-[42vh] space-y-2 overflow-y-auto rounded-xl border border-border/70 bg-background p-3">
-              {batchDeleteClassrooms.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No rows available to delete.</p>
-              ) : (
-                batchDeleteClassrooms.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm"
-                  >
-                    <span className="font-medium text-foreground">{item.name}</span>
-                    <span className="text-xs text-muted-foreground">#{item.id}</span>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsBatchDeleteOpen(false)}>
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                disabled={isSubmitting || batchDeleteIds.length === 0}
-                onClick={submitBatchDelete}
-              >
-                <Trash2 className="size-4" />
-                Delete {batchDeleteIds.length}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
+      <ClassroomBatchPreviewActionDialog
         open={isBatchShowOpen}
+        selectedClassrooms={selectedClassrooms}
         onOpenChange={setIsBatchShowOpen}
-      >
-        <DialogContent className="sm:max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Batch Preview</DialogTitle>
-            <DialogDescription>
-              Showing {selectedClassrooms.length} selected classroom(s).
-            </DialogDescription>
-          </DialogHeader>
+      />
 
-          {selectedClassrooms.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No selected classrooms to preview.</p>
-          ) : (
-            <div className="grid max-h-[60vh] gap-3 overflow-y-auto sm:grid-cols-2 xl:grid-cols-3">
-              {selectedClassrooms.map((item) => (
-                <div
-                  key={item.id}
-                  className="space-y-2 rounded-xl border border-border/70 bg-background p-3"
-                >
-                  <p className="text-xs font-semibold tracking-wide text-muted-foreground">#{item.id}</p>
-                  <p className="text-sm font-semibold text-foreground">{item.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Teacher: {item.teacher_name ?? '-'}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Created: {formatDate(item.created_at)}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
+      <ClassroomCreateActionDialog
         open={isCreateOpen}
+        isSubmitting={isSubmitting}
+        formState={formState}
+        teacherOptions={teacherOptions}
         onOpenChange={(open) => {
           setIsCreateOpen(open);
           if (!open) {
             resetForm();
           }
         }}
-      >
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Create Classroom</DialogTitle>
-            <DialogDescription>Add a classroom without leaving the list page.</DialogDescription>
-          </DialogHeader>
-          <form className="space-y-4" onSubmit={submitCreate}>
-            <div className="space-y-4 rounded-xl border border-border/70 bg-muted/20 p-4">
-              <div className="space-y-2">
-                <Label htmlFor="classroom-create-name">Class Name</Label>
-                <Input
-                  id="classroom-create-name"
-                  value={formState.name}
-                  onChange={(event) => setFormState((current) => ({ ...current, name: event.target.value }))}
-                  placeholder="e.g. Grade 10A"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Teacher In Charge</Label>
-                <SearchableSelect
-                  value={formState.teacher_in_charge_id}
-                  options={teacherOptions}
-                  placeholder="Select a teacher (optional)"
-                  searchPlaceholder="Search teacher name or email..."
-                  clearLabel="No teacher assigned"
-                  onChange={(value) => setFormState((current) => ({ ...current, teacher_in_charge_id: value }))}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-1">
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                <FilePlus2 className="size-4" />
-                Create
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+        onSubmit={submitCreate}
+        onNameChange={(value) => setFormState((current) => ({ ...current, name: value }))}
+        onTeacherChange={(value) => setFormState((current) => ({ ...current, teacher_in_charge_id: value }))}
+        onCancel={() => setIsCreateOpen(false)}
+      />
 
-      <Dialog
+      <ClassroomSearchResultActionDialog
         open={isSearchAlertOpen}
+        searchAlert={searchAlert}
         onOpenChange={setIsSearchAlertOpen}
-      >
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Search Result</DialogTitle>
-            <DialogDescription>
-              Results for "{searchAlert.term}"
-            </DialogDescription>
-          </DialogHeader>
+        onSelectMatch={(label) => {
+          skipNextAutoSearch.current = true;
+          setSearchValue(label);
+          applySearch(label, 1, undefined, sortBy, sortDir);
+          setIsSearchAlertOpen(false);
+        }}
+      />
 
-          <Alert>
-            <Info className="size-4" />
-            <AlertTitle>Matched rows on current page: {searchAlert.count}</AlertTitle>
-            <AlertDescription>
-              {searchAlert.matches.length > 0
-                ? 'Top matching suggestions are listed below.'
-                : 'No suggestion matched. Try another keyword.'}
-            </AlertDescription>
-          </Alert>
-
-          {searchAlert.matches.length > 0 && (
-            <div className="space-y-2">
-              {searchAlert.matches.map((item) => (
-                <button
-                  key={String(item.id)}
-                  type="button"
-                  className="w-full rounded-md border border-border px-3 py-2 text-left text-sm hover:bg-accent"
-                  onClick={() => {
-                    skipNextAutoSearch.current = true;
-                    setSearchValue(item.label);
-                    applySearch(item.label, 1);
-                    setIsSearchAlertOpen(false);
-                  }}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
+      <ClassroomViewActionDialog
         open={isViewOpen}
+        classroom={selectedClassroom}
         onOpenChange={(open) => {
           setIsViewOpen(open);
           if (!open) {
             setSelectedClassroom(null);
           }
         }}
-      >
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Classroom Details</DialogTitle>
-            <DialogDescription>Quick view directly from the index page.</DialogDescription>
-          </DialogHeader>
-          {selectedClassroom && (
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3">
-                <p className="text-xs text-muted-foreground">ID</p>
-                <p className="font-medium">{selectedClassroom.id}</p>
-              </div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3">
-                <p className="text-xs text-muted-foreground">Class Name</p>
-                <p className="font-medium">{selectedClassroom.name}</p>
-              </div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3">
-                <p className="text-xs text-muted-foreground">Teacher</p>
-                <p className="font-medium">{selectedClassroom.teacher_name ?? '-'}</p>
-              </div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3">
-                <p className="text-xs text-muted-foreground">Created At</p>
-                <p className="font-medium">{formatDate(selectedClassroom.created_at)}</p>
-              </div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3 sm:col-span-2">
-                <p className="text-xs text-muted-foreground">Updated At</p>
-                <p className="font-medium">{formatDate(selectedClassroom.updated_at)}</p>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      />
 
-      <Dialog
+      <ClassroomEditActionDialog
         open={isEditOpen}
+        isSubmitting={isSubmitting}
+        canSubmit={Boolean(selectedClassroom)}
+        formState={formState}
+        teacherOptions={teacherOptions}
         onOpenChange={(open) => {
           setIsEditOpen(open);
           if (!open) {
@@ -1566,48 +1021,11 @@ export default function Index({ classrooms, teachers, query }: Props) {
             resetForm();
           }
         }}
-      >
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Edit Classroom</DialogTitle>
-            <DialogDescription>Update classroom details inline from index.</DialogDescription>
-          </DialogHeader>
-          <form className="space-y-4" onSubmit={submitEdit}>
-            <div className="space-y-4 rounded-xl border border-border/70 bg-muted/20 p-4">
-              <div className="space-y-2">
-                <Label htmlFor="classroom-edit-name">Class Name</Label>
-                <Input
-                  id="classroom-edit-name"
-                  value={formState.name}
-                  onChange={(event) => setFormState((current) => ({ ...current, name: event.target.value }))}
-                  placeholder="e.g. Grade 10A"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Teacher In Charge</Label>
-                <SearchableSelect
-                  value={formState.teacher_in_charge_id}
-                  options={teacherOptions}
-                  placeholder="Select a teacher (optional)"
-                  searchPlaceholder="Search teacher name or email..."
-                  clearLabel="No teacher assigned"
-                  onChange={(value) => setFormState((current) => ({ ...current, teacher_in_charge_id: value }))}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-1">
-              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting || !selectedClassroom}>
-                <Pencil className="size-4" />
-                Save Changes
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+        onSubmit={submitEdit}
+        onNameChange={(value) => setFormState((current) => ({ ...current, name: value }))}
+        onTeacherChange={(value) => setFormState((current) => ({ ...current, teacher_in_charge_id: value }))}
+        onCancel={() => setIsEditOpen(false)}
+      />
     </AppLayout>
   );
 }

@@ -33,9 +33,9 @@ export default function LiveSearchInput({
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   const visibleSuggestions = useMemo(() => {
-    const normalized = value.trim();
+    const normalized = value.trim().toLowerCase();
     const base = normalized.length > 0
-      ? suggestions.filter((item) => item.label.includes(normalized))
+      ? suggestions.filter((item) => item.label.toLowerCase().includes(normalized))
       : suggestions;
 
     return base.slice(0, 8);

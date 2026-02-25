@@ -41,15 +41,31 @@ class ClassroomRepo implements ClassroomRepoInterf
                     }
 
                     $query->where(function (Builder $inner) use ($term): void {
-                        $this->applyCaseSensitiveContains($inner, 'name', $term);
+                        $this->applyCaseInsensitiveContains($inner, 'name', $term);
                         $inner
                             ->orWhereHas('teacherInCharge', function (Builder $teacher) use ($term): void {
-                                $this->applyCaseSensitiveContains($teacher, 'name', $term);
+                                $this->applyCaseInsensitiveContains($teacher, 'name', $term);
                             });
                     });
                 }),
                 AllowedFilter::partial('name'),
-                AllowedFilter::exact('teacher_in_charge_id'),
+                AllowedFilter::callback('teacher_in_charge_id', function (Builder $query, $value): void {
+                    $raw = trim((string) $value);
+                    if ($raw === '') {
+                        return;
+                    }
+
+                    $normalized = Str::lower($raw);
+                    if (in_array($normalized, ['none', 'null', 'unassigned'], true)) {
+                        $query->whereNull('teacher_in_charge_id');
+
+                        return;
+                    }
+
+                    if (ctype_digit($raw)) {
+                        $query->where('teacher_in_charge_id', (int) $raw);
+                    }
+                }),
             ])
             ->allowedSorts(['id', 'name', 'created_at'])
             ->defaultSort('id')
@@ -69,7 +85,7 @@ class ClassroomRepo implements ClassroomRepoInterf
             ->select(['id', 'name'])
             ->orderBy('name');
 
-        $this->applyCaseSensitiveContains($builder, 'name', $search);
+        $this->applyCaseInsensitiveContains($builder, 'name', $search);
 
         return $builder
             ->limit($safeLimit)
@@ -118,27 +134,30 @@ class ClassroomRepo implements ClassroomRepoInterf
         $classroom->forceDelete();
     }
 
-    private function applyCaseSensitiveContains(Builder $query, string $column, string $term): void
+    private function applyCaseInsensitiveContains(Builder $query, string $column, string $term): void
     {
         $driver = $query->getConnection()->getDriverName();
         $wrappedColumn = $query->getQuery()->getGrammar()->wrap($column);
+        $normalized = Str::lower($term);
 
         if (in_array($driver, ['mysql', 'mariadb'], true)) {
-            $query->whereRaw('BINARY '.$wrappedColumn.' LIKE ?', ['%'.$term.'%']);
+            $query->whereRaw('LOWER('.$wrappedColumn.') LIKE ?', ['%'.$normalized.'%']);
 
             return;
         }
 
         if ($driver === 'sqlite') {
-            $escaped = Str::of($term)
-                ->replace(['[', ']', '*', '?'], ['[[]', '[]]', '[*]', '[?]'])
-                ->value();
-
-            $query->whereRaw($wrappedColumn.' GLOB ?', ['*'.$escaped.'*']);
+            $query->whereRaw('LOWER('.$wrappedColumn.') LIKE ?', ['%'.$normalized.'%']);
 
             return;
         }
 
-        $query->where($column, 'like', '%'.$term.'%');
+        if ($driver === 'pgsql') {
+            $query->where($column, 'ilike', '%'.$term.'%');
+
+            return;
+        }
+
+        $query->whereRaw('LOWER('.$wrappedColumn.') LIKE ?', ['%'.$normalized.'%']);
     }
 }

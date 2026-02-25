@@ -34,6 +34,10 @@ class ClassroomController extends Controller
         if ($searchQuery !== '') {
             $params['filter']['q'] = $searchQuery;
         }
+        $teacherFilter = trim((string) $request->query('teacher_in_charge_id', ''));
+        if ($teacherFilter !== '') {
+            $params['filter']['teacher_in_charge_id'] = $teacherFilter;
+        }
 
         $sortBy = (string) $request->query('sort_by', '');
         $sortDir = strtolower((string) $request->query('sort_dir', 'asc'));
@@ -206,6 +210,10 @@ class ClassroomController extends Controller
         $searchQuery = trim((string) $request->query('q', ''));
         if ($searchQuery !== '') {
             $params['filter']['q'] = $searchQuery;
+        }
+        $teacherFilter = trim((string) $request->query('teacher_in_charge_id', ''));
+        if ($teacherFilter !== '') {
+            $params['filter']['teacher_in_charge_id'] = $teacherFilter;
         }
 
         $data = $this->service->list($params);
