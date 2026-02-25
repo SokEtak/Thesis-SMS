@@ -1,54 +1,72 @@
-import { useState } from 'react';
+import SearchableSelect from '@/components/SearchableSelect';
 import { Button } from '@/components/ui/button';
-import TextInput from '@/components/Form/TextInput';
-import { Classroom } from '@/types/models';
-import { route } from '@/lib/route';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Classroom, TeacherOption } from '@/types/models';
+import { useMemo, useState } from 'react';
 
 interface Props {
   classroom?: Classroom;
+  teachers: TeacherOption[];
   onSubmit: (data: Partial<Classroom>) => void;
 }
 
-export default function ClassroomForm({ classroom, onSubmit }: Props) {
+export default function ClassroomForm({ classroom, teachers, onSubmit }: Props) {
   const [formData, setFormData] = useState({
     name: classroom?.name || '',
-    level: classroom?.level || '',
-    section: classroom?.section || '',
+    teacher_in_charge_id: classroom?.teacher_in_charge_id || '',
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  const teacherOptions = useMemo(
+    () => teachers.map((teacher) => ({
+      value: String(teacher.id),
+      label: teacher.name,
+      description: teacher.email ?? undefined,
+    })),
+    [teachers],
+  );
+
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((current) => ({ ...current, name: event.target.value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    const teacherIdValue = String(formData.teacher_in_charge_id).trim();
+    const parsedTeacherId = Number(teacherIdValue);
+
+    onSubmit({
+      name: formData.name,
+      teacher_in_charge_id: teacherIdValue === '' || !Number.isFinite(parsedTeacherId)
+        ? null
+        : parsedTeacherId,
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
-      <TextInput
-        label="Name"
-        name="name"
-        value={formData.name}
-        onChange={handleChange}
-        required
-      />
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-xl border border-border bg-card p-6 shadow-sm">
+      <div className="space-y-2">
+        <Label htmlFor="classroom-form-name">Class Name</Label>
+        <Input
+          id="classroom-form-name"
+          value={formData.name}
+          onChange={handleNameChange}
+          placeholder="e.g. Grade 10A"
+          required
+        />
+      </div>
 
-      <TextInput
-        label="Level"
-        name="level"
-        value={formData.level}
-        onChange={handleChange}
-      />
-
-      <TextInput
-        label="Section"
-        name="section"
-        value={formData.section}
-        onChange={handleChange}
-      />
+      <div className="space-y-2">
+        <Label>Teacher In Charge</Label>
+        <SearchableSelect
+          value={String(formData.teacher_in_charge_id)}
+          options={teacherOptions}
+          placeholder="Select a teacher (optional)"
+          searchPlaceholder="Search teacher name or email..."
+          clearLabel="No teacher assigned"
+          onChange={(value) => setFormData((current) => ({ ...current, teacher_in_charge_id: value }))}
+        />
+      </div>
 
       <div className="flex gap-2">
         <Button type="submit">Save</Button>

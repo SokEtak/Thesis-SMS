@@ -2,9 +2,14 @@ import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import ClassroomForm from './_ClassroomForm';
 import { route } from '@/lib/route';
+import { Classroom, TeacherOption } from '@/types/models';
 
-export default function Create() {
-  const handleSubmit = (data: any) => {
+interface Props {
+  teachers: TeacherOption[];
+}
+
+export default function Create({ teachers }: Props) {
+  const handleSubmit = (data: Partial<Classroom>) => {
     router.post(route('classrooms.store'), data);
   };
 
@@ -18,7 +23,7 @@ export default function Create() {
           <p className="text-gray-600 mt-2">Add a new classroom to the system</p>
         </div>
 
-        <ClassroomForm onSubmit={handleSubmit} />
+        <ClassroomForm teachers={teachers} onSubmit={handleSubmit} />
       </div>
     </AppLayout>
   );

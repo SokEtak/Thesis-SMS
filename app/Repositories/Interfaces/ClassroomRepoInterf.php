@@ -9,6 +9,8 @@ interface ClassroomRepoInterf
 {
     public function paginate(array $params = []): LengthAwarePaginator;
 
+    public function suggestions(string $query, int $limit = 8): array;
+
     public function findById(int $id): ?Classroom;
 
     public function create(array $data): Classroom;

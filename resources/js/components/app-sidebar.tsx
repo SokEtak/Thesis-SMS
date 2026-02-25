@@ -10,17 +10,39 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { route } from '@/lib/route';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, School, Trash2, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
-const mainNavItems: NavItem[] = [
+const coreNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+];
+
+const managementNavItems: NavItem[] = [
+    {
+        title: 'Users',
+        href: route('users.index'),
+        icon: Users,
+    },
+];
+
+const academicNavItems: NavItem[] = [
+    {
+        title: 'Classrooms',
+        href: route('classrooms.index'),
+        icon: School,
+    },
+    {
+        title: 'Trashed Classes',
+        href: route('classrooms.trashed'),
+        icon: Trash2,
     },
 ];
 
@@ -40,7 +62,7 @@ const footerNavItems: NavItem[] = [
 export function AppSidebar() {
     return (
         <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader>
+            <SidebarHeader className="border-b border-sidebar-border/70">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
@@ -52,8 +74,10 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent>
-                <NavMain items={mainNavItems} />
+            <SidebarContent className="gap-1">
+                <NavMain label="Core" items={coreNavItems} />
+                <NavMain label="Management" items={managementNavItems} />
+                <NavMain label="Academic" items={academicNavItems} />
             </SidebarContent>
 
             <SidebarFooter>

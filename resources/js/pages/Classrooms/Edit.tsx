@@ -1,15 +1,16 @@
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import ClassroomForm from './_ClassroomForm';
-import { Classroom } from '@/types/models';
+import { Classroom, TeacherOption } from '@/types/models';
 import { route } from '@/lib/route';
 
 interface Props {
   classroom: Classroom;
+  teachers: TeacherOption[];
 }
 
-export default function Edit({ classroom }: Props) {
-  const handleSubmit = (data: any) => {
+export default function Edit({ classroom, teachers }: Props) {
+  const handleSubmit = (data: Partial<Classroom>) => {
     router.put(route('classrooms.update', classroom.id), data);
   };
 
@@ -23,7 +24,7 @@ export default function Edit({ classroom }: Props) {
           <p className="text-gray-600 mt-2">Update classroom information</p>
         </div>
 
-        <ClassroomForm classroom={classroom} onSubmit={handleSubmit} />
+        <ClassroomForm classroom={classroom} teachers={teachers} onSubmit={handleSubmit} />
       </div>
     </AppLayout>
   );

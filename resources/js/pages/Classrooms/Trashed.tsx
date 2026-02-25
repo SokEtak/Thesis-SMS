@@ -8,7 +8,7 @@ import { route } from '@/lib/route';
 
 interface Props {
   classrooms: PaginatedData<Classroom>;
-  query: Record<string, any>;
+  query: Record<string, unknown>;
 }
 
 export default function Trashed({ classrooms, query }: Props) {
@@ -44,11 +44,12 @@ export default function Trashed({ classrooms, query }: Props) {
         </div>
 
         <DataTable
+          tableId="classrooms-trashed"
           columns={columns}
           data={classrooms.data}
           actions={[
-            { label: 'Restore', onClick: (item: any) => handleRestore(item.id), variant: 'success' },
-            { label: 'Delete', onClick: (item: any) => handleForceDelete(item.id), variant: 'danger' },
+            { label: 'Restore', onClick: (item: Classroom) => handleRestore(item.id), variant: 'success' },
+            { label: 'Delete', onClick: (item: Classroom) => handleForceDelete(item.id), variant: 'danger' },
           ]}
           pagination={classrooms.meta}
           onPageChange={(page) => router.get(route('classrooms.trashed', { page, ...query }))}

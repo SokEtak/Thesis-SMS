@@ -21,6 +21,11 @@ class ClassroomService
         return $this->repo->paginate($params);
     }
 
+    public function suggestions(string $query, int $limit = 8): array
+    {
+        return $this->repo->suggestions($query, $limit);
+    }
+
     /** Optional: enrich show (eager load relations). */
     public function show(Classroom $classroom): Classroom
     {

@@ -7,14 +7,22 @@ export interface User {
   deleted_at?: string;
 }
 
+export interface TeacherOption {
+  id: number;
+  name: string;
+  email?: string | null;
+}
+
 export interface Classroom {
   id: number;
   name: string;
-  level: string;
-  section: string;
+  teacher_in_charge_id?: number | null;
+  teacher_name?: string | null;
+  level?: string;
+  section?: string;
   created_at: string;
   updated_at: string;
-  deleted_at?: string;
+  deleted_at?: string | null;
 }
 
 export interface Subject {
