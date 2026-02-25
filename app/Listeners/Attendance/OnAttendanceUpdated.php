@@ -2,7 +2,7 @@
 
 namespace App\Listeners\Attendance;
 
-use App\Events\Attendace\AttendanceCreated;
+use App\Events\Attendace\AttendanceUpdated;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
@@ -21,7 +21,7 @@ class OnAttendanceUpdated implements ShouldQueue
     /**
      * Handle the event.
      */
-    public function handle(AttendanceCreated $event): void
+    public function handle(AttendanceUpdated $event): void
     {
         //
     }

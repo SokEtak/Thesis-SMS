@@ -13,6 +13,19 @@ configureEcho({
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+// Ensure Laravel sets the XSRF cookie for subsequent SPA POST requests
+async function ensureCsrfCookie() {
+    try {
+        await fetch('/sanctum/csrf-cookie', {
+            credentials: 'same-origin',
+        });
+    } catch (e) {
+        // ignore network errors; server may not require it in some setups
+    }
+}
+
+ensureCsrfCookie();
+
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     resolve: (name) =>

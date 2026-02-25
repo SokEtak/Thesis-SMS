@@ -30,10 +30,9 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        $middleware->api(append: [
-            EnsureFrontendRequestsAreStateful::class,
-        ]);
-    })
+
+    $middleware->statefulApi(); // This enables session support Sanctum
+})
 
     ->withExceptions(function (Exceptions $exceptions): void {
         //

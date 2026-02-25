@@ -1,11 +1,14 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 Route::prefix('v1/auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
-    Route::post('login-spa', [AuthController::class, 'loginSpa']);         // cookie session (SPA)
+    Route::post('login-spa', [AuthController::class, 'loginSpa'])
+        ->middleware([StartSession::class, EnsureFrontendRequestsAreStateful::class]);  // cookie session (SPA)
     Route::post('login-mobile', [AuthController::class, 'loginMobile']);   // PAT (mobile)
 
     Route::middleware(['auth:sanctum'])->group(function () {

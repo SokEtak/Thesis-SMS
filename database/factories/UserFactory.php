@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\ClassRoom;
+use App\Models\Classroom;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -55,8 +56,15 @@ class UserFactory extends Factory
             'dob' => fake()->date(),
             'telegram_chat_id' => fake()->numberBetween(100000, 999999),
             'avatar' => fake()->imageUrl(300, 300, 'people'),
-            'class_id' => ClassRoom::inRandomOrder()->value('id'),
-            'parent_id' => User::role('Guardian')->inRandomOrder()->value('id'),
+            'class_id' => Classroom::inRandomOrder()->value('id'),
+            'parent_id' => Role::query()
+                ->where('name', 'Guardian')
+                ->exists()
+                ? User::query()
+                    ->whereHas('roles', fn ($query) => $query->where('name', 'Guardian'))
+                    ->inRandomOrder()
+                    ->value('id')
+                : null,
             'remember_token' => Str::random(10),
             'two_factor_secret' => Str::random(10),
             'two_factor_recovery_codes' => Str::random(10),

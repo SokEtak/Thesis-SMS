@@ -100,7 +100,7 @@ class User extends Authenticatable
     // Relationships
     public function class(): BelongsTo
     {
-        return $this->belongsTo(ClassRoom::class, 'class_id');
+        return $this->belongsTo(Classroom::class, 'class_id');
     }
 
     public function parent(): BelongsTo

@@ -2,6 +2,7 @@
 
 namespace App\Events\Attendace;
 
+use App\Models\Attendance;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -11,12 +12,14 @@ class AttendanceUpdated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public Attendance $attendance;
+
     /**
      * Create a new event instance.
      */
-    public function __construct()
+    public function __construct(Attendance $attendance)
     {
-        //
+        $this->attendance = $attendance;
     }
 
     /**

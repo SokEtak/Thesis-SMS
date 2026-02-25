@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use App\Models\Classes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -26,7 +25,7 @@ it('can soft delete a class', function () {
 
     $class->delete();
 
-    $this->assertSoftDeleted('classrooms', [
+    $this->assertSoftDeleted('classes', [
         'id' => $class->id,
     ]);
 });

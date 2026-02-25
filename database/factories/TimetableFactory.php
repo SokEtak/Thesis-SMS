@@ -23,9 +23,9 @@ class TimetableFactory extends Factory
             'day_of_week' => $this->faker->randomElement(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']),
             'start_time' => $this->faker->time('H:i'),
             'end_time' => $this->faker->time('H:i'),
-            'subject_id' => Subject::factory(),
-            'class_id' => Classroom::factory(),
-            'teacher_id' => User::factory(),
+            'subject_id' => Subject::inRandomOrder()->first()->id,
+            'class_id' => Classroom::inRandomOrder()->first()->id,
+            'teacher_id' => User::inRandomOrder()->first()->id,
         ];
 
     }
