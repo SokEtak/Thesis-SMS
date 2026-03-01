@@ -14,6 +14,7 @@ use App\Repositories\Eloquent\ExamResultRepo;
 use App\Repositories\Eloquent\HomeworkRepo;
 use App\Repositories\Eloquent\HomeworkSubmissionRepo;
 use App\Repositories\Eloquent\LeaveRequestRepo;
+use App\Repositories\Eloquent\MessageRepo;
 use App\Repositories\Eloquent\SubjectRepo;
 use App\Repositories\Eloquent\TimetableRepo;
 use App\Repositories\Eloquent\UserRepo;
@@ -23,6 +24,7 @@ use App\Repositories\Interfaces\ExamResultRepoInterf;
 use App\Repositories\Interfaces\HomeworkRepoInterf;
 use App\Repositories\Interfaces\HomeworkSubmissionRepoInterf;
 use App\Repositories\Interfaces\LeaveRequestRepoInterf;
+use App\Repositories\Interfaces\MessageRepoInterf;
 use App\Repositories\Interfaces\SubjectRepoInterf;
 use App\Repositories\Interfaces\TimetableRepoInterf;
 use App\Repositories\Interfaces\UserRepoInterf;
@@ -43,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
             ExamResultRepoInterf::class => ExamResultRepo::class,
             AttendanceRepoInterf::class => AttendanceRepo::class,
             LeaveRequestRepoInterf::class => LeaveRequestRepo::class,
+            MessageRepoInterf::class => MessageRepo::class,
             HomeworkRepoInterf::class => HomeworkRepo::class,
             HomeworkSubmissionRepoInterf::class => HomeworkSubmissionRepo::class,
             ExamResultRepoInterf::class => ExamResultRepo::class,

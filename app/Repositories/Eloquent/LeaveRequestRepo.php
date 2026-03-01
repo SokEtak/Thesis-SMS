@@ -5,6 +5,8 @@ namespace App\Repositories\Eloquent;
 use App\Models\LeaveRequest;
 use App\Repositories\Interfaces\LeaveRequestRepoInterf;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -15,7 +17,10 @@ class LeaveRequestRepo implements LeaveRequestRepoInterf
         $perPage = (int) ($params['per_page'] ?? 15);
         $perPage = max(1, min($perPage, 100));
 
-        $query = LeaveRequest::query();
+        $query = LeaveRequest::query()->with([
+            'student:id,name',
+            'approver:id,name',
+        ]);
 
         $trashed = $params['trashed'] ?? 'none';
         switch ($trashed) {
@@ -32,14 +37,38 @@ class LeaveRequestRepo implements LeaveRequestRepoInterf
 
         return QueryBuilder::for($query)
             ->allowedFilters([
+                AllowedFilter::callback('q', function (Builder $query, mixed $value): void {
+                    $term = trim((string) $value);
+                    if ($term === '') {
+                        return;
+                    }
+
+                    $query->where(function (Builder $builder) use ($term): void {
+                        $this->applyCaseInsensitiveContains($builder, 'reason', $term);
+                        $builder->orWhere(function (Builder $statusQuery) use ($term): void {
+                            $this->applyCaseInsensitiveContains($statusQuery, 'status', $term);
+                        });
+                        $builder->orWhere(function (Builder $startDateQuery) use ($term): void {
+                            $this->applyCaseInsensitiveContains($startDateQuery, 'start_date', $term);
+                        });
+                        $builder->orWhere(function (Builder $endDateQuery) use ($term): void {
+                            $this->applyCaseInsensitiveContains($endDateQuery, 'end_date', $term);
+                        });
+                        $builder->orWhereHas('student', function (Builder $studentQuery) use ($term): void {
+                            $this->applyCaseInsensitiveContains($studentQuery, 'name', $term);
+                        });
+                        $builder->orWhereHas('approver', function (Builder $approverQuery) use ($term): void {
+                            $this->applyCaseInsensitiveContains($approverQuery, 'name', $term);
+                        });
+                    });
+                }),
                 AllowedFilter::exact('student_id'),
-                AllowedFilter::exact('student.name'),
-                AllowedFilter::partial('request_date'),
+                AllowedFilter::exact('start_date'),
+                AllowedFilter::exact('end_date'),
                 AllowedFilter::exact('status'),
                 AllowedFilter::exact('approved_by'),
-                AllowedFilter::exact('approved_by.name'),
             ])
-            ->allowedSorts(['id', 'request_date', 'status', 'created_at'])
+            ->allowedSorts(['id', 'start_date', 'end_date', 'status', 'approved_at', 'created_at'])
             ->defaultSort('id')
             ->paginate($perPage);
     }
@@ -118,5 +147,26 @@ class LeaveRequestRepo implements LeaveRequestRepoInterf
     {
         $model = LeaveRequest::onlyTrashed()->findOrFail($id);
         $model->forceDelete();
+    }
+
+    private function applyCaseInsensitiveContains(Builder $query, string $column, string $term): void
+    {
+        $driver = $query->getConnection()->getDriverName();
+        $wrappedColumn = $query->getQuery()->getGrammar()->wrap($column);
+        $normalized = Str::lower($term);
+
+        if (in_array($driver, ['mysql', 'mariadb', 'sqlite'], true)) {
+            $query->whereRaw('LOWER('.$wrappedColumn.') LIKE ?', ['%'.$normalized.'%']);
+
+            return;
+        }
+
+        if ($driver === 'pgsql') {
+            $query->where($column, 'ilike', '%'.$term.'%');
+
+            return;
+        }
+
+        $query->whereRaw('LOWER('.$wrappedColumn.') LIKE ?', ['%'.$normalized.'%']);
     }
 }

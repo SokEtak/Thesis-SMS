@@ -2,6 +2,7 @@ import { type SearchSuggestion } from '@/components/LiveSearchInput';
 import { type SearchableSelectOption } from '@/components/SearchableSelect';
 import ResourcePageLayout from '@/components/ResourcePageLayout';
 import AppLayout from '@/layouts/app-layout';
+import { requirePasswordConfirmation } from '@/lib/password-confirm';
 import { route } from '@/lib/route';
 import { type PaginatedData } from '@/types';
 import { type Classroom, type TeacherOption } from '@/types/models';
@@ -498,9 +499,14 @@ export default function Index({ classrooms, teachers, query }: Props) {
     });
   };
 
-  const handleDelete = (classroom: Classroom) => {
+  const handleDelete = async (classroom: Classroom) => {
     const confirmed = confirm(`Delete classroom "${classroom.name}"?`);
     if (!confirmed) {
+      return;
+    }
+
+    const passwordConfirmed = await requirePasswordConfirmation(`delete classroom "${classroom.name}"`);
+    if (!passwordConfirmed) {
       return;
     }
 
@@ -592,7 +598,7 @@ export default function Index({ classrooms, teachers, query }: Props) {
     )));
   };
 
-  const submitBatchCreate = (event: React.FormEvent<HTMLFormElement>) => {
+  const submitBatchCreate = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const payloadItems = batchCreateItems
       .map((item) => {
@@ -611,6 +617,11 @@ export default function Index({ classrooms, teachers, query }: Props) {
       return;
     }
 
+    const passwordConfirmed = await requirePasswordConfirmation('confirm batch create classrooms');
+    if (!passwordConfirmed) {
+      return;
+    }
+
     setIsSubmitting(true);
     executeBatchAction('classrooms.batchStore', { items: payloadItems }, {
       onSuccess: () => {
@@ -620,7 +631,7 @@ export default function Index({ classrooms, teachers, query }: Props) {
     });
   };
 
-  const submitBatchEditTeacher = (event: React.FormEvent<HTMLFormElement>) => {
+  const submitBatchEditTeacher = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (selectedIds.length === 0) {
       return;
@@ -629,6 +640,11 @@ export default function Index({ classrooms, teachers, query }: Props) {
     const teacherRaw = batchTeacherId.trim();
     const parsedTeacher = Number(teacherRaw);
     const teacherValue = teacherRaw === '' || !Number.isFinite(parsedTeacher) ? null : parsedTeacher;
+
+    const passwordConfirmed = await requirePasswordConfirmation('batch edit selected classrooms');
+    if (!passwordConfirmed) {
+      return;
+    }
 
     setIsSubmitting(true);
     executeBatchAction('classrooms.batchAssignTeacher', {
@@ -671,8 +687,13 @@ export default function Index({ classrooms, teachers, query }: Props) {
     setIsBatchDeleteOpen(true);
   };
 
-  const submitBatchDelete = () => {
+  const submitBatchDelete = async () => {
     if (batchDeleteIds.length === 0) {
+      return;
+    }
+
+    const passwordConfirmed = await requirePasswordConfirmation('batch delete selected classrooms');
+    if (!passwordConfirmed) {
       return;
     }
 
@@ -742,7 +763,7 @@ export default function Index({ classrooms, teachers, query }: Props) {
       label: 'Edit',
       icon: Pencil,
       iconOnly: true,
-      variant: 'secondary' as const,
+      variant: 'outline' as const,
       onClick: (row: Classroom) => openEditModal(row),
     },
     {
@@ -750,7 +771,7 @@ export default function Index({ classrooms, teachers, query }: Props) {
       label: 'Delete',
       icon: Trash2,
       iconOnly: true,
-      variant: 'danger' as const,
+      variant: 'outline' as const,
       onClick: (row: Classroom) => handleDelete(row),
     },
   ];
@@ -818,7 +839,12 @@ export default function Index({ classrooms, teachers, query }: Props) {
           <ClassroomPageActionToolbar
             importInputRef={importInputRef}
             onImportFileChange={handleImportFile}
-            onOpenBatchCreate={() => {
+            onOpenBatchCreate={async () => {
+              const passwordConfirmed = await requirePasswordConfirmation('open batch create classrooms form');
+              if (!passwordConfirmed) {
+                return;
+              }
+
               resetBatchCreateForm();
               setIsBatchCreateOpen(true);
             }}

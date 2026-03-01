@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import TextInput from '@/components/Form/TextInput';
 import { User } from '@/types/models';
-import { route } from '@/lib/route';
 
 interface Props {
   user?: User;

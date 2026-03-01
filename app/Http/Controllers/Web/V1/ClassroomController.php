@@ -215,6 +215,11 @@ class ClassroomController extends Controller
         if ($teacherFilter !== '') {
             $params['filter']['teacher_in_charge_id'] = $teacherFilter;
         }
+        $sortBy = (string) $request->query('sort_by', '');
+        $sortDir = strtolower((string) $request->query('sort_dir', 'asc'));
+        if ($sortBy !== '' && in_array($sortBy, ['id', 'name', 'created_at'], true)) {
+            $params['sort'] = $sortDir === 'desc' ? '-'.$sortBy : $sortBy;
+        }
 
         $data = $this->service->list($params);
         $data->appends($request->query());
@@ -222,6 +227,7 @@ class ClassroomController extends Controller
 
         return Inertia::render('Classrooms/Trashed', [
             'classrooms' => $data,
+            'teachers' => $this->teacherOptions(),
             'query' => $request->all(),
         ]);
     }
@@ -238,6 +244,37 @@ class ClassroomController extends Controller
             ->with('success', 'Classroom restored successfully.');
     }
 
+    /** POST /classrooms/batch-restore - Restore multiple classrooms */
+    public function batchRestore(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'distinct', 'exists:classes,id'],
+        ]);
+
+        $ids = $this->sanitizeBatchIds($validated['ids']);
+        $trashedClassrooms = Classroom::onlyTrashed()
+            ->whereIn('id', $ids)
+            ->get()
+            ->keyBy('id');
+
+        foreach ($trashedClassrooms as $classroom) {
+            $this->authorize('restore', $classroom);
+        }
+
+        DB::transaction(function () use ($ids, $trashedClassrooms): void {
+            foreach ($ids as $id) {
+                if (! $trashedClassrooms->has($id)) {
+                    continue;
+                }
+
+                $this->service->restore((int) $id);
+            }
+        });
+
+        return back()->with('success', count($ids).' classrooms restored successfully.');
+    }
+
     /** DELETE /classrooms/{id}/force - Force delete classroom */
     public function forceDelete($id)
     {
@@ -248,6 +285,37 @@ class ClassroomController extends Controller
 
         return redirect()->route('classrooms.trashed')
             ->with('success', 'Classroom permanently deleted.');
+    }
+
+    /** POST /classrooms/batch-force-delete - Permanently delete multiple classrooms */
+    public function batchForceDelete(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'distinct', 'exists:classes,id'],
+        ]);
+
+        $ids = $this->sanitizeBatchIds($validated['ids']);
+        $trashedClassrooms = Classroom::onlyTrashed()
+            ->whereIn('id', $ids)
+            ->get()
+            ->keyBy('id');
+
+        foreach ($trashedClassrooms as $classroom) {
+            $this->authorize('forceDelete', $classroom);
+        }
+
+        DB::transaction(function () use ($ids, $trashedClassrooms): void {
+            foreach ($ids as $id) {
+                if (! $trashedClassrooms->has($id)) {
+                    continue;
+                }
+
+                $this->service->forceDelete((int) $id);
+            }
+        });
+
+        return back()->with('success', count($ids).' classrooms permanently deleted.');
     }
 
     /** POST /classrooms/import - Import from file */

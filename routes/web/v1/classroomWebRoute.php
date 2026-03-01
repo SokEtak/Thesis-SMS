@@ -7,6 +7,8 @@ Route::prefix('classrooms')->name('classrooms.')->controller(ClassroomController
     Route::get('trashed', 'trashed')->name('trashed');
     Route::post('{id}/restore', 'restore')->name('restore');
     Route::delete('{id}/force', 'forceDelete')->name('forceDelete');
+    Route::post('batch-restore', 'batchRestore')->name('batchRestore');
+    Route::post('batch-force-delete', 'batchForceDelete')->name('batchForceDelete');
     Route::post('batch-store', 'batchStore')->name('batchStore');
     Route::post('batch-assign-teacher', 'batchAssignTeacher')->name('batchAssignTeacher');
     Route::post('batch-delete', 'batchDestroy')->name('batchDestroy');

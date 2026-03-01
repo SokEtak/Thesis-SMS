@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             TimetableSeeder::class,
             HomeworkSeeder::class,
+            HomeworkSubmissionSeeder::class,
             AttendanceSeeder::class,
             ClassroomSeeder::class,
             ExamResultSeeder::class,

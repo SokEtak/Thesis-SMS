@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 
 class ExamResultSeeder extends Seeder
 {
-    /**
+    /**e
      * Run the database seeds.
      */
     public function run(): void

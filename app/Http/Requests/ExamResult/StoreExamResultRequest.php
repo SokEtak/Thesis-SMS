@@ -17,7 +17,7 @@ class StoreExamResultRequest extends FormRequest
         return [
             'student_id' => ['required', 'exists:users,id'],
             'subject_id' => ['required', 'exists:subjects,id'],
-            'exam_type' => ['required', 'string', 'max:30'],
+            'exam_type' => ['required', 'in:quiz,monthly,semester,midterm,final'],
             'exam_date' => ['required', 'date'],
             'score' => ['nullable', 'integer', 'min:1', 'max:125'],
             'recorded_by' => ['nullable', 'exists:users,id'], // remove for production(safe approach:user()->id)

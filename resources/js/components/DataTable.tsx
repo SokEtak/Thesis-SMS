@@ -148,6 +148,34 @@ const resolveActionTone = (variant?: Action['variant']) => {
   return { variant: variant ?? 'default', className: '' };
 };
 
+const resolveActionIconClass = <T extends TableRow>(action: Action<T>) => {
+  const token = `${action.key ?? ''} ${action.label}`.toLowerCase();
+
+  if (
+    action.variant === 'danger'
+    || token.includes('delete')
+    || token.includes('trash')
+    || token.includes('force')
+  ) {
+    return 'text-rose-600 dark:text-rose-400';
+  }
+
+  if (
+    token.includes('restore')
+    || token.includes('recover')
+    || token.includes('edit')
+    || token.includes('update')
+  ) {
+    return 'text-emerald-600 dark:text-emerald-400';
+  }
+
+  if (token.includes('view') || token.includes('show')) {
+    return 'text-blue-600 dark:text-blue-400';
+  }
+
+  return 'text-slate-600 dark:text-slate-300';
+};
+
 const buildPaginationItems = (
   currentPage: number,
   lastPage: number,
@@ -219,7 +247,7 @@ function getLegacyActions<T extends TableRow>(
     actions.push({
       key: 'delete',
       label: 'Delete',
-      variant: 'danger',
+      variant: 'outline',
       onClick: (row) => {
         const id = Number(row.id);
         if (!Number.isNaN(id)) {
@@ -599,7 +627,7 @@ export default function DataTable<T extends TableRow>({
                           type="checkbox"
                           className="size-4 cursor-pointer rounded border border-input align-middle accent-primary"
                           checked={isSelected}
-                          onChange={(event) => {
+                          onChange={(event) => {  
                             const nativeEvent = event.nativeEvent as MouseEvent;
                             const useRangeSelection = nativeEvent.shiftKey || rangeSelectMode;
                             toggleRow(idx, rowKeyValue, event.target.checked, useRangeSelection);
@@ -626,6 +654,7 @@ export default function DataTable<T extends TableRow>({
                             const Icon = action.icon;
                             const tone = resolveActionTone(action.variant);
                             const isIconOnly = action.iconOnly === true && Boolean(Icon);
+                            const iconClass = resolveActionIconClass(action);
 
                             return (
                               <Tooltip key={action.key ?? action.label}>
@@ -637,7 +666,7 @@ export default function DataTable<T extends TableRow>({
                                     aria-label={action.label}
                                     onClick={() => action.onClick(row)}
                                   >
-                                    {Icon && <Icon className="size-4" />}
+                                    {Icon && <Icon className={cn('size-4', iconClass)} />}
                                     {!isIconOnly && action.label}
                                   </Button>
                                 </TooltipTrigger>

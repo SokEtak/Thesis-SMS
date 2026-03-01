@@ -96,7 +96,7 @@ export default function ClassroomBatchDeleteActionDialog({
             </Button>
             <Button
               type="button"
-              variant="destructive"
+              variant="outline"
               disabled={isSubmitting || batchDeleteIdsCount === 0}
               onClick={onConfirmDelete}
             >

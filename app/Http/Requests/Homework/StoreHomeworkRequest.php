@@ -32,6 +32,7 @@ class StoreHomeworkRequest extends FormRequest
             'title' => 'required|string|max:200',
             'description' => 'nullable|string',
             'file_url' => 'nullable|string|max:255',
+            'file' => 'nullable|file|max:10240',
             'deadline' => 'nullable|date',
         ];
     }
