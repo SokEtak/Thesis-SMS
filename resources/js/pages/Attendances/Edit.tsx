@@ -82,7 +82,12 @@ export default function Edit({ attendance, students, classes, recorders }: Props
       <ResourcePageLayout
         title={`Edit Attendance #${attendance.id}`}
         description="Update attendance details."
-        actions={<Button variant="outline" asChild><Link href={route('attendances.index')}>Back</Link></Button>}
+        actions={(
+          <div className="flex items-center gap-2">
+            <Button variant="outline" asChild><Link href={route('attendances.index')}>Back</Link></Button>
+            <Button asChild><Link href={route('attendances.create')}>Create</Link></Button>
+          </div>
+        )}
       >
         <form className="mx-auto max-w-2xl space-y-4 rounded-2xl border border-border/70 bg-card p-5" onSubmit={submit}>
           <div className="flex items-center gap-2">

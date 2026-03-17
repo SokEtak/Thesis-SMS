@@ -12,6 +12,7 @@ export default function Show({ homework }: any) {
           <h1 className="text-3xl font-bold">{homework.title}</h1>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.get(route('homeworks.index'))}>Back</Button>
+            <Button onClick={() => router.get(route('homeworks.create'))}>Create</Button>
             <Button onClick={() => router.get(route('homeworks.edit', homework.id))}>Edit</Button>
             <Button variant="danger" onClick={() => confirm('Delete?') && router.delete(route('homeworks.destroy', homework.id))}>Delete</Button>
           </div>

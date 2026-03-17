@@ -18,6 +18,7 @@ export default function Show({ classroom }: Props) {
           <h1 className="text-3xl font-bold">{classroom.name}</h1>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.get(route('classrooms.index'))}>Back</Button>
+            <Button onClick={() => router.get(route('classrooms.create'))}>Create</Button>
             <Button variant="secondary" onClick={() => router.get(route('classrooms.edit', classroom.id))}>Edit</Button>
             <Button variant="danger" onClick={() => {
               if (confirm('Are you sure?')) {

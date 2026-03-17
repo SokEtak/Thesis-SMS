@@ -45,6 +45,8 @@ const routes: Record<string, string | ((params?: unknown) => string)> = {
   'register': '/register',
   'login': '/login',
   'logout': '/logout',
+  'language.edit': '/settings/language',
+  'language.update': '/settings/language',
   
   // Users routes
   'users.index': '/users',

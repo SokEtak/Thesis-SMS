@@ -1,4 +1,5 @@
 import { Input } from '@/components/ui/input';
+import { useTranslate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Loader2, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -29,6 +30,7 @@ export default function LiveSearchInput({
   onSelectSuggestion,
   onSubmit,
 }: LiveSearchInputProps) {
+  const t = useTranslate();
   const [isFocused, setIsFocused] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
@@ -57,7 +59,7 @@ export default function LiveSearchInput({
       <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-sky-600 dark:text-muted-foreground" />
       <Input
         value={value}
-        placeholder={placeholder}
+        placeholder={t(placeholder)}
         className="h-11 rounded-xl border-border/80 bg-background/90 pl-9 pr-9 shadow-sm transition focus-visible:ring-2 focus-visible:ring-sky-400/45"
         onFocus={() => {
           setIsFocused(true);

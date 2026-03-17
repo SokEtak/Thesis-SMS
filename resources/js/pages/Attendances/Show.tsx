@@ -29,6 +29,7 @@ export default function Show({ attendance }: Props) {
         actions={(
           <div className="flex items-center gap-2">
             <Button variant="outline" asChild><Link href={route('attendances.index')}>Back</Link></Button>
+            <Button asChild><Link href={route('attendances.create')}>Create</Link></Button>
             <Button variant="outline" asChild><Link href={route('attendances.edit', attendance.id)}>Edit</Link></Button>
             <Button
               variant="outline"

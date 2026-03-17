@@ -1,5 +1,6 @@
 import BatchActionBar from '@/components/BatchActionBar';
 import DataTable from '@/components/DataTable';
+import { useTranslate } from '@/lib/i18n';
 import { type Subject } from '@/types/models';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -63,12 +64,14 @@ export default function SubjectRecordsSection({
   onPerPageChange,
   onPageChange,
 }: SubjectRecordsSectionProps) {
+  const t = useTranslate();
+
   return (
     <section className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">Subject Records</h2>
+        <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">{t('Subject Records')}</h2>
         <p className="text-sm text-muted-foreground">
-          Manage records inline with row selection and batch actions.
+          {t('Manage records inline with row selection and batch actions.')}
         </p>
       </div>
 

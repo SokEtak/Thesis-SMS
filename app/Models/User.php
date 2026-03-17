@@ -45,7 +45,7 @@ class User extends Authenticatable
         'parent_id',
         'address',
         'position',
-
+        'locale',
     ];
 
     /**

@@ -12,6 +12,7 @@ export default function Show({ examResult }: any) {
           <h1 className="text-3xl font-bold">Exam Result</h1>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.get(route('exam-results.index'))}>Back</Button>
+            <Button onClick={() => router.get(route('exam-results.create'))}>Create</Button>
             <Button onClick={() => router.get(route('exam-results.edit', examResult.id))}>Edit</Button>
             <Button variant="danger" onClick={() => confirm('Delete?') && router.delete(route('exam-results.destroy', examResult.id))}>Delete</Button>
           </div>

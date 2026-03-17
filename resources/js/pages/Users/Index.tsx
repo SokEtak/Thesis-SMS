@@ -1,6 +1,9 @@
+import AlertError from '@/components/alert-error';
 import BatchActionBar from '@/components/BatchActionBar';
 import DataTable from '@/components/DataTable';
+import InputError from '@/components/input-error';
 import LiveSearchInput, { type SearchSuggestion } from '@/components/LiveSearchInput';
+import ResourcePageActions from '@/components/ResourcePageActions';
 import ResourcePageLayout from '@/components/ResourcePageLayout';
 import SearchableSelect, { type SearchableSelectOption } from '@/components/SearchableSelect';
 import { Badge } from '@/components/ui/badge';
@@ -22,17 +25,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
+import { useTranslate } from '@/lib/i18n';
 import { requirePasswordConfirmation } from '@/lib/password-confirm';
 import { route } from '@/lib/route';
 import { cn } from '@/lib/utils';
 import { type PaginatedData } from '@/types';
 import { type User } from '@/types/models';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import {
   ArrowUpDown,
-  Download,
   Eye,
   FilePlus2,
   Pencil,
@@ -41,7 +43,6 @@ import {
   Search,
   Shield,
   Trash2,
-  Upload,
   Users,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
@@ -109,6 +110,8 @@ interface TablePaginationState {
   total: number;
 }
 
+type UserFormErrors = Record<string, string>;
+
 const SORTABLE_FIELDS = ['id', 'name', 'email', 'created_at'] as const;
 type SortBy = (typeof SORTABLE_FIELDS)[number];
 
@@ -136,6 +139,13 @@ const createEmptyBatchCreateItem = (key: number): BatchCreateUserItemState => ({
   parent_id: '',
   role: '',
 });
+
+const normalizeFormErrors = (errors: Record<string, string | string[]>): UserFormErrors =>
+  Object.fromEntries(
+    Object.entries(errors)
+      .map(([key, value]) => [key, Array.isArray(value) ? value[0] : value])
+      .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1].trim().length > 0),
+  );
 
 const formatDate = (value: unknown): string => {
   if (typeof value !== 'string' || value.length === 0) {
@@ -225,6 +235,7 @@ const userMatchesCase = (item: User, term: string): boolean => {
 };
 
 export default function Index({ users, classes, parents, roles, query }: Props) {
+  const t = useTranslate();
   const queryFilter = typeof query.filter === 'object' && query.filter !== null
     ? (query.filter as Record<string, unknown>)
     : null;
@@ -266,6 +277,7 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
   const [batchDeleteLimit, setBatchDeleteLimit] = useState<string>('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [formState, setFormState] = useState<UserFormState>(createEmptyFormState());
+  const [formErrors, setFormErrors] = useState<UserFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const searchBootstrapped = useRef(false);
@@ -600,15 +612,15 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
       return options;
     }
 
-    options.push({ value: 'all', label: `All selected (${selectedIds.length})` });
+    options.push({ value: 'all', label: t('All selected (:count)', { count: selectedIds.length }) });
     [5, 10, 20, 50].forEach((size) => {
       if (size < selectedIds.length) {
-        options.push({ value: String(size), label: `First ${size}` });
+        options.push({ value: String(size), label: t('First :count', { count: size }) });
       }
     });
 
     return options;
-  }, [selectedIds.length]);
+  }, [selectedIds.length, t]);
 
   const batchDeleteIds = useMemo(() => {
     if (batchDeleteLimit === 'all') {
@@ -635,6 +647,20 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
 
   const resetForm = () => {
     setFormState(createEmptyFormState());
+    setFormErrors({});
+  };
+
+  const updateFormField = <K extends keyof UserFormState>(key: K, value: UserFormState[K]) => {
+    setFormState((current) => ({ ...current, [key]: value }));
+    setFormErrors((current) => {
+      if (!current[key]) {
+        return current;
+      }
+
+      const nextErrors = { ...current };
+      delete nextErrors[key];
+      return nextErrors;
+    });
   };
 
   const resetBatchCreateForm = () => {
@@ -646,7 +672,7 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
 
   const closeBatchCreateDialog = (force = false) => {
     if (!force && batchCreateDirty) {
-      const confirmed = confirm('You have unsaved batch user rows. Discard changes and close?');
+      const confirmed = confirm(t('You have unsaved batch user rows. Discard changes and close?'));
       if (!confirmed) {
         return;
       }
@@ -727,6 +753,7 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
 
   const openEditModal = (user: User) => {
     setSelectedUser(user);
+    setFormErrors({});
     setFormState({
       name: user.name ?? '',
       email: user.email ?? '',
@@ -781,6 +808,7 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
         setIsCreateOpen(false);
         resetForm();
       },
+      onError: (errors) => setFormErrors(normalizeFormErrors(errors)),
       onFinish: () => setIsSubmitting(false),
     });
   };
@@ -798,13 +826,15 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
       onSuccess: () => {
         setIsEditOpen(false);
         setSelectedUser(null);
+        resetForm();
       },
+      onError: (errors) => setFormErrors(normalizeFormErrors(errors)),
       onFinish: () => setIsSubmitting(false),
     });
   };
 
   const handleDelete = async (user: User) => {
-    const confirmed = confirm(`Delete user "${user.name}"?`);
+    const confirmed = confirm(t('Delete user ":name"?', { name: user.name }));
     if (!confirmed) {
       return;
     }
@@ -857,13 +887,13 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
       ));
 
     if (payloadItems.length === 0) {
-      alert('Please provide at least one complete user row (name, email, password, confirmation).');
+      alert(t('Please provide at least one complete user row (name, email, password, confirmation).'));
       return;
     }
 
     const mismatchIndex = payloadItems.findIndex((item) => item.password !== item.password_confirmation);
     if (mismatchIndex >= 0) {
-      alert(`Password confirmation does not match on row ${mismatchIndex + 1}.`);
+      alert(t('Password confirmation does not match on row :row.', { row: mismatchIndex + 1 }));
       return;
     }
 
@@ -1026,6 +1056,8 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
     ? queryPerPage
     : pagination.per_page;
 
+  const formErrorMessages = Object.values(formErrors);
+
   const resetFilters = () => {
     skipNextAutoSearch.current = true;
     setSearchValue('');
@@ -1042,76 +1074,28 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
 
   return (
     <AppLayout>
-      <Head title="Users" />
+      <Head title={t('Users')} />
 
       <ResourcePageLayout
         title="Users"
         description="Manage users with inline create/edit/view, search, batch actions, and foreign key filters."
         actions={(
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="size-9 p-0" asChild>
-                  <a href={route('users.export.csv')} aria-label="Export CSV">
-                    <Download className="size-4" />
-                  </a>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Export CSV</TooltipContent>
-            </Tooltip>
+          <ResourcePageActions
+            exportHref={route('users.export.csv')}
+            trashedHref={route('users.trashed')}
+            importInputRef={importInputRef}
+            onImportFileChange={handleImportFile}
+            onOpenCreate={openCreateModal}
+            onOpenBatchCreate={async () => {
+              const passwordConfirmed = await requirePasswordConfirmation('open batch create users form');
+              if (!passwordConfirmed) {
+                return;
+              }
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="size-9 p-0" aria-label="Import" onClick={() => importInputRef.current?.click()}>
-                  <Upload className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Import</TooltipContent>
-            </Tooltip>
-            <input ref={importInputRef} type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={handleImportFile} />
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="size-9 p-0" aria-label="Trashed" asChild>
-                  <Link href={route('users.trashed')}>
-                    <Trash2 className="size-4" />
-                  </Link>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Trashed</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="size-9 p-0" aria-label="Create" onClick={openCreateModal}>
-                  <Plus className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Create User</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="size-9 p-0"
-                  aria-label="Batch Create"
-                  onClick={async () => {
-                    const passwordConfirmed = await requirePasswordConfirmation('open batch create users form');
-                    if (!passwordConfirmed) {
-                      return;
-                    }
-
-                    resetBatchCreateForm();
-                    setIsBatchCreateOpen(true);
-                  }}
-                >
-                  <FilePlus2 className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Batch Create</TooltipContent>
-            </Tooltip>
-          </>
+              resetBatchCreateForm();
+              setIsBatchCreateOpen(true);
+            }}
+          />
         )}
       >
         <div className="space-y-4">
@@ -1120,7 +1104,7 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Total Users</p>
+                    <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('Total Users')}</p>
                     <p className="mt-1 text-2xl font-semibold">{pagination.total}</p>
                   </div>
                   <span className="rounded-full border border-sky-200 bg-white p-2 text-sky-600 dark:border-border dark:bg-muted dark:text-muted-foreground">
@@ -1133,7 +1117,7 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Roles On Page</p>
+                    <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('Roles On Page')}</p>
                     <p className="mt-1 text-2xl font-semibold">{activeRoleCount}</p>
                   </div>
                   <span className="rounded-full border border-emerald-200 bg-white p-2 text-emerald-600 dark:border-border dark:bg-muted dark:text-muted-foreground">
@@ -1146,9 +1130,9 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Class Assignment</p>
+                    <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('Class Assignment')}</p>
                     <p className="mt-1 text-2xl font-semibold">{classCoverageOnPage}%</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{assignedClassCount}/{filteredRows.length || 0} rows assigned</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{t(':assigned/:total rows assigned', { assigned: assignedClassCount, total: filteredRows.length || 0 })}</p>
                   </div>
                   <span className="rounded-full border border-amber-200 bg-white p-2 text-amber-600 dark:border-border dark:bg-muted dark:text-muted-foreground">
                     <Users className="size-4" />
@@ -1160,9 +1144,9 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Filter Mode</p>
-                    <p className="mt-1 text-2xl font-semibold">{hasActiveFilter ? 'Active' : 'Idle'}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{searchValue.trim() || 'No keyword'}</p>
+                    <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('Filter Mode')}</p>
+                    <p className="mt-1 text-2xl font-semibold">{hasActiveFilter ? t('Active') : t('Idle')}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{searchValue.trim() || t('No keyword')}</p>
                   </div>
                   <span className="rounded-full border border-violet-200 bg-white p-2 text-violet-600 dark:border-border dark:bg-muted dark:text-muted-foreground">
                     <Search className="size-4" />
@@ -1175,8 +1159,8 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
           <section className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
             <div className="space-y-3 rounded-2xl border border-sky-200/70 bg-gradient-to-br from-sky-50/80 via-background to-cyan-50/60 p-4 shadow-sm dark:border-border dark:from-background dark:via-background dark:to-background">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold tracking-[0.15em] uppercase text-sky-700 dark:text-muted-foreground">Search & Discover</p>
-                {(searchValue || classFilterValue || parentFilterValue || roleFilterValue) && <Badge variant="secondary">Live ({filteredRows.length})</Badge>}
+                <p className="text-xs font-semibold tracking-[0.15em] uppercase text-sky-700 dark:text-muted-foreground">{t('Search & Discover')}</p>
+                {(searchValue || classFilterValue || parentFilterValue || roleFilterValue) && <Badge variant="secondary">{t('Live (:count)', { count: filteredRows.length })}</Badge>}
               </div>
               <LiveSearchInput
                 value={searchValue}
@@ -1193,17 +1177,17 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
                 onSubmit={() => applySearch(searchValue, 1, undefined, sortBy, sortDir)}
               />
               <div className="grid gap-2 md:grid-cols-3">
-                <SearchableSelect value={classFilterValue} options={classFilterOptions} placeholder="Filter class" searchPlaceholder="Search class..." clearLabel="All classes" onChange={(value) => {
+                <SearchableSelect value={classFilterValue} options={classFilterOptions} placeholder={t('Filter class')} searchPlaceholder={t('Search class...')} clearLabel={t('All classes')} onChange={(value) => {
                   setClassFilterValue(value);
                   classFilterRef.current = value;
                   applySearch(searchValue, 1, undefined, sortBy, sortDir, value, undefined, undefined);
                 }} />
-                <SearchableSelect value={parentFilterValue} options={parentFilterOptions} placeholder="Filter parent" searchPlaceholder="Search parent..." clearLabel="All parents" onChange={(value) => {
+                <SearchableSelect value={parentFilterValue} options={parentFilterOptions} placeholder={t('Filter parent')} searchPlaceholder={t('Search parent...')} clearLabel={t('All parents')} onChange={(value) => {
                   setParentFilterValue(value);
                   parentFilterRef.current = value;
                   applySearch(searchValue, 1, undefined, sortBy, sortDir, undefined, value, undefined);
                 }} />
-                <SearchableSelect value={roleFilterValue} options={roleFilterOptions} placeholder="Filter role" searchPlaceholder="Search role..." clearLabel="All roles" onChange={(value) => {
+                <SearchableSelect value={roleFilterValue} options={roleFilterOptions} placeholder={t('Filter role')} searchPlaceholder={t('Search role...')} clearLabel={t('All roles')} onChange={(value) => {
                   setRoleFilterValue(value);
                   roleFilterRef.current = value;
                   applySearch(searchValue, 1, undefined, sortBy, sortDir, undefined, undefined, value);
@@ -1218,7 +1202,7 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
             <div className="space-y-3 rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/80 via-background to-teal-50/60 p-4 shadow-sm dark:border-border dark:from-background dark:via-background dark:to-background">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <ArrowUpDown className="size-4" />
-                Sort & Status
+                {t('Sort & Status')}
               </div>
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                 <Select value={sortBy} onValueChange={(nextValue) => {
@@ -1226,12 +1210,12 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
                   setSortBy(value);
                   applySearch(searchValue, 1, undefined, value, sortDir);
                 }}>
-                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder="Sort by" /></SelectTrigger>
+                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder={t('Sort by')} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="id">ID</SelectItem>
-                    <SelectItem value="name">Name</SelectItem>
-                    <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="created_at">Created At</SelectItem>
+                    <SelectItem value="id">{t('ID')}</SelectItem>
+                    <SelectItem value="name">{t('Name')}</SelectItem>
+                    <SelectItem value="email">{t('Email')}</SelectItem>
+                    <SelectItem value="created_at">{t('Created At')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={sortDir} onValueChange={(nextValue) => {
@@ -1239,25 +1223,25 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
                   setSortDir(value);
                   applySearch(searchValue, 1, undefined, sortBy, value);
                 }}>
-                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder="Direction" /></SelectTrigger>
+                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder={t('Direction')} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="asc">Asc</SelectItem>
-                    <SelectItem value="desc">Desc</SelectItem>
+                    <SelectItem value="asc">{t('Asc')}</SelectItem>
+                    <SelectItem value="desc">{t('Desc')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline">Total {pagination.total}</Badge>
-                <Badge variant="outline">Page {pagination.current_page}/{pagination.last_page}</Badge>
-                <Badge variant="outline">{activePerPage} per page</Badge>
+                <Badge variant="outline">{t('Total :count', { count: pagination.total })}</Badge>
+                <Badge variant="outline">{t('Page :current/:last', { current: pagination.current_page, last: pagination.last_page })}</Badge>
+                <Badge variant="outline">{t(':count per page', { count: activePerPage })}</Badge>
               </div>
             </div>
           </section>
 
           <section className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">User Records</h2>
-              <p className="text-sm text-muted-foreground">Manage user results directly from this table with range selection support.</p>
+              <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">{t('User Records')}</h2>
+              <p className="text-sm text-muted-foreground">{t('Manage user records directly from this table with range selection support.')}</p>
             </div>
             <BatchActionBar
               selectedCount={selectedIds.length}
@@ -1312,9 +1296,9 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
       >
         <DialogContent className="sm:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
-            <DialogTitle>Batch Create Users</DialogTitle>
+            <DialogTitle>{t('Batch Create Users')}</DialogTitle>
             <DialogDescription>
-              Add multiple users at once. Select a number to auto-add rows quickly.
+              {t('Add multiple users at once. Select a number to auto-add rows quickly.')}
             </DialogDescription>
           </DialogHeader>
 
@@ -1322,9 +1306,9 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
             <div className="rounded-2xl border border-border/70 bg-background/60 p-4 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{batchCreateItems.length} rows</Badge>
-                  <Badge variant="outline">Quick add: {batchCreateAutoAddCount}</Badge>
-                  <Badge variant="outline">Selected: {batchCreateSelectedRowKeys.length}</Badge>
+                  <Badge variant="secondary">{t(':count rows', { count: batchCreateItems.length })}</Badge>
+                  <Badge variant="outline">{t('Quick add: :count', { count: batchCreateAutoAddCount })}</Badge>
+                  <Badge variant="outline">{t('Selected: :count', { count: batchCreateSelectedRowKeys.length })}</Badge>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -1339,7 +1323,7 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
                     }}
                   >
                     <SelectTrigger className="h-9 w-28">
-                      <SelectValue placeholder="Rows" />
+                      <SelectValue placeholder={t('Rows')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="1">+1</SelectItem>
@@ -1364,7 +1348,7 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
               </div>
 
               <div className="mt-3 flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Required per row: name, email, password, confirmation.</p>
+                <p className="text-sm text-muted-foreground">{t('Required per row: name, email, password, confirmation.')}</p>
                 <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
                   <input
                     type="checkbox"
@@ -1372,7 +1356,7 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
                     checked={allBatchCreateRowsSelected}
                     onChange={(event) => toggleBatchCreateSelectAll(event.target.checked)}
                   />
-                  Select all
+                  {t('Select all')}
                 </label>
               </div>
 
@@ -1394,16 +1378,16 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
 
                     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                       <div className="space-y-1">
-                        <Label className="text-xs">Name *</Label>
+                        <Label className="text-xs">{t('Name *')}</Label>
                         <Input
                           value={item.name}
                           onChange={(event) => updateBatchCreateRow(item.key, { name: event.target.value })}
-                          placeholder="Full name"
+                          placeholder={t('Full name')}
                           required
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Email *</Label>
+                        <Label className="text-xs">{t('Email *')}</Label>
                         <Input
                           type="email"
                           value={item.email}
@@ -1413,15 +1397,15 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Phone</Label>
+                        <Label className="text-xs">{t('Phone')}</Label>
                         <Input
                           value={item.phone}
                           onChange={(event) => updateBatchCreateRow(item.key, { phone: event.target.value })}
-                          placeholder="Phone number"
+                          placeholder={t('Phone number')}
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Password *</Label>
+                        <Label className="text-xs">{t('Password *')}</Label>
                         <Input
                           type="password"
                           value={item.password}
@@ -1430,7 +1414,7 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Confirm Password *</Label>
+                        <Label className="text-xs">{t('Confirm Password *')}</Label>
                         <Input
                           type="password"
                           value={item.password_confirmation}
@@ -1439,46 +1423,46 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Gender</Label>
+                        <Label className="text-xs">{t('Gender')}</Label>
                         <SearchableSelect
                           value={item.gender}
                           options={genderOptions}
-                          placeholder="Select gender"
-                          searchPlaceholder="Search gender..."
-                          clearLabel="No gender"
+                          placeholder={t('Select gender')}
+                          searchPlaceholder={t('Search gender...')}
+                          clearLabel={t('No gender')}
                           onChange={(value) => updateBatchCreateRow(item.key, { gender: value })}
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Role</Label>
+                        <Label className="text-xs">{t('Role')}</Label>
                         <SearchableSelect
                           value={item.role}
                           options={roleSelectOptions}
-                          placeholder="Select role"
-                          searchPlaceholder="Search role..."
-                          clearLabel="No role"
+                          placeholder={t('Select role')}
+                          searchPlaceholder={t('Search role...')}
+                          clearLabel={t('No role')}
                           onChange={(value) => updateBatchCreateRow(item.key, { role: value })}
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Class</Label>
+                        <Label className="text-xs">{t('Class')}</Label>
                         <SearchableSelect
                           value={item.class_id}
                           options={classSelectOptions}
-                          placeholder="Select class"
-                          searchPlaceholder="Search class..."
-                          clearLabel="No class"
+                          placeholder={t('Select class')}
+                          searchPlaceholder={t('Search class...')}
+                          clearLabel={t('No class')}
                           onChange={(value) => updateBatchCreateRow(item.key, { class_id: value })}
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Parent</Label>
+                        <Label className="text-xs">{t('Parent')}</Label>
                         <SearchableSelect
                           value={item.parent_id}
                           options={parentSelectOptions}
-                          placeholder="Select parent"
-                          searchPlaceholder="Search parent..."
-                          clearLabel="No parent"
+                          placeholder={t('Select parent')}
+                          searchPlaceholder={t('Search parent...')}
+                          clearLabel={t('No parent')}
                           onChange={(value) => updateBatchCreateRow(item.key, { parent_id: value })}
                         />
                       </div>
@@ -1499,11 +1483,11 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
 
             <div className="sticky bottom-0 z-30 mt-2 flex justify-end gap-2 bg-gradient-to-t from-background/80 to-transparent p-3">
               <Button type="button" variant="outline" onClick={() => closeBatchCreateDialog()}>
-                Cancel
+                {t('Cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 <FilePlus2 className="size-4" />
-                Create {batchCreateItems.length}
+                {t('Create :count', { count: batchCreateItems.length })}
               </Button>
             </div>
           </form>
@@ -1518,20 +1502,20 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
       }}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Batch Edit Class</DialogTitle>
-            <DialogDescription>Update class assignment for selected users only.</DialogDescription>
+            <DialogTitle>{t('Batch Edit Class')}</DialogTitle>
+            <DialogDescription>{t('Update class assignment for selected users only.')}</DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={submitBatchEditClass}>
             <div className="space-y-4 rounded-xl border border-border/70 bg-muted/20 p-4">
-              <Badge variant="secondary">{selectedIds.length} selected</Badge>
+              <Badge variant="secondary">{t(':count selected', { count: selectedIds.length })}</Badge>
               <div className="space-y-2">
-                <Label>Class</Label>
-                <SearchableSelect value={batchClassId} options={classSelectOptions} placeholder="Select class or clear assignment" searchPlaceholder="Search class..." clearLabel="Set class to none" onChange={setBatchClassId} />
+                <Label>{t('Class')}</Label>
+                <SearchableSelect value={batchClassId} options={classSelectOptions} placeholder={t('Select class or clear assignment')} searchPlaceholder={t('Search class...')} clearLabel={t('Set class to none')} onChange={setBatchClassId} />
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-1">
-              <Button type="button" variant="outline" onClick={() => setIsBatchEditOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={isSubmitting || selectedIds.length === 0}><Pencil className="size-4" />Apply</Button>
+              <Button type="button" variant="outline" onClick={() => setIsBatchEditOpen(false)}>{t('Cancel')}</Button>
+              <Button type="submit" disabled={isSubmitting || selectedIds.length === 0}><Pencil className="size-4" />{t('Apply')}</Button>
             </div>
           </form>
         </DialogContent>
@@ -1539,17 +1523,17 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
       <Dialog open={isBatchDeleteOpen} onOpenChange={setIsBatchDeleteOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Batch Delete Users</DialogTitle>
-            <DialogDescription>{selectedIds.length} row(s) selected. Choose how many rows to delete now.</DialogDescription>
+            <DialogTitle>{t('Batch Delete Users')}</DialogTitle>
+            <DialogDescription>{t(':count row(s) selected. Choose how many rows to delete now.', { count: selectedIds.length })}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid gap-3 rounded-xl border border-border/70 bg-muted/20 p-4 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-center">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{selectedIds.length} row(s) selected</Badge>
-                <Badge variant="outline">{batchDeleteIds.length} row(s) pending delete</Badge>
+                <Badge variant="secondary">{t(':count row(s) selected', { count: selectedIds.length })}</Badge>
+                <Badge variant="outline">{t(':count row(s) pending delete', { count: batchDeleteIds.length })}</Badge>
               </div>
               <Select value={batchDeleteLimit} onValueChange={setBatchDeleteLimit}>
-                <SelectTrigger><SelectValue placeholder="Delete amount" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t('Delete amount')} /></SelectTrigger>
                 <SelectContent>
                   {batchDeleteLimitOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
@@ -1559,7 +1543,7 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
             </div>
             <div className="max-h-[42vh] space-y-2 overflow-y-auto rounded-xl border border-border/70 bg-background p-3">
               {batchDeleteUsers.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No rows available to delete.</p>
+                <p className="text-sm text-muted-foreground">{t('No rows available to delete.')}</p>
               ) : (
                 batchDeleteUsers.map((item) => (
                   <div key={item.id} className="flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm">
@@ -1570,8 +1554,8 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
               )}
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsBatchDeleteOpen(false)}>Cancel</Button>
-              <Button type="button" variant="outline" disabled={isSubmitting || batchDeleteIds.length === 0} onClick={submitBatchDelete}><Trash2 className="size-4" />Delete {batchDeleteIds.length}</Button>
+              <Button type="button" variant="outline" onClick={() => setIsBatchDeleteOpen(false)}>{t('Cancel')}</Button>
+              <Button type="button" variant="outline" disabled={isSubmitting || batchDeleteIds.length === 0} onClick={submitBatchDelete}><Trash2 className="size-4" />{t('Delete :count', { count: batchDeleteIds.length })}</Button>
             </div>
           </div>
         </DialogContent>
@@ -1580,11 +1564,11 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
       <Dialog open={isBatchShowOpen} onOpenChange={setIsBatchShowOpen}>
         <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Batch Preview</DialogTitle>
-            <DialogDescription>Showing {selectedUsers.length} selected user(s).</DialogDescription>
+            <DialogTitle>{t('Batch Preview')}</DialogTitle>
+            <DialogDescription>{t('Showing :count selected user(s).', { count: selectedUsers.length })}</DialogDescription>
           </DialogHeader>
           {selectedUsers.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No selected users to preview.</p>
+            <p className="text-sm text-muted-foreground">{t('No selected users to preview.')}</p>
           ) : (
             <div className="grid max-h-[60vh] gap-3 overflow-y-auto sm:grid-cols-2 xl:grid-cols-3">
               {selectedUsers.map((item) => (
@@ -1592,8 +1576,8 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
                   <p className="text-xs font-semibold tracking-wide text-muted-foreground">#{item.id}</p>
                   <p className="text-sm font-semibold text-foreground">{item.name}</p>
                   <p className="text-xs text-muted-foreground">{item.email}</p>
-                  <p className="text-xs text-muted-foreground">Role: {item.role_name ?? '-'}</p>
-                  <p className="text-xs text-muted-foreground">Class: {item.class_name ?? '-'}</p>
+                  <p className="text-xs text-muted-foreground">{t('Role')}: {item.role_name ?? '-'}</p>
+                  <p className="text-xs text-muted-foreground">{t('Class')}: {item.class_name ?? '-'}</p>
                 </div>
               ))}
             </div>
@@ -1607,26 +1591,29 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
           resetForm();
         }
       }}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Create User</DialogTitle>
-            <DialogDescription>Add a user without leaving this list page.</DialogDescription>
+            <DialogTitle>{t('Create User')}</DialogTitle>
+            <DialogDescription>{t('Add a user without leaving this list page.')}</DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={submitCreate}>
+            {formErrorMessages.length > 0 && (
+              <AlertError title={t('Could not save user.')} errors={formErrorMessages} />
+            )}
             <div className="grid gap-4 rounded-xl border border-border/70 bg-muted/20 p-4 md:grid-cols-2">
-              <div className="space-y-2"><Label htmlFor="user-create-name">Name</Label><Input id="user-create-name" value={formState.name} onChange={(event) => setFormState((current) => ({ ...current, name: event.target.value }))} required /></div>
-              <div className="space-y-2"><Label htmlFor="user-create-email">Email</Label><Input id="user-create-email" type="email" value={formState.email} onChange={(event) => setFormState((current) => ({ ...current, email: event.target.value }))} required /></div>
-              <div className="space-y-2"><Label htmlFor="user-create-password">Password</Label><Input id="user-create-password" type="password" value={formState.password} onChange={(event) => setFormState((current) => ({ ...current, password: event.target.value }))} required /></div>
-              <div className="space-y-2"><Label htmlFor="user-create-password-confirm">Confirm Password</Label><Input id="user-create-password-confirm" type="password" value={formState.password_confirmation} onChange={(event) => setFormState((current) => ({ ...current, password_confirmation: event.target.value }))} required /></div>
-              <div className="space-y-2"><Label>Role</Label><SearchableSelect value={formState.role} options={roleSelectOptions} placeholder="Select role" searchPlaceholder="Search role..." clearLabel="No role" onChange={(value) => setFormState((current) => ({ ...current, role: value }))} /></div>
-              <div className="space-y-2"><Label>Class</Label><SearchableSelect value={formState.class_id} options={classSelectOptions} placeholder="Select class" searchPlaceholder="Search class..." clearLabel="No class" onChange={(value) => setFormState((current) => ({ ...current, class_id: value }))} /></div>
-              <div className="space-y-2"><Label>Parent</Label><SearchableSelect value={formState.parent_id} options={parentSelectOptions} placeholder="Select parent" searchPlaceholder="Search parent..." clearLabel="No parent" onChange={(value) => setFormState((current) => ({ ...current, parent_id: value }))} /></div>
-              <div className="space-y-2"><Label>Gender</Label><SearchableSelect value={formState.gender} options={genderOptions} placeholder="Select gender" searchPlaceholder="Search gender..." clearLabel="No gender" onChange={(value) => setFormState((current) => ({ ...current, gender: value }))} /></div>
-              <div className="space-y-2 md:col-span-2"><Label htmlFor="user-create-phone">Phone</Label><Input id="user-create-phone" value={formState.phone} onChange={(event) => setFormState((current) => ({ ...current, phone: event.target.value }))} /></div>
+              <div className="space-y-2"><Label htmlFor="user-create-name">{t('Name')}</Label><Input id="user-create-name" value={formState.name} onChange={(event) => updateFormField('name', event.target.value)} required /><InputError message={formErrors.name} /></div>
+              <div className="space-y-2"><Label htmlFor="user-create-email">{t('Email')}</Label><Input id="user-create-email" type="email" value={formState.email} onChange={(event) => updateFormField('email', event.target.value)} required /><InputError message={formErrors.email} /></div>
+              <div className="space-y-2"><Label htmlFor="user-create-password">{t('Password')}</Label><Input id="user-create-password" type="password" value={formState.password} onChange={(event) => updateFormField('password', event.target.value)} required /><InputError message={formErrors.password} /></div>
+              <div className="space-y-2"><Label htmlFor="user-create-password-confirm">{t('Confirm Password')}</Label><Input id="user-create-password-confirm" type="password" value={formState.password_confirmation} onChange={(event) => updateFormField('password_confirmation', event.target.value)} required /><InputError message={formErrors.password_confirmation} /></div>
+              <div className="space-y-2"><Label>{t('Role')}</Label><SearchableSelect value={formState.role} options={roleSelectOptions} placeholder={t('Select role')} searchPlaceholder={t('Search role...')} clearLabel={t('No role')} onChange={(value) => updateFormField('role', value)} /><InputError message={formErrors.role} /></div>
+              <div className="space-y-2"><Label>{t('Class')}</Label><SearchableSelect value={formState.class_id} options={classSelectOptions} placeholder={t('Select class')} searchPlaceholder={t('Search class...')} clearLabel={t('No class')} onChange={(value) => updateFormField('class_id', value)} /><InputError message={formErrors.class_id} /></div>
+              <div className="space-y-2"><Label>{t('Parent')}</Label><SearchableSelect value={formState.parent_id} options={parentSelectOptions} placeholder={t('Select parent')} searchPlaceholder={t('Search parent...')} clearLabel={t('No parent')} onChange={(value) => updateFormField('parent_id', value)} /><InputError message={formErrors.parent_id} /></div>
+              <div className="space-y-2"><Label>{t('Gender')}</Label><SearchableSelect value={formState.gender} options={genderOptions} placeholder={t('Select gender')} searchPlaceholder={t('Search gender...')} clearLabel={t('No gender')} onChange={(value) => updateFormField('gender', value)} /><InputError message={formErrors.gender} /></div>
+              <div className="space-y-2 md:col-span-2"><Label htmlFor="user-create-phone">{t('Phone')}</Label><Input id="user-create-phone" value={formState.phone} onChange={(event) => updateFormField('phone', event.target.value)} /><InputError message={formErrors.phone} /></div>
             </div>
             <div className="flex justify-end gap-2 pt-1">
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={isSubmitting}><Plus className="size-4" />Create</Button>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>{t('Cancel')}</Button>
+              <Button type="submit" disabled={isSubmitting}><Plus className="size-4" />{t('Create')}</Button>
             </div>
           </form>
         </DialogContent>
@@ -1640,18 +1627,18 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
       }}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>User Details</DialogTitle>
-            <DialogDescription>Quick view directly from the index page.</DialogDescription>
+            <DialogTitle>{t('User Details')}</DialogTitle>
+            <DialogDescription>{t('Quick view directly from the index page.')}</DialogDescription>
           </DialogHeader>
           {selectedUser && (
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">ID</p><p className="font-medium">{selectedUser.id}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Name</p><p className="font-medium">{selectedUser.name}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Email</p><p className="font-medium">{selectedUser.email}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Role</p><p className="font-medium">{selectedUser.role_name ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Class</p><p className="font-medium">{selectedUser.class_name ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Parent</p><p className="font-medium">{selectedUser.parent_name ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3 sm:col-span-2"><p className="text-xs text-muted-foreground">Created At</p><p className="font-medium">{formatDate(selectedUser.created_at)}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('ID')}</p><p className="font-medium">{selectedUser.id}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Name')}</p><p className="font-medium">{selectedUser.name}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Email')}</p><p className="font-medium">{selectedUser.email}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Role')}</p><p className="font-medium">{selectedUser.role_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Class')}</p><p className="font-medium">{selectedUser.class_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Parent')}</p><p className="font-medium">{selectedUser.parent_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3 sm:col-span-2"><p className="text-xs text-muted-foreground">{t('Created At')}</p><p className="font-medium">{formatDate(selectedUser.created_at)}</p></div>
             </div>
           )}
         </DialogContent>
@@ -1666,24 +1653,27 @@ export default function Index({ users, classes, parents, roles, query }: Props) 
       }}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>Update user details inline from index.</DialogDescription>
+            <DialogTitle>{t('Edit User')}</DialogTitle>
+            <DialogDescription>{t('Update user details inline from index.')}</DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={submitEdit}>
+            {formErrorMessages.length > 0 && (
+              <AlertError title={t('Could not update user.')} errors={formErrorMessages} />
+            )}
             <div className="grid gap-4 rounded-xl border border-border/70 bg-muted/20 p-4 md:grid-cols-2">
-              <div className="space-y-2"><Label htmlFor="user-edit-name">Name</Label><Input id="user-edit-name" value={formState.name} onChange={(event) => setFormState((current) => ({ ...current, name: event.target.value }))} required /></div>
-              <div className="space-y-2"><Label htmlFor="user-edit-email">Email</Label><Input id="user-edit-email" type="email" value={formState.email} onChange={(event) => setFormState((current) => ({ ...current, email: event.target.value }))} required /></div>
-              <div className="space-y-2"><Label htmlFor="user-edit-password">Password (optional)</Label><Input id="user-edit-password" type="password" value={formState.password} onChange={(event) => setFormState((current) => ({ ...current, password: event.target.value }))} /></div>
-              <div className="space-y-2"><Label htmlFor="user-edit-password-confirm">Confirm Password</Label><Input id="user-edit-password-confirm" type="password" value={formState.password_confirmation} onChange={(event) => setFormState((current) => ({ ...current, password_confirmation: event.target.value }))} /></div>
-              <div className="space-y-2"><Label>Role</Label><SearchableSelect value={formState.role} options={roleSelectOptions} placeholder="Select role" searchPlaceholder="Search role..." clearLabel="No role" onChange={(value) => setFormState((current) => ({ ...current, role: value }))} /></div>
-              <div className="space-y-2"><Label>Class</Label><SearchableSelect value={formState.class_id} options={classSelectOptions} placeholder="Select class" searchPlaceholder="Search class..." clearLabel="No class" onChange={(value) => setFormState((current) => ({ ...current, class_id: value }))} /></div>
-              <div className="space-y-2"><Label>Parent</Label><SearchableSelect value={formState.parent_id} options={parentSelectOptions} placeholder="Select parent" searchPlaceholder="Search parent..." clearLabel="No parent" onChange={(value) => setFormState((current) => ({ ...current, parent_id: value }))} /></div>
-              <div className="space-y-2"><Label>Gender</Label><SearchableSelect value={formState.gender} options={genderOptions} placeholder="Select gender" searchPlaceholder="Search gender..." clearLabel="No gender" onChange={(value) => setFormState((current) => ({ ...current, gender: value }))} /></div>
-              <div className="space-y-2 md:col-span-2"><Label htmlFor="user-edit-phone">Phone</Label><Input id="user-edit-phone" value={formState.phone} onChange={(event) => setFormState((current) => ({ ...current, phone: event.target.value }))} /></div>
+              <div className="space-y-2"><Label htmlFor="user-edit-name">{t('Name')}</Label><Input id="user-edit-name" value={formState.name} onChange={(event) => updateFormField('name', event.target.value)} required /><InputError message={formErrors.name} /></div>
+              <div className="space-y-2"><Label htmlFor="user-edit-email">{t('Email')}</Label><Input id="user-edit-email" type="email" value={formState.email} onChange={(event) => updateFormField('email', event.target.value)} required /><InputError message={formErrors.email} /></div>
+              <div className="space-y-2"><Label htmlFor="user-edit-password">{t('Password (optional)')}</Label><Input id="user-edit-password" type="password" value={formState.password} onChange={(event) => updateFormField('password', event.target.value)} /><InputError message={formErrors.password} /></div>
+              <div className="space-y-2"><Label htmlFor="user-edit-password-confirm">{t('Confirm Password')}</Label><Input id="user-edit-password-confirm" type="password" value={formState.password_confirmation} onChange={(event) => updateFormField('password_confirmation', event.target.value)} /><InputError message={formErrors.password_confirmation} /></div>
+              <div className="space-y-2"><Label>{t('Role')}</Label><SearchableSelect value={formState.role} options={roleSelectOptions} placeholder={t('Select role')} searchPlaceholder={t('Search role...')} clearLabel={t('No role')} onChange={(value) => updateFormField('role', value)} /><InputError message={formErrors.role} /></div>
+              <div className="space-y-2"><Label>{t('Class')}</Label><SearchableSelect value={formState.class_id} options={classSelectOptions} placeholder={t('Select class')} searchPlaceholder={t('Search class...')} clearLabel={t('No class')} onChange={(value) => updateFormField('class_id', value)} /><InputError message={formErrors.class_id} /></div>
+              <div className="space-y-2"><Label>{t('Parent')}</Label><SearchableSelect value={formState.parent_id} options={parentSelectOptions} placeholder={t('Select parent')} searchPlaceholder={t('Search parent...')} clearLabel={t('No parent')} onChange={(value) => updateFormField('parent_id', value)} /><InputError message={formErrors.parent_id} /></div>
+              <div className="space-y-2"><Label>{t('Gender')}</Label><SearchableSelect value={formState.gender} options={genderOptions} placeholder={t('Select gender')} searchPlaceholder={t('Search gender...')} clearLabel={t('No gender')} onChange={(value) => updateFormField('gender', value)} /><InputError message={formErrors.gender} /></div>
+              <div className="space-y-2 md:col-span-2"><Label htmlFor="user-edit-phone">{t('Phone')}</Label><Input id="user-edit-phone" value={formState.phone} onChange={(event) => updateFormField('phone', event.target.value)} /><InputError message={formErrors.phone} /></div>
             </div>
             <div className="flex justify-end gap-2 pt-1">
-              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={isSubmitting || !selectedUser}><Pencil className="size-4" />Save Changes</Button>
+              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>{t('Cancel')}</Button>
+              <Button type="submit" disabled={isSubmitting || !selectedUser}><Pencil className="size-4" />{t('Save Changes')}</Button>
             </div>
           </form>
         </DialogContent>

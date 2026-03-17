@@ -5,6 +5,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { useTranslate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Check, ChevronDown, Search, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -40,6 +41,7 @@ export default function SearchableSelect({
   clearable = true,
   clearLabel = 'Clear selection',
 }: SearchableSelectProps) {
+  const t = useTranslate();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -57,9 +59,9 @@ export default function SearchableSelect({
     }
 
     return options.filter((option) =>
-      `${option.label} ${option.description ?? ''}`.toLowerCase().includes(normalized),
+      `${t(option.label)} ${option.description ? t(option.description) : ''}`.toLowerCase().includes(normalized),
     );
-  }, [options, query]);
+  }, [options, query, t]);
 
   const closeMenu = () => {
     setOpen(false);
@@ -148,7 +150,7 @@ export default function SearchableSelect({
           disabled={disabled}
         >
           <span className="min-w-0 truncate">
-            {selectedOption ? selectedOption.label : placeholder}
+            {selectedOption ? t(selectedOption.label) : t(placeholder)}
           </span>
           <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
         </Button>
@@ -165,7 +167,7 @@ export default function SearchableSelect({
             <Input
               ref={inputRef}
               value={query}
-              placeholder={searchPlaceholder}
+              placeholder={t(searchPlaceholder)}
               className="h-9 rounded-lg border-border/80 bg-background pl-8"
               onChange={(event) => setQuery(event.target.value)}
               onKeyDown={(event) => {
@@ -227,12 +229,12 @@ export default function SearchableSelect({
               onClick={() => selectValue('')}
             >
               <X className="size-4" />
-              {clearLabel}
+              {t(clearLabel)}
             </button>
           )}
 
           {filteredOptions.length === 0 && (
-            <p className="px-2 py-3 text-sm text-muted-foreground">{emptyText}</p>
+            <p className="px-2 py-3 text-sm text-muted-foreground">{t(emptyText)}</p>
           )}
 
           {filteredOptions.map((option, index) => {
@@ -253,9 +255,9 @@ export default function SearchableSelect({
               >
                 <Check className={cn('mt-0.5 size-4 shrink-0', isActive ? 'opacity-100 text-primary' : 'opacity-0')} />
                 <span className="min-w-0">
-                  <span className="block truncate">{option.label}</span>
+                  <span className="block truncate">{t(option.label)}</span>
                   {option.description && (
-                    <span className="block truncate text-xs text-muted-foreground">{option.description}</span>
+                    <span className="block truncate text-xs text-muted-foreground">{t(option.description)}</span>
                   )}
                 </span>
               </button>

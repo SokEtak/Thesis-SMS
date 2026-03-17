@@ -1,6 +1,7 @@
 import BatchActionBar from '@/components/BatchActionBar';
 import DataTable from '@/components/DataTable';
 import LiveSearchInput, { type SearchSuggestion } from '@/components/LiveSearchInput';
+import ResourcePageActions from '@/components/ResourcePageActions';
 import ResourcePageLayout from '@/components/ResourcePageLayout';
 import SearchableSelect, { type SearchableSelectOption } from '@/components/SearchableSelect';
 import { Badge } from '@/components/ui/badge';
@@ -10,15 +11,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
+import { useTranslate } from '@/lib/i18n';
 import { requirePasswordConfirmation } from '@/lib/password-confirm';
 import { route } from '@/lib/route';
 import { cn } from '@/lib/utils';
 import { type PaginatedData } from '@/types';
 import { type Timetable } from '@/types/models';
-import { Head, Link, router } from '@inertiajs/react';
-import { ArrowUpDown, Download, Eye, FilePlus2, Pencil, Plus, RotateCcw, Search, Trash2, Upload } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { ArrowUpDown, Eye, FilePlus2, Pencil, Plus, RotateCcw, Search, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 
 interface Option {
@@ -112,6 +113,7 @@ const resolvePagination = (data: PaginatedData<Timetable>): TablePaginationState
 };
 
 export default function Index({ timetables, classes, subjects, teachers, query }: Props) {
+  const t = useTranslate();
   const queryFilter = typeof query.filter === 'object' && query.filter !== null ? query.filter as Record<string, unknown> : null;
   const [search, setSearch] = useState(typeof query.q === 'string' ? query.q : String(queryFilter?.q ?? ''));
   const [classId, setClassId] = useState(normalizeFilterValue(query.class_id ?? queryFilter?.class_id));
@@ -235,15 +237,15 @@ export default function Index({ timetables, classes, subjects, teachers, query }
       return options;
     }
 
-    options.push({ value: 'all', label: `All selected (${selectedIds.length})` });
+    options.push({ value: 'all', label: t('All selected (:count)', { count: selectedIds.length }) });
     [5, 10, 20, 50].forEach((size) => {
       if (size < selectedIds.length) {
-        options.push({ value: String(size), label: `First ${size}` });
+        options.push({ value: String(size), label: t('First :count', { count: size }) });
       }
     });
 
     return options;
-  }, [selectedIds.length]);
+  }, [selectedIds.length, t]);
 
   const batchDeleteIds = useMemo(() => {
     if (batchDeleteLimit === 'all') {
@@ -311,7 +313,7 @@ export default function Index({ timetables, classes, subjects, teachers, query }
 
   const closeBatchCreateDialog = (force = false) => {
     if (!force && batchCreateDirty) {
-      const confirmed = confirm('You have unsaved batch timetable rows. Discard changes and close?');
+      const confirmed = confirm(t('You have unsaved batch timetable rows. Discard changes and close?'));
       if (!confirmed) {
         return;
       }
@@ -411,11 +413,11 @@ export default function Index({ timetables, classes, subjects, teachers, query }
     event.preventDefault();
     const payload = buildPayload();
     if (!payload.day_of_week || !payload.start_time || !payload.end_time) {
-      alert('Day, start time, and end time are required.');
+      alert(t('Day, start time, and end time are required.'));
       return;
     }
     if (payload.end_time <= payload.start_time) {
-      alert('End time must be after start time.');
+      alert(t('End time must be after start time.'));
       return;
     }
     setIsSubmitting(true);
@@ -431,11 +433,11 @@ export default function Index({ timetables, classes, subjects, teachers, query }
     if (!selectedTimetable) return;
     const payload = buildPayload();
     if (!payload.day_of_week || !payload.start_time || !payload.end_time) {
-      alert('Day, start time, and end time are required.');
+      alert(t('Day, start time, and end time are required.'));
       return;
     }
     if (payload.end_time <= payload.start_time) {
-      alert('End time must be after start time.');
+      alert(t('End time must be after start time.'));
       return;
     }
     setIsSubmitting(true);
@@ -461,12 +463,12 @@ export default function Index({ timetables, classes, subjects, teachers, query }
       .filter((row) => row.day_of_week && row.start_time && row.end_time);
 
     if (payloadItems.length === 0) {
-      alert('Add at least one valid row with day, start time, and end time.');
+      alert(t('Add at least one valid row with day, start time, and end time.'));
       return;
     }
 
     if (payloadItems.some((row) => row.end_time <= row.start_time)) {
-      alert('Every row must have end time after start time.');
+      alert(t('Every row must have end time after start time.'));
       return;
     }
 
@@ -500,12 +502,12 @@ export default function Index({ timetables, classes, subjects, teachers, query }
     const endValue = batchEditEndTime.trim();
 
     if (!classValue && !subjectValue && !teacherValue && !dayValue && !startValue && !endValue) {
-      alert('Provide at least one field to update.');
+      alert(t('Provide at least one field to update.'));
       return;
     }
 
     if (startValue && endValue && endValue <= startValue) {
-      alert('End time must be after start time.');
+      alert(t('End time must be after start time.'));
       return;
     }
 
@@ -539,7 +541,7 @@ export default function Index({ timetables, classes, subjects, teachers, query }
   };
 
   const handleDelete = async (timetable: Timetable) => {
-    if (!confirm(`Delete timetable #${timetable.id}?`)) return;
+    if (!confirm(t('Delete timetable #:id?', { id: timetable.id }))) return;
     const passwordConfirmed = await requirePasswordConfirmation(`delete timetable #${timetable.id}`);
     if (!passwordConfirmed) return;
     router.delete(route('timetables.destroy', timetable.id), { preserveScroll: true });
@@ -624,7 +626,7 @@ export default function Index({ timetables, classes, subjects, teachers, query }
     { key: 'class_name', label: 'Class', render: (value: unknown) => (value ? String(value) : '-') },
     { key: 'subject_name', label: 'Subject', render: (value: unknown) => (value ? String(value) : '-') },
     { key: 'teacher_name', label: 'Teacher', render: (value: unknown) => (value ? String(value) : '-') },
-    { key: 'day_of_week', label: 'Day', render: (value: unknown) => (value ? String(value) : '-') },
+    { key: 'day_of_week', label: 'Day', render: (value: unknown) => (value ? t(String(value)) : '-') },
     { key: 'start_time', label: 'Start', render: (value: unknown) => (value ? String(value) : '-') },
     { key: 'end_time', label: 'End', render: (value: unknown) => (value ? String(value) : '-') },
     { key: 'created_at', label: 'Created At', render: (value: unknown) => formatDate(value) },
@@ -637,46 +639,46 @@ export default function Index({ timetables, classes, subjects, teachers, query }
 
   return (
     <AppLayout>
-      <Head title="Timetables" />
+      <Head title={t('Timetables')} />
       <ResourcePageLayout
         title="Timetables"
         description="Manage timetables with the same UI pattern used in Users."
         actions={(
-          <>
-            <Tooltip><TooltipTrigger asChild><Button variant="outline" className="size-9 p-0" asChild><a href={route('timetables.export.csv')}><Download className="size-4" /></a></Button></TooltipTrigger><TooltipContent side="top" align="center">Export CSV</TooltipContent></Tooltip>
-            <Tooltip><TooltipTrigger asChild><Button variant="outline" className="size-9 p-0" onClick={() => importInputRef.current?.click()}><Upload className="size-4" /></Button></TooltipTrigger><TooltipContent side="top" align="center">Import</TooltipContent></Tooltip>
-            <input ref={importInputRef} type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={handleImportFile} />
-            <Tooltip><TooltipTrigger asChild><Button variant="outline" className="size-9 p-0" asChild><Link href={route('timetables.trashed')}><Trash2 className="size-4" /></Link></Button></TooltipTrigger><TooltipContent side="top" align="center">Trashed</TooltipContent></Tooltip>
-            <Tooltip><TooltipTrigger asChild><Button variant="outline" className="size-9 p-0" onClick={openCreateModal}><Plus className="size-4" /></Button></TooltipTrigger><TooltipContent side="top" align="center">Create</TooltipContent></Tooltip>
-            <Tooltip><TooltipTrigger asChild><Button variant="outline" className="size-9 p-0" onClick={async () => {
+          <ResourcePageActions
+            exportHref={route('timetables.export.csv')}
+            trashedHref={route('timetables.trashed')}
+            importInputRef={importInputRef}
+            onImportFileChange={handleImportFile}
+            onOpenCreate={openCreateModal}
+            onOpenBatchCreate={async () => {
               const passwordConfirmed = await requirePasswordConfirmation('open batch create timetables form');
               if (!passwordConfirmed) return;
               resetBatchCreateForm();
               setIsBatchCreateOpen(true);
-            }}><FilePlus2 className="size-4" /></Button></TooltipTrigger><TooltipContent side="top" align="center">Batch Create</TooltipContent></Tooltip>
-          </>
+            }}
+          />
         )}
       >
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <Card className="gap-0 overflow-hidden border-sky-200/70 bg-gradient-to-br from-sky-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Total Records</p><p className="mt-1 text-2xl font-semibold">{pagination.total}</p></CardContent></Card>
-            <Card className="gap-0 overflow-hidden border-emerald-200/70 bg-gradient-to-br from-emerald-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Rows On Page</p><p className="mt-1 text-2xl font-semibold">{rows.length}</p></CardContent></Card>
-            <Card className="gap-0 overflow-hidden border-amber-200/70 bg-gradient-to-br from-amber-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Classes On Page</p><p className="mt-1 text-2xl font-semibold">{new Set(rows.map((item) => item.class_id)).size}</p></CardContent></Card>
-            <Card className="gap-0 overflow-hidden border-violet-200/70 bg-gradient-to-br from-violet-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Filter Mode</p><p className="mt-1 text-2xl font-semibold">{hasActiveFilter ? 'Active' : 'Idle'}</p></CardContent></Card>
+            <Card className="gap-0 overflow-hidden border-sky-200/70 bg-gradient-to-br from-sky-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('Total Records')}</p><p className="mt-1 text-2xl font-semibold">{pagination.total}</p></CardContent></Card>
+            <Card className="gap-0 overflow-hidden border-emerald-200/70 bg-gradient-to-br from-emerald-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('Rows On Page')}</p><p className="mt-1 text-2xl font-semibold">{rows.length}</p></CardContent></Card>
+            <Card className="gap-0 overflow-hidden border-amber-200/70 bg-gradient-to-br from-amber-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('Classes On Page')}</p><p className="mt-1 text-2xl font-semibold">{new Set(rows.map((item) => item.class_id)).size}</p></CardContent></Card>
+            <Card className="gap-0 overflow-hidden border-violet-200/70 bg-gradient-to-br from-violet-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('Filter Mode')}</p><p className="mt-1 text-2xl font-semibold">{hasActiveFilter ? t('Active') : t('Idle')}</p></CardContent></Card>
           </div>
 
           <section className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
             <div className="space-y-3 rounded-2xl border border-sky-200/70 bg-gradient-to-br from-sky-50/80 via-background to-cyan-50/60 p-4 shadow-sm dark:border-border dark:from-background dark:via-background dark:to-background">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold tracking-[0.15em] uppercase text-sky-700 dark:text-muted-foreground">Search & Discover</p>
-                {(search || classId || subjectId || teacherId || dayOfWeek) && <Badge variant="secondary">Live ({rows.length})</Badge>}
+                <p className="text-xs font-semibold tracking-[0.15em] uppercase text-sky-700 dark:text-muted-foreground">{t('Search & Discover')}</p>
+                {(search || classId || subjectId || teacherId || dayOfWeek) && <Badge variant="secondary">{t('Live (:count)', { count: rows.length })}</Badge>}
               </div>
               <LiveSearchInput value={search} suggestions={suggestions} loading={false} onChange={setSearch} onSelectSuggestion={(item) => { setSearch(item.label); applySearch(1); }} onSubmit={() => applySearch(1)} />
               <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-                <SearchableSelect value={classId} options={classOptions} onChange={setClassId} placeholder="Filter class" searchPlaceholder="Search class..." clearLabel="All classes" />
-                <SearchableSelect value={subjectId} options={subjectOptions} onChange={setSubjectId} placeholder="Filter subject" searchPlaceholder="Search subject..." clearLabel="All subjects" />
-                <SearchableSelect value={teacherId} options={teacherOptions} onChange={setTeacherId} placeholder="Filter teacher" searchPlaceholder="Search teacher..." clearLabel="All teachers" />
-                <SearchableSelect value={dayOfWeek} options={dayOptions} onChange={setDayOfWeek} placeholder="Filter day" searchPlaceholder="Search day..." clearLabel="All days" />
+                <SearchableSelect value={classId} options={classOptions} onChange={setClassId} placeholder={t('Filter class')} searchPlaceholder={t('Search class...')} clearLabel={t('All classes')} />
+                <SearchableSelect value={subjectId} options={subjectOptions} onChange={setSubjectId} placeholder={t('Filter subject')} searchPlaceholder={t('Search subject...')} clearLabel={t('All subjects')} />
+                <SearchableSelect value={teacherId} options={teacherOptions} onChange={setTeacherId} placeholder={t('Filter teacher')} searchPlaceholder={t('Search teacher...')} clearLabel={t('All teachers')} />
+                <SearchableSelect value={dayOfWeek} options={dayOptions} onChange={setDayOfWeek} placeholder={t('Filter day')} searchPlaceholder={t('Search day...')} clearLabel={t('All days')} />
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" className="size-9 p-0" onClick={() => applySearch(1)}><Search className="size-4" /></Button>
@@ -684,31 +686,31 @@ export default function Index({ timetables, classes, subjects, teachers, query }
               </div>
             </div>
             <div className="space-y-3 rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/80 via-background to-teal-50/60 p-4 shadow-sm dark:border-border dark:from-background dark:via-background dark:to-background">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground"><ArrowUpDown className="size-4" />Sort & Pagination</div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground"><ArrowUpDown className="size-4" />{t('Sort & Pagination')}</div>
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                 <Select value={sortBy} onValueChange={(value) => { const nextSort = normalizeSortBy(value); setSortBy(nextSort); applySearch(1, undefined, nextSort, sortDir); }}>
-                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder="Sort by" /></SelectTrigger>
-                  <SelectContent><SelectItem value="id">ID</SelectItem><SelectItem value="day_of_week">Day</SelectItem><SelectItem value="start_time">Start Time</SelectItem><SelectItem value="end_time">End Time</SelectItem><SelectItem value="created_at">Created At</SelectItem></SelectContent>
+                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder={t('Sort by')} /></SelectTrigger>
+                  <SelectContent><SelectItem value="id">{t('ID')}</SelectItem><SelectItem value="day_of_week">{t('Day')}</SelectItem><SelectItem value="start_time">{t('Start Time')}</SelectItem><SelectItem value="end_time">{t('End Time')}</SelectItem><SelectItem value="created_at">{t('Created At')}</SelectItem></SelectContent>
                 </Select>
                 <Select value={sortDir} onValueChange={(value) => { const nextDir = value === 'desc' ? 'desc' : 'asc'; setSortDir(nextDir); applySearch(1, undefined, sortBy, nextDir); }}>
-                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder="Direction" /></SelectTrigger>
-                  <SelectContent><SelectItem value="asc">Asc</SelectItem><SelectItem value="desc">Desc</SelectItem></SelectContent>
+                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder={t('Direction')} /></SelectTrigger>
+                  <SelectContent><SelectItem value="asc">{t('Asc')}</SelectItem><SelectItem value="desc">{t('Desc')}</SelectItem></SelectContent>
                 </Select>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline">Total {pagination.total}</Badge>
-                <Badge variant="outline">Page {pagination.current_page}/{pagination.last_page}</Badge>
-                <Badge variant="outline">{activePerPage} per page</Badge>
+                <Badge variant="outline">{t('Total :count', { count: pagination.total })}</Badge>
+                <Badge variant="outline">{t('Page :current/:last', { current: pagination.current_page, last: pagination.last_page })}</Badge>
+                <Badge variant="outline">{t(':count per page', { count: activePerPage })}</Badge>
               </div>
             </div>
           </section>
 
           <section className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">Timetable Records</h2>
-              <p className="text-sm text-muted-foreground">Range-select and batch actions are available just like Users.</p>
+              <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">{t('Timetable Records')}</h2>
+              <p className="text-sm text-muted-foreground">{t('Range-select and batch actions are available just like Users.')}</p>
             </div>
-            <BatchActionBar selectedCount={selectedIds.length} onViewSelected={() => setIsBatchPreviewOpen(true)} onEditSelected={() => setIsBatchEditOpen(true)} editActionLabel="Batch Edit" onDeleteSelected={handleBatchDelete} onClearSelection={() => { setSelectedKeys([]); setIsBatchDeleteOpen(false); setBatchDeleteLimit('all'); }} shiftModeEnabled={shiftMode} onToggleShiftMode={() => setShiftMode((value) => !value)} />
+            <BatchActionBar selectedCount={selectedIds.length} onViewSelected={() => setIsBatchPreviewOpen(true)} onEditSelected={() => setIsBatchEditOpen(true)} editActionLabel={t('Batch Edit')} onDeleteSelected={handleBatchDelete} onClearSelection={() => { setSelectedKeys([]); setIsBatchDeleteOpen(false); setBatchDeleteLimit('all'); }} shiftModeEnabled={shiftMode} onToggleShiftMode={() => setShiftMode((value) => !value)} />
             <div className="rounded-2xl border border-border/70 bg-card/90 p-3 shadow-sm">
               <DataTable tableId="timetables-index" columns={columns} data={rows} actions={tableActions} pagination={pagination} onPageChange={(page) => applySearch(page)} perPage={activePerPage} onPerPageChange={(value) => applySearch(1, value)} selectableRows selectedRowKeys={selectedKeys} onSelectedRowKeysChange={(keys) => { setSelectedKeys(keys); if (keys.length === 0) { setIsBatchDeleteOpen(false); setBatchDeleteLimit('all'); } }} rangeSelectMode={shiftMode} />
             </div>
@@ -733,7 +735,7 @@ export default function Index({ timetables, classes, subjects, teachers, query }
       >
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
-            <DialogTitle>Batch Create Timetables</DialogTitle>
+            <DialogTitle>{t('Batch Create Timetables')}</DialogTitle>
             <DialogDescription>
               Add multiple timetable rows at once. Select a number to auto-add rows quickly.
             </DialogDescription>
@@ -742,9 +744,9 @@ export default function Index({ timetables, classes, subjects, teachers, query }
             <div className="rounded-2xl border border-border/70 bg-background/60 p-4 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{batchCreateRows.length} rows</Badge>
-                  <Badge variant="outline">Quick add: {batchCreateAutoAddCount}</Badge>
-                  <Badge variant="outline">Selected: {batchCreateSelectedRowKeys.length}</Badge>
+                  <Badge variant="secondary">{t(':count rows', { count: batchCreateRows.length })}</Badge>
+                  <Badge variant="outline">{t('Quick add: :count', { count: batchCreateAutoAddCount })}</Badge>
+                  <Badge variant="outline">{t('Selected: :count', { count: batchCreateSelectedRowKeys.length })}</Badge>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -759,7 +761,7 @@ export default function Index({ timetables, classes, subjects, teachers, query }
                     }}
                   >
                     <SelectTrigger className="h-9 w-28">
-                      <SelectValue placeholder="Rows" />
+                      <SelectValue placeholder={t('Rows')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="1">+1</SelectItem>
@@ -786,7 +788,7 @@ export default function Index({ timetables, classes, subjects, teachers, query }
               </div>
 
               <div className="mt-3 flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Required per row: day, start time, end time.</p>
+                <p className="text-sm text-muted-foreground">{t('Required per row: day, start time, end time.')}</p>
                 <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
                   <input
                     type="checkbox"
@@ -794,7 +796,7 @@ export default function Index({ timetables, classes, subjects, teachers, query }
                     checked={allBatchCreateRowsSelected}
                     onChange={(event) => toggleBatchCreateSelectAll(event.target.checked)}
                   />
-                  Select all
+                  {t('Select all')}
                 </label>
               </div>
 
@@ -815,27 +817,27 @@ export default function Index({ timetables, classes, subjects, teachers, query }
                     </div>
                     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                       <div className="space-y-1">
-                        <Label className="text-xs">Class</Label>
-                        <SearchableSelect value={row.class_id} options={classOptions} onChange={(value) => updateBatchCreateRow(row.key, { class_id: value })} placeholder="Optional class" searchPlaceholder="Search class..." />
+                        <Label className="text-xs">{t('Class')}</Label>
+                        <SearchableSelect value={row.class_id} options={classOptions} onChange={(value) => updateBatchCreateRow(row.key, { class_id: value })} placeholder={t('Optional class')} searchPlaceholder={t('Search class...')} />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Subject</Label>
-                        <SearchableSelect value={row.subject_id} options={subjectOptions} onChange={(value) => updateBatchCreateRow(row.key, { subject_id: value })} placeholder="Optional subject" searchPlaceholder="Search subject..." />
+                        <Label className="text-xs">{t('Subject')}</Label>
+                        <SearchableSelect value={row.subject_id} options={subjectOptions} onChange={(value) => updateBatchCreateRow(row.key, { subject_id: value })} placeholder={t('Optional subject')} searchPlaceholder={t('Search subject...')} />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Teacher</Label>
-                        <SearchableSelect value={row.teacher_id} options={teacherOptions} onChange={(value) => updateBatchCreateRow(row.key, { teacher_id: value })} placeholder="Optional teacher" searchPlaceholder="Search teacher..." />
+                        <Label className="text-xs">{t('Teacher')}</Label>
+                        <SearchableSelect value={row.teacher_id} options={teacherOptions} onChange={(value) => updateBatchCreateRow(row.key, { teacher_id: value })} placeholder={t('Optional teacher')} searchPlaceholder={t('Search teacher...')} />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Day *</Label>
-                        <SearchableSelect value={row.day_of_week} options={dayOptions} onChange={(value) => updateBatchCreateRow(row.key, { day_of_week: value })} placeholder="Select day" searchPlaceholder="Search day..." clearable={false} />
+                        <Label className="text-xs">{t('Day *')}</Label>
+                        <SearchableSelect value={row.day_of_week} options={dayOptions} onChange={(value) => updateBatchCreateRow(row.key, { day_of_week: value })} placeholder={t('Select day')} searchPlaceholder={t('Search day...')} clearable={false} />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Start *</Label>
+                        <Label className="text-xs">{t('Start *')}</Label>
                         <Input type="time" value={row.start_time} onChange={(event) => updateBatchCreateRow(row.key, { start_time: event.target.value })} />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">End *</Label>
+                        <Label className="text-xs">{t('End *')}</Label>
                         <Input type="time" value={row.end_time} onChange={(event) => updateBatchCreateRow(row.key, { end_time: event.target.value })} />
                       </div>
                     </div>
@@ -854,10 +856,10 @@ export default function Index({ timetables, classes, subjects, teachers, query }
             </div>
 
             <div className="sticky bottom-0 z-30 mt-2 flex justify-end gap-2 bg-gradient-to-t from-background/80 to-transparent p-3">
-              <Button type="button" variant="outline" onClick={() => closeBatchCreateDialog()}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => closeBatchCreateDialog()}>{t('Cancel')}</Button>
               <Button type="submit" disabled={isSubmitting}>
                 <FilePlus2 className="size-4" />
-                Create {batchCreateRows.length}
+                {t('Create :count', { count: batchCreateRows.length })}
               </Button>
             </div>
           </form>
@@ -880,42 +882,42 @@ export default function Index({ timetables, classes, subjects, teachers, query }
       >
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Batch Edit Timetables</DialogTitle>
-            <DialogDescription>Update selected timetable rows.</DialogDescription>
+            <DialogTitle>{t('Batch Edit Timetables')}</DialogTitle>
+            <DialogDescription>{t('Update selected timetable rows.')}</DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={submitBatchEdit}>
             <div className="space-y-4 rounded-xl border border-border/70 bg-muted/20 p-4">
-              <Badge variant="secondary">{selectedIds.length} selected</Badge>
+              <Badge variant="secondary">{t(':count selected', { count: selectedIds.length })}</Badge>
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Class (optional)</Label>
-                  <SearchableSelect value={batchEditClassId} options={classOptions} onChange={setBatchEditClassId} placeholder="Keep current class" searchPlaceholder="Search class..." />
+                  <Label>{t('Class (optional)')}</Label>
+                  <SearchableSelect value={batchEditClassId} options={classOptions} onChange={setBatchEditClassId} placeholder={t('Keep current class')} searchPlaceholder={t('Search class...')} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Subject (optional)</Label>
-                  <SearchableSelect value={batchEditSubjectId} options={subjectOptions} onChange={setBatchEditSubjectId} placeholder="Keep current subject" searchPlaceholder="Search subject..." />
+                  <Label>{t('Subject (optional)')}</Label>
+                  <SearchableSelect value={batchEditSubjectId} options={subjectOptions} onChange={setBatchEditSubjectId} placeholder={t('Keep current subject')} searchPlaceholder={t('Search subject...')} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Teacher (optional)</Label>
-                  <SearchableSelect value={batchEditTeacherId} options={teacherOptions} onChange={setBatchEditTeacherId} placeholder="Keep current teacher" searchPlaceholder="Search teacher..." />
+                  <Label>{t('Teacher (optional)')}</Label>
+                  <SearchableSelect value={batchEditTeacherId} options={teacherOptions} onChange={setBatchEditTeacherId} placeholder={t('Keep current teacher')} searchPlaceholder={t('Search teacher...')} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Day (optional)</Label>
-                  <SearchableSelect value={batchEditDay} options={dayOptions} onChange={setBatchEditDay} placeholder="Keep current day" searchPlaceholder="Search day..." />
+                  <Label>{t('Day (optional)')}</Label>
+                  <SearchableSelect value={batchEditDay} options={dayOptions} onChange={setBatchEditDay} placeholder={t('Keep current day')} searchPlaceholder={t('Search day...')} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Start Time (optional)</Label>
+                  <Label>{t('Start Time (optional)')}</Label>
                   <Input type="time" value={batchEditStartTime} onChange={(event) => setBatchEditStartTime(event.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>End Time (optional)</Label>
+                  <Label>{t('End Time (optional)')}</Label>
                   <Input type="time" value={batchEditEndTime} onChange={(event) => setBatchEditEndTime(event.target.value)} />
                 </div>
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsBatchEditOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={isSubmitting || selectedIds.length === 0}><Pencil className="size-4" />Apply</Button>
+              <Button type="button" variant="outline" onClick={() => setIsBatchEditOpen(false)}>{t('Cancel')}</Button>
+              <Button type="submit" disabled={isSubmitting || selectedIds.length === 0}><Pencil className="size-4" />{t('Apply')}</Button>
             </div>
           </form>
         </DialogContent>
@@ -923,32 +925,32 @@ export default function Index({ timetables, classes, subjects, teachers, query }
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>Create Timetable</DialogTitle><DialogDescription>Add a timetable row without leaving the table page.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>{t('Create Timetable')}</DialogTitle><DialogDescription>{t('Add a timetable row without leaving the table page.')}</DialogDescription></DialogHeader>
           <form className="space-y-4" onSubmit={submitCreate}>
             <div className="grid gap-4 rounded-xl border border-border/70 bg-muted/20 p-4 md:grid-cols-2">
-              <div className="space-y-2"><Label>Class</Label><SearchableSelect value={formState.class_id} options={classOptions} onChange={(value) => setFormState((current) => ({ ...current, class_id: value }))} placeholder="Optional class" searchPlaceholder="Search class..." /></div>
-              <div className="space-y-2"><Label>Subject</Label><SearchableSelect value={formState.subject_id} options={subjectOptions} onChange={(value) => setFormState((current) => ({ ...current, subject_id: value }))} placeholder="Optional subject" searchPlaceholder="Search subject..." /></div>
-              <div className="space-y-2"><Label>Teacher</Label><SearchableSelect value={formState.teacher_id} options={teacherOptions} onChange={(value) => setFormState((current) => ({ ...current, teacher_id: value }))} placeholder="Optional teacher" searchPlaceholder="Search teacher..." /></div>
-              <div className="space-y-2"><Label>Day</Label><SearchableSelect value={formState.day_of_week} options={dayOptions} onChange={(value) => setFormState((current) => ({ ...current, day_of_week: value }))} placeholder="Select day" searchPlaceholder="Search day..." clearable={false} /></div>
-              <div className="space-y-2"><Label>Start Time</Label><Input type="time" value={formState.start_time} onChange={(event) => setFormState((current) => ({ ...current, start_time: event.target.value }))} /></div>
-              <div className="space-y-2"><Label>End Time</Label><Input type="time" value={formState.end_time} onChange={(event) => setFormState((current) => ({ ...current, end_time: event.target.value }))} /></div>
+              <div className="space-y-2"><Label>{t('Class')}</Label><SearchableSelect value={formState.class_id} options={classOptions} onChange={(value) => setFormState((current) => ({ ...current, class_id: value }))} placeholder={t('Optional class')} searchPlaceholder={t('Search class...')} /></div>
+              <div className="space-y-2"><Label>{t('Subject')}</Label><SearchableSelect value={formState.subject_id} options={subjectOptions} onChange={(value) => setFormState((current) => ({ ...current, subject_id: value }))} placeholder={t('Optional subject')} searchPlaceholder={t('Search subject...')} /></div>
+              <div className="space-y-2"><Label>{t('Teacher')}</Label><SearchableSelect value={formState.teacher_id} options={teacherOptions} onChange={(value) => setFormState((current) => ({ ...current, teacher_id: value }))} placeholder={t('Optional teacher')} searchPlaceholder={t('Search teacher...')} /></div>
+              <div className="space-y-2"><Label>{t('Day')}</Label><SearchableSelect value={formState.day_of_week} options={dayOptions} onChange={(value) => setFormState((current) => ({ ...current, day_of_week: value }))} placeholder={t('Select day')} searchPlaceholder={t('Search day...')} clearable={false} /></div>
+              <div className="space-y-2"><Label>{t('Start Time')}</Label><Input type="time" value={formState.start_time} onChange={(event) => setFormState((current) => ({ ...current, start_time: event.target.value }))} /></div>
+              <div className="space-y-2"><Label>{t('End Time')}</Label><Input type="time" value={formState.end_time} onChange={(event) => setFormState((current) => ({ ...current, end_time: event.target.value }))} /></div>
             </div>
-            <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button><Button type="submit" disabled={isSubmitting}><FilePlus2 className="size-4" />Create</Button></div>
+            <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>{t('Cancel')}</Button><Button type="submit" disabled={isSubmitting}><FilePlus2 className="size-4" />{t('Create')}</Button></div>
           </form>
         </DialogContent>
       </Dialog>
 
       <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
         <DialogContent className="sm:max-w-xl">
-          <DialogHeader><DialogTitle>Timetable Details</DialogTitle><DialogDescription>Quick preview directly from the index page.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>{t('Timetable Details')}</DialogTitle><DialogDescription>{t('Quick preview directly from the index page.')}</DialogDescription></DialogHeader>
           {selectedTimetable && (
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">ID</p><p className="font-medium">#{selectedTimetable.id}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Day</p><p className="font-medium">{selectedTimetable.day_of_week ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Class</p><p className="font-medium">{selectedTimetable.class_name ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Subject</p><p className="font-medium">{selectedTimetable.subject_name ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Teacher</p><p className="font-medium">{selectedTimetable.teacher_name ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Time</p><p className="font-medium">{selectedTimetable.start_time ?? '-'} - {selectedTimetable.end_time ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('ID')}</p><p className="font-medium">#{selectedTimetable.id}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Day')}</p><p className="font-medium">{t(String(selectedTimetable.day_of_week ?? '-'))}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Class')}</p><p className="font-medium">{selectedTimetable.class_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Subject')}</p><p className="font-medium">{selectedTimetable.subject_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Teacher')}</p><p className="font-medium">{selectedTimetable.teacher_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Time')}</p><p className="font-medium">{selectedTimetable.start_time ?? '-'} - {selectedTimetable.end_time ?? '-'}</p></div>
             </div>
           )}
         </DialogContent>
@@ -956,42 +958,42 @@ export default function Index({ timetables, classes, subjects, teachers, query }
 
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>Edit Timetable</DialogTitle><DialogDescription>Update timetable details inline from index.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>{t('Edit Timetable')}</DialogTitle><DialogDescription>{t('Update timetable details inline from index.')}</DialogDescription></DialogHeader>
           <form className="space-y-4" onSubmit={submitEdit}>
             <div className="grid gap-4 rounded-xl border border-border/70 bg-muted/20 p-4 md:grid-cols-2">
-              <div className="space-y-2"><Label>Class</Label><SearchableSelect value={formState.class_id} options={classOptions} onChange={(value) => setFormState((current) => ({ ...current, class_id: value }))} placeholder="Optional class" searchPlaceholder="Search class..." /></div>
-              <div className="space-y-2"><Label>Subject</Label><SearchableSelect value={formState.subject_id} options={subjectOptions} onChange={(value) => setFormState((current) => ({ ...current, subject_id: value }))} placeholder="Optional subject" searchPlaceholder="Search subject..." /></div>
-              <div className="space-y-2"><Label>Teacher</Label><SearchableSelect value={formState.teacher_id} options={teacherOptions} onChange={(value) => setFormState((current) => ({ ...current, teacher_id: value }))} placeholder="Optional teacher" searchPlaceholder="Search teacher..." /></div>
-              <div className="space-y-2"><Label>Day</Label><SearchableSelect value={formState.day_of_week} options={dayOptions} onChange={(value) => setFormState((current) => ({ ...current, day_of_week: value }))} placeholder="Select day" searchPlaceholder="Search day..." clearable={false} /></div>
-              <div className="space-y-2"><Label>Start Time</Label><Input type="time" value={formState.start_time} onChange={(event) => setFormState((current) => ({ ...current, start_time: event.target.value }))} /></div>
-              <div className="space-y-2"><Label>End Time</Label><Input type="time" value={formState.end_time} onChange={(event) => setFormState((current) => ({ ...current, end_time: event.target.value }))} /></div>
+              <div className="space-y-2"><Label>{t('Class')}</Label><SearchableSelect value={formState.class_id} options={classOptions} onChange={(value) => setFormState((current) => ({ ...current, class_id: value }))} placeholder={t('Optional class')} searchPlaceholder={t('Search class...')} /></div>
+              <div className="space-y-2"><Label>{t('Subject')}</Label><SearchableSelect value={formState.subject_id} options={subjectOptions} onChange={(value) => setFormState((current) => ({ ...current, subject_id: value }))} placeholder={t('Optional subject')} searchPlaceholder={t('Search subject...')} /></div>
+              <div className="space-y-2"><Label>{t('Teacher')}</Label><SearchableSelect value={formState.teacher_id} options={teacherOptions} onChange={(value) => setFormState((current) => ({ ...current, teacher_id: value }))} placeholder={t('Optional teacher')} searchPlaceholder={t('Search teacher...')} /></div>
+              <div className="space-y-2"><Label>{t('Day')}</Label><SearchableSelect value={formState.day_of_week} options={dayOptions} onChange={(value) => setFormState((current) => ({ ...current, day_of_week: value }))} placeholder={t('Select day')} searchPlaceholder={t('Search day...')} clearable={false} /></div>
+              <div className="space-y-2"><Label>{t('Start Time')}</Label><Input type="time" value={formState.start_time} onChange={(event) => setFormState((current) => ({ ...current, start_time: event.target.value }))} /></div>
+              <div className="space-y-2"><Label>{t('End Time')}</Label><Input type="time" value={formState.end_time} onChange={(event) => setFormState((current) => ({ ...current, end_time: event.target.value }))} /></div>
             </div>
-            <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button><Button type="submit" disabled={isSubmitting || !selectedTimetable}><Pencil className="size-4" />Save Changes</Button></div>
+            <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>{t('Cancel')}</Button><Button type="submit" disabled={isSubmitting || !selectedTimetable}><Pencil className="size-4" />{t('Save Changes')}</Button></div>
           </form>
         </DialogContent>
       </Dialog>
 
       <Dialog open={isBatchPreviewOpen} onOpenChange={setIsBatchPreviewOpen}>
         <DialogContent className="max-w-3xl">
-          <DialogHeader><DialogTitle>Batch Preview</DialogTitle><DialogDescription>Showing {selectedRows.length} selected timetable row(s).</DialogDescription></DialogHeader>
-          <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">{selectedRows.map((item) => (<div key={item.id} className="rounded-xl border border-border/70 bg-muted/30 p-3 text-sm"><span className="font-medium">#{item.id}</span> {item.class_name ?? '-'} - {item.subject_name ?? '-'} - {item.day_of_week ?? '-'} - {item.start_time ?? '-'}-{item.end_time ?? '-'}</div>))}</div>
+          <DialogHeader><DialogTitle>{t('Batch Preview')}</DialogTitle><DialogDescription>{t('Showing :count selected timetable row(s).', { count: selectedRows.length })}</DialogDescription></DialogHeader>
+          <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">{selectedRows.map((item) => (<div key={item.id} className="rounded-xl border border-border/70 bg-muted/30 p-3 text-sm"><span className="font-medium">#{item.id}</span> {item.class_name ?? '-'} - {item.subject_name ?? '-'} - {t(String(item.day_of_week ?? '-'))} - {item.start_time ?? '-'}-{item.end_time ?? '-'}</div>))}</div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={isBatchDeleteOpen} onOpenChange={setIsBatchDeleteOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Batch Delete Timetables</DialogTitle>
-            <DialogDescription>{selectedIds.length} row(s) selected. Choose how many rows to delete now.</DialogDescription>
+            <DialogTitle>{t('Batch Delete Timetables')}</DialogTitle>
+            <DialogDescription>{t(':count row(s) selected. Choose how many rows to delete now.', { count: selectedIds.length })}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid gap-3 rounded-xl border border-border/70 bg-muted/20 p-4 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-center">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{selectedIds.length} row(s) selected</Badge>
-                <Badge variant="outline">{batchDeleteIds.length} row(s) pending delete</Badge>
+                <Badge variant="secondary">{t(':count row(s) selected', { count: selectedIds.length })}</Badge>
+                <Badge variant="outline">{t(':count row(s) pending delete', { count: batchDeleteIds.length })}</Badge>
               </div>
               <Select value={batchDeleteLimit} onValueChange={setBatchDeleteLimit}>
-                <SelectTrigger><SelectValue placeholder="Delete amount" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t('Delete amount')} /></SelectTrigger>
                 <SelectContent>
                   {batchDeleteLimitOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
@@ -1001,7 +1003,7 @@ export default function Index({ timetables, classes, subjects, teachers, query }
             </div>
             <div className="max-h-[42vh] space-y-2 overflow-y-auto rounded-xl border border-border/70 bg-background p-3">
               {batchDeleteRows.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No rows available to delete.</p>
+                <p className="text-sm text-muted-foreground">{t('No rows available to delete.')}</p>
               ) : (
                 batchDeleteRows.map((item) => (
                   <div key={item.id} className="flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm">
@@ -1012,8 +1014,8 @@ export default function Index({ timetables, classes, subjects, teachers, query }
               )}
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsBatchDeleteOpen(false)}>Cancel</Button>
-              <Button type="button" variant="outline" disabled={isSubmitting || batchDeleteIds.length === 0} onClick={submitBatchDelete}><Trash2 className="size-4" />Delete {batchDeleteIds.length}</Button>
+              <Button type="button" variant="outline" onClick={() => setIsBatchDeleteOpen(false)}>{t('Cancel')}</Button>
+              <Button type="button" variant="outline" disabled={isSubmitting || batchDeleteIds.length === 0} onClick={submitBatchDelete}><Trash2 className="size-4" />{t('Delete :count', { count: batchDeleteIds.length })}</Button>
             </div>
           </div>
         </DialogContent>

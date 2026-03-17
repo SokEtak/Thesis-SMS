@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Message;
 
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreMessageRequest extends FormRequest
@@ -11,13 +12,29 @@ class StoreMessageRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'message_body' => is_string($this->message_body)
+                ? trim($this->message_body)
+                : $this->message_body,
+        ]);
+    }
+
     public function rules(): array
     {
         return [
-            'sender_id' => ['required', 'exists:users,id'],
-            'receiver_id' => ['required', 'exists:users,id'],
-            'message_body' => ['nullable', 'string'],
-            'is_read' => ['sometimes', 'boolean'],
+            'receiver_id' => [
+                'required',
+                'integer',
+                'exists:users,id',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if ((int) $value === (int) $this->user()?->id) {
+                        $fail('You cannot send a message to yourself.');
+                    }
+                },
+            ],
+            'message_body' => ['required', 'string', 'max:5000'],
         ];
     }
 }

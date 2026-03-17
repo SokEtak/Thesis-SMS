@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
+import { useTranslate } from '@/lib/i18n';
 import { requirePasswordConfirmation } from '@/lib/password-confirm';
 import { route } from '@/lib/route';
 import { type PaginatedData } from '@/types';
@@ -82,6 +83,7 @@ const resolvePagination = (data: PaginatedData<Timetable>): TablePaginationState
 };
 
 export default function Trashed({ timetables, query }: Props) {
+  const t = useTranslate();
   const queryFilter = typeof query.filter === 'object' && query.filter !== null
     ? (query.filter as Record<string, unknown>)
     : null;
@@ -118,7 +120,7 @@ export default function Trashed({ timetables, query }: Props) {
     return timetables.data
       .map((item) => ({
         id: item.id,
-        label: `${item.class_name ?? '-'} - ${item.subject_name ?? '-'} (${item.day_of_week ?? '-'})`,
+        label: `${item.class_name ?? '-'} - ${item.subject_name ?? '-'} (${t(String(item.day_of_week ?? '-'))})`,
       }))
       .filter((item, index, all) => (
         item.label.toLowerCase().includes(normalized)
@@ -169,11 +171,11 @@ export default function Trashed({ timetables, query }: Props) {
   };
 
   const handleRestore = async (timetable: Timetable) => {
-    if (!confirm(`Restore timetable #${timetable.id}?`)) {
+    if (!confirm(t('Restore :resource #:id?', { resource: t('Timetable').toLowerCase(), id: timetable.id }))) {
       return;
     }
 
-    const passwordConfirmed = await requirePasswordConfirmation(`restore timetable #${timetable.id}`);
+    const passwordConfirmed = await requirePasswordConfirmation(t('restore :resource #:id', { resource: t('Timetable').toLowerCase(), id: timetable.id }));
     if (!passwordConfirmed) {
       return;
     }
@@ -182,11 +184,11 @@ export default function Trashed({ timetables, query }: Props) {
   };
 
   const handleForceDelete = async (timetable: Timetable) => {
-    if (!confirm(`Permanently delete timetable #${timetable.id}? This cannot be undone.`)) {
+    if (!confirm(t('Permanently delete :resource #:id? This cannot be undone.', { resource: t('Timetable').toLowerCase(), id: timetable.id }))) {
       return;
     }
 
-    const passwordConfirmed = await requirePasswordConfirmation(`delete timetable #${timetable.id} permanently`);
+    const passwordConfirmed = await requirePasswordConfirmation(t('delete :resource #:id permanently', { resource: t('Timetable').toLowerCase(), id: timetable.id }));
     if (!passwordConfirmed) {
       return;
     }
@@ -199,11 +201,11 @@ export default function Trashed({ timetables, query }: Props) {
       return;
     }
 
-    if (!confirm(`Restore ${selectedIds.length} selected timetable row(s)?`)) {
+    if (!confirm(t('Restore :count selected :resource?', { count: selectedIds.length, resource: t('Timetables').toLowerCase() }))) {
       return;
     }
 
-    const passwordConfirmed = await requirePasswordConfirmation('batch restore selected timetables');
+    const passwordConfirmed = await requirePasswordConfirmation(t('batch restore selected :resource', { resource: t('Timetables').toLowerCase() }));
     if (!passwordConfirmed) {
       return;
     }
@@ -219,7 +221,7 @@ export default function Trashed({ timetables, query }: Props) {
       return;
     }
 
-    const passwordConfirmed = await requirePasswordConfirmation('batch permanently delete selected timetables');
+    const passwordConfirmed = await requirePasswordConfirmation(t('batch delete selected :resource permanently', { resource: t('Timetables').toLowerCase() }));
     if (!passwordConfirmed) {
       return;
     }
@@ -238,7 +240,7 @@ export default function Trashed({ timetables, query }: Props) {
     { key: 'class_name', label: 'Class', render: (value: unknown) => (value ? String(value) : '-') },
     { key: 'subject_name', label: 'Subject', render: (value: unknown) => (value ? String(value) : '-') },
     { key: 'teacher_name', label: 'Teacher', render: (value: unknown) => (value ? String(value) : '-') },
-    { key: 'day_of_week', label: 'Day', render: (value: unknown) => (value ? String(value) : '-') },
+    { key: 'day_of_week', label: 'Day', render: (value: unknown) => (value ? t(String(value)) : '-') },
     { key: 'start_time', label: 'Start', render: (value: unknown) => (value ? String(value) : '-') },
     { key: 'end_time', label: 'End', render: (value: unknown) => (value ? String(value) : '-') },
     { key: 'deleted_at', label: 'Deleted At', width: '220px', render: (value: unknown) => formatDate(value) },
@@ -246,19 +248,24 @@ export default function Trashed({ timetables, query }: Props) {
 
   return (
     <AppLayout>
-      <Head title="Trashed Timetables" />
+      <Head title={t('Trashed Timetables')} />
 
       <div className="space-y-4 p-4 md:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">Trashed Timetables</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{t('Trashed Timetables')}</h1>
             <p className="text-sm text-muted-foreground">
-              Restore or permanently delete removed timetable rows.
+              {t('Restore or permanently delete removed :resource.', { resource: t('Timetables').toLowerCase() })}
             </p>
           </div>
-          <Button variant="outline" onClick={() => router.get(route('timetables.index'))}>
-            Back to Timetables
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => router.get(route('timetables.index'))}>
+              {t('Back to :resource', { resource: t('Timetables') })}
+            </Button>
+            <Button onClick={() => router.get(route('timetables.create'))}>
+              {t('Create Timetable')}
+            </Button>
+          </div>
         </div>
 
         <div className="rounded-xl border border-border/70 bg-card p-4">
@@ -266,7 +273,7 @@ export default function Trashed({ timetables, query }: Props) {
             <div className="w-full lg:max-w-xl">
               <LiveSearchInput
                 value={searchValue}
-                placeholder="Search deleted timetables..."
+                placeholder={t('Search deleted :resource...', { resource: t('Timetables').toLowerCase() })}
                 suggestions={suggestions}
                 loading={false}
                 onChange={setSearchValue}
@@ -275,14 +282,14 @@ export default function Trashed({ timetables, query }: Props) {
               />
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">{filteredRows.length} on page</Badge>
+              <Badge variant="secondary">{t(':count on page', { count: filteredRows.length })}</Badge>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setSearchValue('')}
                 disabled={searchValue.trim().length === 0}
               >
-                Clear Search
+                {t('Clear Search')}
               </Button>
             </div>
           </div>
@@ -353,18 +360,18 @@ export default function Trashed({ timetables, query }: Props) {
       <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>Deleted Timetable Details</DialogTitle>
-            <DialogDescription>Quick preview from the trashed table.</DialogDescription>
+            <DialogTitle>{t('Deleted :resource Details', { resource: t('Timetable') })}</DialogTitle>
+            <DialogDescription>{t('Quick preview from the trashed table.')}</DialogDescription>
           </DialogHeader>
           {selectedTimetable && (
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">ID</p><p className="font-medium">#{selectedTimetable.id}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Day</p><p className="font-medium">{selectedTimetable.day_of_week ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Class</p><p className="font-medium">{selectedTimetable.class_name ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Subject</p><p className="font-medium">{selectedTimetable.subject_name ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Teacher</p><p className="font-medium">{selectedTimetable.teacher_name ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Time</p><p className="font-medium">{selectedTimetable.start_time ?? '-'} - {selectedTimetable.end_time ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3 sm:col-span-2"><p className="text-xs text-muted-foreground">Deleted At</p><p className="font-medium">{formatDate(selectedTimetable.deleted_at)}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('ID')}</p><p className="font-medium">#{selectedTimetable.id}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Day')}</p><p className="font-medium">{selectedTimetable.day_of_week ? t(String(selectedTimetable.day_of_week)) : '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Class')}</p><p className="font-medium">{selectedTimetable.class_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Subject')}</p><p className="font-medium">{selectedTimetable.subject_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Teacher')}</p><p className="font-medium">{selectedTimetable.teacher_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Time')}</p><p className="font-medium">{selectedTimetable.start_time ?? '-'} - {selectedTimetable.end_time ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3 sm:col-span-2"><p className="text-xs text-muted-foreground">{t('Deleted At')}</p><p className="font-medium">{formatDate(selectedTimetable.deleted_at)}</p></div>
             </div>
           )}
         </DialogContent>
@@ -373,11 +380,11 @@ export default function Trashed({ timetables, query }: Props) {
       <Dialog open={isBatchViewOpen} onOpenChange={setIsBatchViewOpen}>
         <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Batch Preview</DialogTitle>
-            <DialogDescription>Showing {selectedTimetables.length} selected deleted timetable row(s).</DialogDescription>
+            <DialogTitle>{t('Batch Preview')}</DialogTitle>
+            <DialogDescription>{t('Showing :count selected deleted :resource.', { count: selectedTimetables.length, resource: t('Timetables').toLowerCase() })}</DialogDescription>
           </DialogHeader>
           {selectedTimetables.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No selected rows to preview.</p>
+            <p className="text-sm text-muted-foreground">{t('No selected rows to preview.')}</p>
           ) : (
             <div className="grid max-h-[60vh] gap-3 overflow-y-auto sm:grid-cols-2 xl:grid-cols-3">
               {selectedTimetables.map((item) => (
@@ -385,8 +392,8 @@ export default function Trashed({ timetables, query }: Props) {
                   <p className="text-xs font-semibold tracking-wide text-muted-foreground">#{item.id}</p>
                   <p className="text-sm font-semibold text-foreground">{item.class_name ?? '-'}</p>
                   <p className="text-xs text-muted-foreground">{item.subject_name ?? '-'} / {item.teacher_name ?? '-'}</p>
-                  <p className="text-xs text-muted-foreground">{item.day_of_week ?? '-'} {item.start_time ?? '-'}-{item.end_time ?? '-'}</p>
-                  <p className="text-xs text-muted-foreground">Deleted: {formatDate(item.deleted_at)}</p>
+                  <p className="text-xs text-muted-foreground">{item.day_of_week ? t(String(item.day_of_week)) : '-'} {item.start_time ?? '-'}-{item.end_time ?? '-'}</p>
+                  <p className="text-xs text-muted-foreground">{t('Deleted: :value', { value: formatDate(item.deleted_at) })}</p>
                 </div>
               ))}
             </div>
@@ -397,15 +404,15 @@ export default function Trashed({ timetables, query }: Props) {
       <Dialog open={isBatchDeleteOpen} onOpenChange={setIsBatchDeleteOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Batch Permanent Delete</DialogTitle>
+            <DialogTitle>{t('Batch Permanent Delete')}</DialogTitle>
             <DialogDescription>
-              {selectedIds.length} selected row(s) will be permanently deleted.
+              {t(':count selected row(s) will be permanently deleted.', { count: selectedIds.length })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="max-h-[42vh] space-y-2 overflow-y-auto rounded-xl border border-border/70 bg-background p-3">
               {selectedTimetables.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No selected rows.</p>
+                <p className="text-sm text-muted-foreground">{t('No selected rows.')}</p>
               ) : (
                 selectedTimetables.map((item) => (
                   <div key={item.id} className="flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm">
@@ -417,7 +424,7 @@ export default function Trashed({ timetables, query }: Props) {
             </div>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setIsBatchDeleteOpen(false)}>
-                Cancel
+                {t('Cancel')}
               </Button>
               <Button
                 type="button"
@@ -426,7 +433,7 @@ export default function Trashed({ timetables, query }: Props) {
                 onClick={handleBatchForceDelete}
               >
                 <Trash2 className="size-4" />
-                Delete {selectedIds.length}
+                {t('Delete :count', { count: selectedIds.length })}
               </Button>
             </div>
           </div>

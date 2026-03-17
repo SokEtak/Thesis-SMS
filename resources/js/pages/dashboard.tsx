@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import AppLayout from '@/layouts/app-layout';
 import { route } from '@/lib/route';
@@ -33,12 +34,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard() {
+    const t = useTranslate();
     const { overview, resources, generated_at: generatedAt } = usePage<DashboardPageProps>().props;
     const resourceEntries = Object.entries(resources) as Array<[ResourceKey, ResourceSummary]>;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Dashboard" />
+            <Head title={t('Dashboard')} />
             <div className="space-y-6 p-4 md:p-6">
                 <section className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white via-blue-50/70 to-teal-50/80 shadow-md shadow-slate-200/60 dark:border-slate-700/70 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 dark:shadow-none">
                     <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-sky-500 via-cyan-500 to-emerald-500" />
@@ -49,17 +51,17 @@ export default function Dashboard() {
                         <div className="space-y-3">
                             <Badge variant="outline" className="rounded-full border-sky-200 bg-white/80 px-3 py-1 text-[11px] tracking-[0.12em] uppercase text-sky-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
                                 <Sparkles className="mr-1 size-3.5" />
-                                Insights Workspace
+                                {t('Insights Workspace')}
                             </Badge>
                             <h1 className="text-2xl font-semibold tracking-tight text-slate-900 md:text-3xl dark:text-slate-100">
-                                Dashboard Overview
+                                {t('Dashboard Overview')}
                             </h1>
                             <p className="max-w-2xl text-sm leading-6 text-slate-600 md:text-base dark:text-slate-300">
-                                Monitor academic and operational resources in one place with live totals, trend signals, and quick navigation.
+                                {t('Monitor academic and operational resources in one place with live totals, trend signals, and quick navigation.')}
                             </p>
                             <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200/80 bg-white/85 px-3 py-1.5 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300">
                                 <Clock3 className="size-3.5" />
-                                Updated {formatDateTime(generatedAt)}
+                                {t('Updated :time', { time: formatDateTime(generatedAt) })}
                             </div>
                         </div>
 
@@ -81,7 +83,7 @@ export default function Dashboard() {
                                         <Link href={route(meta.indexRoute)} prefetch>
                                             <span className="flex items-center gap-2">
                                                 <Icon className={cn('size-4', meta.iconTone)} />
-                                                <span className="text-sm font-medium">{meta.label}</span>
+                                                <span className="text-sm font-medium">{t(meta.label)}</span>
                                             </span>
                                             <ArrowRight className="size-4 text-muted-foreground" />
                                         </Link>
@@ -101,7 +103,7 @@ export default function Dashboard() {
                                         <Link href={route(meta.trashedRoute)} prefetch>
                                             <span className="flex items-center gap-2">
                                                 <Trash2 className="size-4 text-rose-500 dark:text-rose-400" />
-                                                <span className="text-sm font-medium">Trashed {meta.shortLabel}</span>
+                                                <span className="text-sm font-medium">{t('Trashed :resource', { resource: t(meta.label) })}</span>
                                             </span>
                                             <ArrowRight className="size-4 text-muted-foreground" />
                                         </Link>
@@ -114,33 +116,33 @@ export default function Dashboard() {
 
                 <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     <MetricCard
-                        label="Total Records"
+                        label={t('Total Records')}
                         value={overview.total_records}
-                        caption="Across all three resources"
+                        caption={t('Across all tracked resources')}
                         icon={Database}
                         iconClass="text-sky-600 dark:text-sky-300"
                         cardClass="border-sky-200/70 bg-gradient-to-br from-sky-50/90 to-background dark:border-slate-700 dark:from-slate-900"
                     />
                     <MetricCard
-                        label="Active Records"
+                        label={t('Active Records')}
                         value={overview.active_records}
-                        caption={`${overview.active_ratio.toFixed(1)}% active integrity`}
+                        caption={t(':percent% active integrity', { percent: overview.active_ratio.toFixed(1) })}
                         icon={Sparkles}
                         iconClass="text-emerald-600 dark:text-emerald-300"
                         cardClass="border-emerald-200/70 bg-gradient-to-br from-emerald-50/90 to-background dark:border-slate-700 dark:from-slate-900"
                     />
                     <MetricCard
-                        label="Trashed Records"
+                        label={t('Trashed Records')}
                         value={overview.trashed_records}
-                        caption="Soft deleted entries"
+                        caption={t('Soft deleted entries')}
                         icon={Trash2}
                         iconClass="text-rose-600 dark:text-rose-300"
                         cardClass="border-rose-200/70 bg-gradient-to-br from-rose-50/90 to-background dark:border-slate-700 dark:from-slate-900"
                     />
                     <MetricCard
-                        label="Created (7 Days)"
+                        label={t('Created (7 Days)')}
                         value={overview.created_last_7_days}
-                        caption="New records this week"
+                        caption={t('New records this week')}
                         icon={ArrowUpRight}
                         iconClass="text-violet-600 dark:text-violet-300"
                         cardClass="border-violet-200/70 bg-gradient-to-br from-violet-50/90 to-background dark:border-slate-700 dark:from-slate-900"
@@ -173,8 +175,8 @@ export default function Dashboard() {
                                 <CardHeader className="space-y-3 pb-4">
                                     <div className="flex items-start justify-between gap-3">
                                         <div>
-                                            <CardTitle className="text-base font-semibold">{meta.label}</CardTitle>
-                                            <CardDescription>{meta.description}</CardDescription>
+                                            <CardTitle className="text-base font-semibold">{t(meta.label)}</CardTitle>
+                                            <CardDescription>{t(meta.description)}</CardDescription>
                                         </div>
                                         <span className={cn('inline-flex size-9 items-center justify-center rounded-xl border bg-white shadow-sm dark:bg-slate-900', meta.iconContainerClass)}>
                                             <meta.icon className={cn('size-4', meta.iconTone)} />
@@ -183,10 +185,10 @@ export default function Dashboard() {
                                     {summary.can_view ? (
                                         <div className={cn('inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium', trendTone)}>
                                             <TrendIcon className="size-3.5" />
-                                            {formatTrendLabel(trend)}
+                                            {formatTrendLabel(trend, t)}
                                         </div>
                                     ) : (
-                                        <Badge variant="outline" className="w-fit rounded-full">No access</Badge>
+                                        <Badge variant="outline" className="w-fit rounded-full">{t('No access')}</Badge>
                                     )}
                                 </CardHeader>
 
@@ -195,17 +197,17 @@ export default function Dashboard() {
                                         <>
                                             <div className="grid grid-cols-2 gap-2">
                                                 <div className="rounded-xl border border-slate-200/80 bg-white/80 p-3 dark:border-slate-700 dark:bg-slate-900/70">
-                                                    <p className="text-xs font-medium text-muted-foreground">Total</p>
+                                                    <p className="text-xs font-medium text-muted-foreground">{t('Total')}</p>
                                                     <p className="mt-1 text-xl font-semibold">{formatNumber(summary.total)}</p>
                                                 </div>
                                                 <div className="rounded-xl border border-slate-200/80 bg-white/80 p-3 dark:border-slate-700 dark:bg-slate-900/70">
-                                                    <p className="text-xs font-medium text-muted-foreground">Trashed</p>
+                                                    <p className="text-xs font-medium text-muted-foreground">{t('Trashed')}</p>
                                                     <p className="mt-1 text-xl font-semibold">{formatNumber(summary.trashed)}</p>
                                                 </div>
                                             </div>
 
                                             <div className="space-y-2">
-                                                <p className="text-xs font-semibold tracking-[0.1em] uppercase text-muted-foreground">7-Day Activity</p>
+                                                <p className="text-xs font-semibold tracking-[0.1em] uppercase text-muted-foreground">{t('7-Day Activity')}</p>
                                                 <TrendBars series={summary.series} barClass={meta.barTone} />
                                             </div>
 
@@ -216,7 +218,7 @@ export default function Dashboard() {
                                                             key={`${resourceKey}-${item.key}`}
                                                             className="rounded-lg border border-slate-200/70 bg-white/75 px-2.5 py-2 text-xs dark:border-slate-700 dark:bg-slate-900/70"
                                                         >
-                                                            <p className="text-muted-foreground">{item.label}</p>
+                                                            <p className="text-muted-foreground">{t(item.label)}</p>
                                                             <p className="mt-1 font-semibold">{formatNumber(summary.stats[item.key] ?? 0)}</p>
                                                         </div>
                                                     ))}
@@ -226,19 +228,19 @@ export default function Dashboard() {
                                             <div className="flex gap-2">
                                                 <Button asChild size="sm" className="flex-1">
                                                     <Link href={route(meta.indexRoute)} prefetch>
-                                                        Open {meta.shortLabel}
+                                                        {t('Open :resource', { resource: t(meta.label) })}
                                                     </Link>
                                                 </Button>
                                                 <Button asChild size="sm" variant="outline" className="flex-1">
                                                     <Link href={route(meta.trashedRoute)} prefetch>
-                                                        View Trashed
+                                                        {t('View Trashed')}
                                                     </Link>
                                                 </Button>
                                             </div>
                                         </>
                                     ) : (
                                         <div className="rounded-xl border border-dashed border-slate-300/80 bg-slate-50/70 p-4 text-sm text-muted-foreground dark:border-slate-700 dark:bg-slate-900/60">
-                                            You do not currently have permission to view this resource.
+                                            {t('You do not currently have permission to view this resource.')}
                                         </div>
                                     )}
                                 </CardContent>
@@ -256,8 +258,8 @@ export default function Dashboard() {
                                 <CardHeader className="pb-3">
                                     <div className="flex items-center justify-between">
                                         <div className="space-y-1">
-                                            <CardTitle className="text-base">{meta.label} Recent</CardTitle>
-                                            <CardDescription>Latest entries</CardDescription>
+                                            <CardTitle className="text-base">{t(':resource Recent', { resource: t(meta.label) })}</CardTitle>
+                                            <CardDescription>{t('Latest entries')}</CardDescription>
                                         </div>
                                         <meta.icon className={cn('size-4', meta.iconTone)} />
                                     </div>
@@ -265,12 +267,12 @@ export default function Dashboard() {
                                 <CardContent className="space-y-2 pb-5">
                                     {!summary.can_view && (
                                         <div className="rounded-lg border border-dashed border-slate-300/80 bg-slate-50/60 px-3 py-3 text-sm text-muted-foreground dark:border-slate-700 dark:bg-slate-900/60">
-                                            No access for this section.
+                                            {t('No access for this section.')}
                                         </div>
                                     )}
                                     {summary.can_view && summary.recent.length === 0 && (
                                         <div className="rounded-lg border border-dashed border-slate-300/80 bg-slate-50/60 px-3 py-3 text-sm text-muted-foreground dark:border-slate-700 dark:bg-slate-900/60">
-                                            No records yet.
+                                            {t('No records yet.')}
                                         </div>
                                     )}
                                     {summary.can_view && summary.recent.map((item) => (
@@ -629,11 +631,15 @@ function formatDateTime(value: string | null | undefined): string {
     }).format(parsed);
 }
 
-function formatTrendLabel(trend: TrendSummary): string {
+function formatTrendLabel(
+    trend: TrendSummary,
+    t: (key: string, replacements?: Record<string, string | number>) => string,
+): string {
     if (trend.direction === 'flat') {
-        return 'No change vs previous 7 days';
+        return t('No change vs previous 7 days');
     }
 
-    const sign = trend.direction === 'up' ? '+' : '-';
-    return `${sign}${trend.percent}% vs previous 7 days`;
+    return trend.direction === 'up'
+        ? t('Increase of :percent% vs previous 7 days', { percent: trend.percent })
+        : t('Decrease of :percent% vs previous 7 days', { percent: trend.percent });
 }

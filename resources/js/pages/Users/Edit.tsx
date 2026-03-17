@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
+import { Button } from '@/components/ui/button';
 import UserForm from './_UserForm';
 import { User } from '@/types/models';
 import { route } from '@/lib/route';
@@ -18,9 +19,15 @@ export default function Edit({ user }: Props) {
       <Head title={`Edit User: ${user.name}`} />
       
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Edit User</h1>
-          <p className="text-gray-600 mt-2">Update user information</p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold">Edit User</h1>
+            <p className="text-gray-600 mt-2">Update user information</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => router.get(route('users.index'))}>Back</Button>
+            <Button onClick={() => router.get(route('users.create'))}>Create</Button>
+          </div>
         </div>
 
         <UserForm user={user} onSubmit={handleSubmit} />

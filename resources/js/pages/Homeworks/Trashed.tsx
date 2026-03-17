@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
+import { useTranslate } from '@/lib/i18n';
 import { requirePasswordConfirmation } from '@/lib/password-confirm';
 import { route } from '@/lib/route';
 import { type PaginatedData } from '@/types';
@@ -82,6 +83,7 @@ const resolvePagination = (data: PaginatedData<Homework>): TablePaginationState 
 };
 
 export default function Trashed({ homeworks, query }: Props) {
+  const t = useTranslate();
   const queryFilter = typeof query.filter === 'object' && query.filter !== null
     ? (query.filter as Record<string, unknown>)
     : null;
@@ -169,11 +171,11 @@ export default function Trashed({ homeworks, query }: Props) {
   };
 
   const handleRestore = async (homework: Homework) => {
-    if (!confirm(`Restore homework #${homework.id}?`)) {
+    if (!confirm(t('Restore :resource #:id?', { resource: t('Homework').toLowerCase(), id: homework.id }))) {
       return;
     }
 
-    const passwordConfirmed = await requirePasswordConfirmation(`restore homework #${homework.id}`);
+    const passwordConfirmed = await requirePasswordConfirmation(t('restore :resource #:id', { resource: t('Homework').toLowerCase(), id: homework.id }));
     if (!passwordConfirmed) {
       return;
     }
@@ -182,11 +184,11 @@ export default function Trashed({ homeworks, query }: Props) {
   };
 
   const handleForceDelete = async (homework: Homework) => {
-    if (!confirm(`Permanently delete homework #${homework.id}? This cannot be undone.`)) {
+    if (!confirm(t('Permanently delete :resource #:id? This cannot be undone.', { resource: t('Homework').toLowerCase(), id: homework.id }))) {
       return;
     }
 
-    const passwordConfirmed = await requirePasswordConfirmation(`delete homework #${homework.id} permanently`);
+    const passwordConfirmed = await requirePasswordConfirmation(t('delete :resource #:id permanently', { resource: t('Homework').toLowerCase(), id: homework.id }));
     if (!passwordConfirmed) {
       return;
     }
@@ -199,11 +201,11 @@ export default function Trashed({ homeworks, query }: Props) {
       return;
     }
 
-    if (!confirm(`Restore ${selectedIds.length} selected homework row(s)?`)) {
+    if (!confirm(t('Restore :count selected :resource?', { count: selectedIds.length, resource: t('Homeworks').toLowerCase() }))) {
       return;
     }
 
-    const passwordConfirmed = await requirePasswordConfirmation('batch restore selected homeworks');
+    const passwordConfirmed = await requirePasswordConfirmation(t('batch restore selected :resource', { resource: t('Homeworks').toLowerCase() }));
     if (!passwordConfirmed) {
       return;
     }
@@ -219,7 +221,7 @@ export default function Trashed({ homeworks, query }: Props) {
       return;
     }
 
-    const passwordConfirmed = await requirePasswordConfirmation('batch permanently delete selected homeworks');
+    const passwordConfirmed = await requirePasswordConfirmation(t('batch delete selected :resource permanently', { resource: t('Homeworks').toLowerCase() }));
     if (!passwordConfirmed) {
       return;
     }
@@ -244,19 +246,24 @@ export default function Trashed({ homeworks, query }: Props) {
 
   return (
     <AppLayout>
-      <Head title="Trashed Homeworks" />
+      <Head title={t('Trashed Homeworks')} />
 
       <div className="space-y-4 p-4 md:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">Trashed Homeworks</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{t('Trashed Homeworks')}</h1>
             <p className="text-sm text-muted-foreground">
-              Restore or permanently delete removed homework rows.
+              {t('Restore or permanently delete removed :resource.', { resource: t('Homeworks').toLowerCase() })}
             </p>
           </div>
-          <Button variant="outline" onClick={() => router.get(route('homeworks.index'))}>
-            Back to Homeworks
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => router.get(route('homeworks.index'))}>
+              {t('Back to :resource', { resource: t('Homeworks') })}
+            </Button>
+            <Button onClick={() => router.get(route('homeworks.create'))}>
+              {t('Create Homework')}
+            </Button>
+          </div>
         </div>
 
         <div className="rounded-xl border border-border/70 bg-card p-4">
@@ -264,7 +271,7 @@ export default function Trashed({ homeworks, query }: Props) {
             <div className="w-full lg:max-w-xl">
               <LiveSearchInput
                 value={searchValue}
-                placeholder="Search deleted homeworks..."
+                placeholder={t('Search deleted :resource...', { resource: t('Homeworks').toLowerCase() })}
                 suggestions={suggestions}
                 loading={false}
                 onChange={setSearchValue}
@@ -273,14 +280,14 @@ export default function Trashed({ homeworks, query }: Props) {
               />
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">{filteredRows.length} on page</Badge>
+              <Badge variant="secondary">{t(':count on page', { count: filteredRows.length })}</Badge>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setSearchValue('')}
                 disabled={searchValue.trim().length === 0}
               >
-                Clear Search
+                {t('Clear Search')}
               </Button>
             </div>
           </div>
@@ -351,18 +358,18 @@ export default function Trashed({ homeworks, query }: Props) {
       <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>Deleted Homework Details</DialogTitle>
-            <DialogDescription>Quick preview from the trashed table.</DialogDescription>
+            <DialogTitle>{t('Deleted :resource Details', { resource: t('Homework') })}</DialogTitle>
+            <DialogDescription>{t('Quick preview from the trashed table.')}</DialogDescription>
           </DialogHeader>
           {selectedHomework && (
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">ID</p><p className="font-medium">#{selectedHomework.id}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Title</p><p className="font-medium">{selectedHomework.title ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Class</p><p className="font-medium">{selectedHomework.class_name ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Subject</p><p className="font-medium">{selectedHomework.subject_name ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Teacher</p><p className="font-medium">{selectedHomework.teacher_name ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Deadline</p><p className="font-medium">{selectedHomework.deadline ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3 sm:col-span-2"><p className="text-xs text-muted-foreground">Deleted At</p><p className="font-medium">{formatDate(selectedHomework.deleted_at)}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('ID')}</p><p className="font-medium">#{selectedHomework.id}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Title')}</p><p className="font-medium">{selectedHomework.title ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Class')}</p><p className="font-medium">{selectedHomework.class_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Subject')}</p><p className="font-medium">{selectedHomework.subject_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Teacher')}</p><p className="font-medium">{selectedHomework.teacher_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Deadline')}</p><p className="font-medium">{selectedHomework.deadline ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3 sm:col-span-2"><p className="text-xs text-muted-foreground">{t('Deleted At')}</p><p className="font-medium">{formatDate(selectedHomework.deleted_at)}</p></div>
             </div>
           )}
         </DialogContent>
@@ -371,11 +378,11 @@ export default function Trashed({ homeworks, query }: Props) {
       <Dialog open={isBatchViewOpen} onOpenChange={setIsBatchViewOpen}>
         <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Batch Preview</DialogTitle>
-            <DialogDescription>Showing {selectedHomeworks.length} selected deleted homework row(s).</DialogDescription>
+            <DialogTitle>{t('Batch Preview')}</DialogTitle>
+            <DialogDescription>{t('Showing :count selected deleted :resource.', { count: selectedHomeworks.length, resource: t('Homeworks').toLowerCase() })}</DialogDescription>
           </DialogHeader>
           {selectedHomeworks.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No selected rows to preview.</p>
+            <p className="text-sm text-muted-foreground">{t('No selected rows to preview.')}</p>
           ) : (
             <div className="grid max-h-[60vh] gap-3 overflow-y-auto sm:grid-cols-2 xl:grid-cols-3">
               {selectedHomeworks.map((item) => (
@@ -383,8 +390,8 @@ export default function Trashed({ homeworks, query }: Props) {
                   <p className="text-xs font-semibold tracking-wide text-muted-foreground">#{item.id}</p>
                   <p className="text-sm font-semibold text-foreground">{item.title ?? '-'}</p>
                   <p className="text-xs text-muted-foreground">{item.class_name ?? '-'}</p>
-                  <p className="text-xs text-muted-foreground">Subject: {item.subject_name ?? '-'}</p>
-                  <p className="text-xs text-muted-foreground">Deleted: {formatDate(item.deleted_at)}</p>
+                  <p className="text-xs text-muted-foreground">{t('Subject')}: {item.subject_name ?? '-'}</p>
+                  <p className="text-xs text-muted-foreground">{t('Deleted: :value', { value: formatDate(item.deleted_at) })}</p>
                 </div>
               ))}
             </div>
@@ -395,15 +402,15 @@ export default function Trashed({ homeworks, query }: Props) {
       <Dialog open={isBatchDeleteOpen} onOpenChange={setIsBatchDeleteOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Batch Permanent Delete</DialogTitle>
+            <DialogTitle>{t('Batch Permanent Delete')}</DialogTitle>
             <DialogDescription>
-              {selectedIds.length} selected row(s) will be permanently deleted.
+              {t(':count selected row(s) will be permanently deleted.', { count: selectedIds.length })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="max-h-[42vh] space-y-2 overflow-y-auto rounded-xl border border-border/70 bg-background p-3">
               {selectedHomeworks.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No selected rows.</p>
+                <p className="text-sm text-muted-foreground">{t('No selected rows.')}</p>
               ) : (
                 selectedHomeworks.map((item) => (
                   <div key={item.id} className="flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm">
@@ -415,7 +422,7 @@ export default function Trashed({ homeworks, query }: Props) {
             </div>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setIsBatchDeleteOpen(false)}>
-                Cancel
+                {t('Cancel')}
               </Button>
               <Button
                 type="button"
@@ -424,7 +431,7 @@ export default function Trashed({ homeworks, query }: Props) {
                 onClick={handleBatchForceDelete}
               >
                 <Trash2 className="size-4" />
-                Delete {selectedIds.length}
+                {t('Delete :count', { count: selectedIds.length })}
               </Button>
             </div>
           </div>

@@ -2,6 +2,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  email_verified_at?: string | null;
   telegram_chat_id?: string | null;
   avatar?: string | null;
   phone?: string | null;
@@ -13,6 +14,7 @@ export interface User {
   class_name?: string | null;
   parent_id?: number | null;
   parent_name?: string | null;
+  locale?: string | null;
   role_name?: string | null;
   role_names?: string[];
   created_at: string;

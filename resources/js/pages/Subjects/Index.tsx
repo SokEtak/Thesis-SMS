@@ -2,6 +2,7 @@ import { type SearchSuggestion } from '@/components/LiveSearchInput';
 import { type SearchableSelectOption } from '@/components/SearchableSelect';
 import ResourcePageLayout from '@/components/ResourcePageLayout';
 import AppLayout from '@/layouts/app-layout';
+import { useTranslate } from '@/lib/i18n';
 import { requirePasswordConfirmation } from '@/lib/password-confirm';
 import { route } from '@/lib/route';
 import { type PaginatedData } from '@/types';
@@ -62,6 +63,7 @@ const createEmptyBatchCreateItem = (key: number): BatchCreateSubjectItemState =>
 });
 
 export default function Index({ subjects, codes, query }: Props) {
+  const t = useTranslate();
   const queryFilter = typeof query.filter === 'object' && query.filter !== null
     ? (query.filter as Record<string, unknown>)
     : null;
@@ -821,7 +823,7 @@ export default function Index({ subjects, codes, query }: Props) {
 
   return (
     <AppLayout>
-      <Head title="Subjects" />
+      <Head title={t('Subjects')} />
 
       <ResourcePageLayout
         title="Subjects"

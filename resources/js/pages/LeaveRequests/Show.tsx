@@ -26,6 +26,7 @@ export default function Show({ leaveRequest }: Props) {
           <h1 className="text-2xl font-semibold tracking-tight">Leave Request #{leaveRequest.id}</h1>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => router.get(route('leave-requests.index'))}>Back</Button>
+            <Button onClick={() => router.get(route('leave-requests.create'))}>Create</Button>
             <Button variant="outline" onClick={() => router.get(route('leave-requests.edit', leaveRequest.id))}>Edit</Button>
             <Button
               variant="destructive"

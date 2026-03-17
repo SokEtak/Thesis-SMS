@@ -12,6 +12,7 @@ export default function Show({ homeworkSubmission }: any) {
           <h1 className="text-3xl font-bold">Submission</h1>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.get(route('homework-submissions.index'))}>Back</Button>
+            <Button onClick={() => router.get(route('homework-submissions.create'))}>Create</Button>
             <Button onClick={() => router.get(route('homework-submissions.edit', homeworkSubmission.id))}>Edit</Button>
             <Button variant="danger" onClick={() => confirm('Delete?') && router.delete(route('homework-submissions.destroy', homeworkSubmission.id))}>Delete</Button>
           </div>

@@ -115,10 +115,10 @@ class UserController extends Controller
         $validated = $request->validate([
             'items' => ['required', 'array', 'min:1', 'max:100'],
             'items.*.name' => ['required', 'string', 'max:255'],
-            'items.*.email' => ['required', 'email:rfc,dns', 'max:255', 'distinct', 'unique:users,email'],
+            'items.*.email' => ['required', 'email:rfc', 'max:255', 'distinct', 'unique:users,email'],
             'items.*.password' => ['required', 'string', 'min:8', 'max:64'],
             'items.*.password_confirmation' => ['required', 'string', 'min:8', 'max:64'],
-            'items.*.phone' => ['nullable', 'string', 'max:32', 'regex:/^[0-9+\-() .]+$/'],
+            'items.*.phone' => ['nullable', 'string', 'max:32', 'regex:/^[0-9+\-() .]+(?:\s?(?:x|ext\.?)\s?\d+)?$/i'],
             'items.*.gender' => ['nullable', 'in:male,female'],
             'items.*.class_id' => ['nullable', 'integer', 'exists:classes,id'],
             'items.*.parent_id' => ['nullable', 'integer', 'exists:users,id'],

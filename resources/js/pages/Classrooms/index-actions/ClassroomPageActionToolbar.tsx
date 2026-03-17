@@ -1,88 +1,28 @@
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import ResourcePageActions from '@/components/ResourcePageActions';
 import { route } from '@/lib/route';
-import { Link } from '@inertiajs/react';
-import { Download, FilePlus2, Trash2, Upload } from 'lucide-react';
 import type { ChangeEvent, RefObject } from 'react';
 
 interface ClassroomPageActionToolbarProps {
   importInputRef: RefObject<HTMLInputElement | null>;
   onImportFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onOpenCreate: () => void;
   onOpenBatchCreate: () => void;
 }
 
 export default function ClassroomPageActionToolbar({
   importInputRef,
   onImportFileChange,
+  onOpenCreate,
   onOpenBatchCreate,
 }: ClassroomPageActionToolbarProps) {
   return (
-    <>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            className="size-9 p-0"
-            asChild
-          >
-            <a href={route('classrooms.export.csv')} aria-label="Export CSV">
-              <Download className="size-4" />
-            </a>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="top" align="center">Export CSV</TooltipContent>
-      </Tooltip>
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            className="size-9 p-0"
-            aria-label="Import"
-            onClick={() => importInputRef.current?.click()}
-          >
-            <Upload className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="top" align="center">Import</TooltipContent>
-      </Tooltip>
-      <input
-        ref={importInputRef}
-        type="file"
-        accept=".csv,.xlsx,.xls"
-        className="hidden"
-        onChange={onImportFileChange}
-      />
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            className="size-9 p-0"
-            aria-label="Trashed"
-            asChild
-          >
-            <Link href={route('classrooms.trashed')}>
-              <Trash2 className="size-4" />
-            </Link>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="top" align="center">Trashed</TooltipContent>
-      </Tooltip>
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            className="size-9 p-0"
-            aria-label="Batch Create"
-            onClick={onOpenBatchCreate}
-          >
-            <FilePlus2 className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="top" align="center">Batch Create</TooltipContent>
-      </Tooltip>
-    </>
+    <ResourcePageActions
+      exportHref={route('classrooms.export.csv')}
+      trashedHref={route('classrooms.trashed')}
+      importInputRef={importInputRef}
+      onImportFileChange={onImportFileChange}
+      onOpenCreate={onOpenCreate}
+      onOpenBatchCreate={onOpenBatchCreate}
+    />
   );
 }

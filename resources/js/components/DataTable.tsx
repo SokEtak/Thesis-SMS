@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useTranslate } from '@/lib/i18n';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -281,6 +282,7 @@ export default function DataTable<T extends TableRow>({
   onSelectedRowKeysChange,
   rangeSelectMode = false,
 }: DataTableProps<T>) {
+  const t = useTranslate();
   const normalizedActions = actions && actions.length > 0 ? actions : getLegacyActions<T>(onEdit, onDelete);
   const hasActions = normalizedActions.length > 0;
   const columnKeys = React.useMemo(
@@ -534,11 +536,14 @@ export default function DataTable<T extends TableRow>({
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
                 <Columns3 className="size-4" />
-                Columns ({visibleColumns.length}/{columns.length})
+                {t('Columns (:visible/:total)', {
+                  visible: visibleColumns.length,
+                  total: columns.length,
+                })}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('Toggle Columns')}</DropdownMenuLabel>
               {columns.map((column) => {
                 const key = String(column.key);
                 const canHide = column.canHide !== false;
@@ -552,7 +557,7 @@ export default function DataTable<T extends TableRow>({
                     disabled={disabled}
                     onCheckedChange={(checked) => toggleColumn(key, checked === true)}
                   >
-                    {column.label}
+                    {t(column.label)}
                   </DropdownMenuCheckboxItem>
                 );
               })}
@@ -574,7 +579,7 @@ export default function DataTable<T extends TableRow>({
                       className="size-4 cursor-pointer rounded border border-input align-middle accent-primary"
                       checked={allPageRowsSelected}
                       onChange={(event) => toggleAllRows(event.target.checked)}
-                      aria-label="Select all rows"
+                      aria-label={t('Select all rows')}
                     />
                   </th>
                 )}
@@ -587,12 +592,12 @@ export default function DataTable<T extends TableRow>({
                     )}
                     style={{ width: col.width }}
                   >
-                    {col.label}
+                    {t(col.label)}
                   </th>
                 ))}
                 {hasActions && (
                   <th className="px-4 py-3 text-right text-xs font-semibold tracking-wide uppercase text-muted-foreground">
-                    Actions
+                    {t('Actions')}
                   </th>
                 )}
               </tr>
@@ -604,7 +609,7 @@ export default function DataTable<T extends TableRow>({
                     colSpan={visibleColumns.length + (hasActions ? 1 : 0) + (selectableRows ? 1 : 0)}
                     className="px-4 py-10 text-center text-sm text-muted-foreground"
                   >
-                    {emptyText}
+                    {t(emptyText)}
                   </td>
                 </tr>
               )}
@@ -632,8 +637,8 @@ export default function DataTable<T extends TableRow>({
                             const useRangeSelection = nativeEvent.shiftKey || rangeSelectMode;
                             toggleRow(idx, rowKeyValue, event.target.checked, useRangeSelection);
                           }}
-                          aria-label={`Select row ${idx + 1}`}
-                          title="Hold Shift and click for range selection"
+                          aria-label={t('Select row :index', { index: idx + 1 })}
+                          title={t('Hold Shift and click for range selection')}
                         />
                       </td>
                     )}
@@ -655,6 +660,7 @@ export default function DataTable<T extends TableRow>({
                             const tone = resolveActionTone(action.variant);
                             const isIconOnly = action.iconOnly === true && Boolean(Icon);
                             const iconClass = resolveActionIconClass(action);
+                            const actionText = t(action.label);
 
                             return (
                               <Tooltip key={action.key ?? action.label}>
@@ -663,15 +669,15 @@ export default function DataTable<T extends TableRow>({
                                     variant={tone.variant}
                                     size="sm"
                                     className={cn(tone.className, isIconOnly && 'size-8 p-0')}
-                                    aria-label={action.label}
+                                    aria-label={actionText}
                                     onClick={() => action.onClick(row)}
                                   >
                                     {Icon && <Icon className={cn('size-4', iconClass)} />}
-                                    {!isIconOnly && action.label}
+                                    {!isIconOnly && actionText}
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent side="top" align="center">
-                                  {action.label}
+                                  {actionText}
                                 </TooltipContent>
                               </Tooltip>
                             );
@@ -699,7 +705,7 @@ export default function DataTable<T extends TableRow>({
                   <SelectTrigger
                     id={`datatable-per-page-${tableId}`}
                     className="h-9 w-20 rounded-md border border-input bg-background px-2 text-sm"
-                    aria-label="Rows per page"
+                    aria-label={t('Rows per page')}
                   >
                     <SelectValue />
                   </SelectTrigger>
@@ -714,7 +720,11 @@ export default function DataTable<T extends TableRow>({
               </div>
             )}
             <span className="text-sm text-muted-foreground">
-              Showing {start} to {end} of {pagination.total}
+              {t('Showing :start to :end of :total', {
+                start,
+                end,
+                total: pagination.total,
+              })}
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -725,7 +735,7 @@ export default function DataTable<T extends TableRow>({
                     variant="outline"
                     size="sm"
                     className="size-9 p-0"
-                    aria-label="First"
+                    aria-label={t('First')}
                     disabled={pagination.current_page <= 1}
                     onClick={() => onPageChange?.(1)}
                   >
@@ -733,7 +743,7 @@ export default function DataTable<T extends TableRow>({
                   </Button>
                 </span>
               </TooltipTrigger>
-              <TooltipContent side="top" align="center">First page</TooltipContent>
+              <TooltipContent side="top" align="center">{t('First page')}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -742,7 +752,7 @@ export default function DataTable<T extends TableRow>({
                     variant="outline"
                     size="sm"
                     className="size-9 p-0"
-                    aria-label="Previous"
+                    aria-label={t('Previous')}
                     disabled={pagination.current_page <= 1}
                     onClick={() => onPageChange?.(pagination.current_page - 1)}
                   >
@@ -750,7 +760,7 @@ export default function DataTable<T extends TableRow>({
                   </Button>
                 </span>
               </TooltipTrigger>
-              <TooltipContent side="top" align="center">Previous page</TooltipContent>
+              <TooltipContent side="top" align="center">{t('Previous page')}</TooltipContent>
             </Tooltip>
             {paginationItems.map((item) => (
               item.type === 'ellipsis'
@@ -772,7 +782,9 @@ export default function DataTable<T extends TableRow>({
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="top" align="center">
-                      {item.value === pagination.current_page ? 'Current page' : `Go to page ${item.value}`}
+                      {item.value === pagination.current_page
+                        ? t('Current page')
+                        : t('Go to page :page', { page: item.value })}
                     </TooltipContent>
                   </Tooltip>
                 )
@@ -784,7 +796,7 @@ export default function DataTable<T extends TableRow>({
                     variant="outline"
                     size="sm"
                     className="size-9 p-0"
-                    aria-label="Next"
+                    aria-label={t('Next')}
                     disabled={pagination.current_page >= pagination.last_page}
                     onClick={() => onPageChange?.(pagination.current_page + 1)}
                   >
@@ -792,7 +804,7 @@ export default function DataTable<T extends TableRow>({
                   </Button>
                 </span>
               </TooltipTrigger>
-              <TooltipContent side="top" align="center">Next page</TooltipContent>
+              <TooltipContent side="top" align="center">{t('Next page')}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -801,7 +813,7 @@ export default function DataTable<T extends TableRow>({
                     variant="outline"
                     size="sm"
                     className="size-9 p-0"
-                    aria-label="Last"
+                    aria-label={t('Last')}
                     disabled={pagination.current_page >= pagination.last_page}
                     onClick={() => onPageChange?.(pagination.last_page)}
                   >
@@ -809,7 +821,7 @@ export default function DataTable<T extends TableRow>({
                   </Button>
                 </span>
               </TooltipTrigger>
-              <TooltipContent side="top" align="center">Last page</TooltipContent>
+              <TooltipContent side="top" align="center">{t('Last page')}</TooltipContent>
             </Tooltip>
           </div>
         </div>

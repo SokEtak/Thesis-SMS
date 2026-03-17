@@ -1,6 +1,8 @@
 import AppLogoIcon from '@/components/app-logo-icon';
+import { useTranslate } from '@/lib/i18n';
 import { home } from '@/routes';
-import { Link } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
 
 interface AuthLayoutProps {
@@ -14,6 +16,9 @@ export default function AuthSimpleLayout({
     title,
     description,
 }: PropsWithChildren<AuthLayoutProps>) {
+    const t = useTranslate();
+    const { name } = usePage<SharedData>().props;
+
     return (
         <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
             <div className="w-full max-w-sm">
@@ -26,7 +31,12 @@ export default function AuthSimpleLayout({
                             <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
                                 <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
                             </div>
-                            <span className="sr-only">{title}</span>
+                            <div className="space-y-0.5 text-center">
+                                <p className="text-sm font-semibold">{name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {t('School operations made clear and connected.')}
+                                </p>
+                            </div>
                         </Link>
 
                         <div className="space-y-2 text-center">

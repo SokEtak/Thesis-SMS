@@ -254,9 +254,14 @@ export default function Trashed({ leaveRequests, query }: Props) {
               Restore or permanently delete removed leave request rows.
             </p>
           </div>
-          <Button variant="outline" onClick={() => router.get(route('leave-requests.index'))}>
-            Back to Leave Requests
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => router.get(route('leave-requests.index'))}>
+              Back to Leave Requests
+            </Button>
+            <Button onClick={() => router.get(route('leave-requests.create'))}>
+              Create Leave Request
+            </Button>
+          </div>
         </div>
 
         <div className="rounded-xl border border-border/70 bg-card p-4">

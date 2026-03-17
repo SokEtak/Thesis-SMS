@@ -15,11 +15,11 @@ class UserStoreRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email:rfc,dns', 'max:255', 'unique:users,email'],
+            'email' => ['required', 'email:rfc', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'max:64', 'confirmed'],
             'telegram_chat_id' => ['nullable', 'string', 'max:64', 'regex:/^[0-9+\-]+$/'],
             'avatar' => ['nullable', 'url', 'max:1024'],
-            'phone' => ['nullable', 'string', 'max:32', 'regex:/^[0-9+\-() .]+$/'],
+            'phone' => ['nullable', 'string', 'max:32', 'regex:/^[0-9+\-() .]+(?:\s?(?:x|ext\.?)\s?\d+)?$/i'],
             'gender' => ['nullable', 'in:male,female'],
             'dob' => ['nullable', 'date', 'before:today'],
             'position' => ['nullable', 'string', 'max:50'],

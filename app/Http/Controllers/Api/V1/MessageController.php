@@ -44,7 +44,14 @@ class MessageController extends Controller
     {
         $this->authorize('create', Message::class);
 
-        $item = $this->service->store($request->validated());
+        $actor = $request->user();
+        abort_if($actor === null, 403);
+
+        $payload = $request->validated();
+        $payload['sender_id'] = $actor->id;
+        $payload['is_read'] = false;
+
+        $item = $this->service->store($payload);
 
         return ApiResponse::created(new MessageResource($item));
     }

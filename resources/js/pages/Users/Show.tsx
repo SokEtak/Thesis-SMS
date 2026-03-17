@@ -35,6 +35,7 @@ export default function Show({ user }: Props) {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleBack}>Back</Button>
+            <Button onClick={() => router.get(route('users.create'))}>Create</Button>
             <Button variant="secondary" onClick={handleEdit}>Edit</Button>
             <Button variant="danger" onClick={handleDelete}>Delete</Button>
           </div>

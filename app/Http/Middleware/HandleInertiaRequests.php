@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -36,14 +36,23 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
+        $locale = app()->getLocale();
 
         return [
             ...parent::share($request),
             'name' => config('app.name'),
-            'quote' => ['message' => trim($message), 'author' => trim($author)],
+            'quote' => [
+                'message' => __('Keep classes, attendance, results, and communication aligned in one secure workspace.'),
+                'author' => config('app.name'),
+            ],
             'auth' => [
                 'user' => $request->user(),
+            ],
+            'i18n' => [
+                'locale' => $locale,
+                'fallbackLocale' => config('app.fallback_locale'),
+                'availableLocales' => array_values(config('app.supported_locales', [])),
+                'messages' => $this->loadTranslations($locale),
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
@@ -53,5 +62,23 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    /**
+     * Load the flat JSON translation catalog for the active locale.
+     *
+     * @return array<string, string>
+     */
+    private function loadTranslations(string $locale): array
+    {
+        $path = lang_path("{$locale}.json");
+
+        if (! File::exists($path)) {
+            return [];
+        }
+
+        $translations = json_decode((string) File::get($path), true);
+
+        return is_array($translations) ? $translations : [];
     }
 }

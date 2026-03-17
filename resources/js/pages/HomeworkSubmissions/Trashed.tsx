@@ -254,9 +254,14 @@ export default function Trashed({ homeworkSubmissions, query }: Props) {
               Restore or permanently delete removed submission rows.
             </p>
           </div>
-          <Button variant="outline" onClick={() => router.get(route('homework-submissions.index'))}>
-            Back to Submissions
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => router.get(route('homework-submissions.index'))}>
+              Back to Submissions
+            </Button>
+            <Button onClick={() => router.get(route('homework-submissions.create'))}>
+              Create Submission
+            </Button>
+          </div>
         </div>
 
         <div className="rounded-xl border border-border/70 bg-card p-4">

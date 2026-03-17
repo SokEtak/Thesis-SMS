@@ -12,7 +12,13 @@ export default function Edit({ homework }: any) {
     <AppLayout>
       <Head title={`Edit: ${homework.title}`} />
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Edit Homework</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-3xl font-bold">Edit Homework</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => router.get(route('homeworks.index'))}>Back</Button>
+            <Button onClick={() => router.get(route('homeworks.create'))}>Create</Button>
+          </div>
+        </div>
         <form onSubmit={(e) => { e.preventDefault(); router.put(route('homeworks.update', homework.id), formData); }} className="bg-white rounded-lg shadow p-6 space-y-6">
           <TextInput label="Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
           <div>

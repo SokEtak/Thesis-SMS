@@ -58,6 +58,9 @@ class MessageController extends Controller
             'messages' => $data,
             'users' => $this->userOptions(),
             'query' => $request->all(),
+            'can' => [
+                'create' => $request->user()?->can('create', Message::class) ?? false,
+            ],
         ]);
     }
 
@@ -92,7 +95,14 @@ class MessageController extends Controller
     {
         $this->authorize('create', Message::class);
 
-        $this->service->store($request->validated());
+        $actor = $request->user();
+        abort_if($actor === null, 403);
+
+        $payload = $request->validated();
+        $payload['sender_id'] = $actor->id;
+        $payload['is_read'] = false;
+
+        $this->service->store($payload);
 
         return redirect()->route('messages.index')
             ->with('success', 'Message sent successfully.');

@@ -26,6 +26,7 @@ export default function Show({ message }: Props) {
           <h1 className="text-2xl font-semibold tracking-tight">Message #{message.id}</h1>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => router.get(route('messages.index'))}>Back</Button>
+            <Button onClick={() => router.get(route('messages.create'))}>Create</Button>
             <Button variant="outline" onClick={() => router.get(route('messages.edit', message.id))}>Edit</Button>
             <Button
               variant="destructive"

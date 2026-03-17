@@ -252,9 +252,14 @@ export default function Trashed({ messages, query }: Props) {
               Restore or permanently delete removed message rows.
             </p>
           </div>
-          <Button variant="outline" onClick={() => router.get(route('messages.index'))}>
-            Back to Messages
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => router.get(route('messages.index'))}>
+              Back to Messages
+            </Button>
+            <Button onClick={() => router.get(route('messages.create'))}>
+              Create Message
+            </Button>
+          </div>
         </div>
 
         <div className="rounded-xl border border-border/70 bg-card p-4">
@@ -378,7 +383,7 @@ export default function Trashed({ messages, query }: Props) {
               {selectedMessages.map((item) => (
                 <div key={item.id} className="space-y-2 rounded-xl border border-border/70 bg-background p-3">
                   <p className="text-xs font-semibold tracking-wide text-muted-foreground">#{item.id}</p>
-                  <p className="text-sm font-semibold text-foreground">{item.sender_name ?? '-'} -> {item.receiver_name ?? '-'}</p>
+                  <p className="text-sm font-semibold text-foreground">{item.sender_name ?? '-'} {'->'} {item.receiver_name ?? '-'}</p>
                   <p className="text-xs text-muted-foreground line-clamp-3">{item.message_body ?? '-'}</p>
                   <p className="text-xs text-muted-foreground">Deleted: {formatDate(item.deleted_at)}</p>
                 </div>
@@ -403,7 +408,7 @@ export default function Trashed({ messages, query }: Props) {
               ) : (
                 selectedMessages.map((item) => (
                   <div key={item.id} className="flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm">
-                    <span className="font-medium text-foreground">{item.sender_name ?? '-'} -> {item.receiver_name ?? '-'}</span>
+                    <span className="font-medium text-foreground">{item.sender_name ?? '-'} {'->'} {item.receiver_name ?? '-'}</span>
                     <span className="text-xs text-muted-foreground">#{item.id}</span>
                   </div>
                 ))

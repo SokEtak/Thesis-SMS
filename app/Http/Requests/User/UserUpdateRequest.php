@@ -21,13 +21,13 @@ class UserUpdateRequest extends FormRequest
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'email' => [
-                'sometimes', 'required', 'email:rfc,dns', 'max:255',
+                'sometimes', 'required', 'email:rfc', 'max:255',
                 Rule::unique('users', 'email')->ignore($userId),
             ],
             'password' => ['nullable', 'string', 'min:8', 'max:64', 'confirmed'],
             'telegram_chat_id' => ['nullable', 'string', 'max:64', 'regex:/^[0-9+\-]+$/'],
             'avatar' => ['nullable', 'url', 'max:1024'],
-            'phone' => ['nullable', 'string', 'max:32', 'regex:/^[0-9+\-() .]+$/'],
+            'phone' => ['nullable', 'string', 'max:32', 'regex:/^[0-9+\-() .]+(?:\s?(?:x|ext\.?)\s?\d+)?$/i'],
             'gender' => ['nullable', 'in:male,female'],
             'dob' => ['nullable', 'date', 'before:today'],
             'position' => ['nullable', 'string', 'max:50'],

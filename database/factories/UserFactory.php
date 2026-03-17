@@ -56,6 +56,7 @@ class UserFactory extends Factory
             'dob' => fake()->date(),
             'telegram_chat_id' => fake()->numberBetween(100000, 999999),
             'avatar' => fake()->imageUrl(300, 300, 'people'),
+            'locale' => fake()->randomElement(['en', 'km']),
             'class_id' => Classroom::inRandomOrder()->value('id'),
             'parent_id' => Role::query()
                 ->where('name', 'Guardian')

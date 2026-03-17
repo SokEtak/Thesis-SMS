@@ -76,9 +76,15 @@ export default function Edit({ timetable, classes, subjects, teachers }: Props) 
     <AppLayout>
       <Head title={`Edit Timetable #${timetable.id}`} />
       <div className="mx-auto w-full max-w-3xl space-y-6 p-4 md:p-6">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Edit Timetable</h1>
-          <p className="text-sm text-muted-foreground">Update timetable values with current schema fields.</p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Edit Timetable</h1>
+            <p className="text-sm text-muted-foreground">Update timetable values with current schema fields.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => router.get(route('timetables.index'))}>Back</Button>
+            <Button onClick={() => router.get(route('timetables.create'))}>Create</Button>
+          </div>
         </div>
 
         <form onSubmit={submit} className="space-y-4 rounded-xl border border-border/70 bg-card p-4">

@@ -1,6 +1,7 @@
 import BatchActionBar from '@/components/BatchActionBar';
 import DataTable from '@/components/DataTable';
 import LiveSearchInput, { type SearchSuggestion } from '@/components/LiveSearchInput';
+import ResourcePageActions from '@/components/ResourcePageActions';
 import ResourcePageLayout from '@/components/ResourcePageLayout';
 import SearchableSelect, { type SearchableSelectOption } from '@/components/SearchableSelect';
 import { Badge } from '@/components/ui/badge';
@@ -10,15 +11,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
+import { useTranslate } from '@/lib/i18n';
 import { requirePasswordConfirmation } from '@/lib/password-confirm';
 import { route } from '@/lib/route';
 import { cn } from '@/lib/utils';
 import { type PaginatedData } from '@/types';
 import { type LeaveRequest } from '@/types/models';
-import { Head, Link, router } from '@inertiajs/react';
-import { ArrowUpDown, Download, Eye, FilePlus2, Pencil, Plus, RotateCcw, Search, Trash2, Upload } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { ArrowUpDown, Eye, FilePlus2, Pencil, Plus, RotateCcw, Search, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 
 interface Option {
@@ -143,6 +144,7 @@ export default function Index({
   approvers,
   query,
 }: Props) {
+  const t = useTranslate();
   const queryFilter = typeof query.filter === 'object' && query.filter !== null ? query.filter as Record<string, unknown> : null;
   const [search, setSearch] = useState(typeof query.q === 'string' ? query.q : String(queryFilter?.q ?? ''));
   const [studentId, setStudentId] = useState(normalizeFilterValue(query.student_id ?? queryFilter?.student_id));
@@ -626,7 +628,7 @@ export default function Index({
     { key: 'student_name', label: 'Student', render: (value: unknown) => (value ? String(value) : '-') },
     { key: 'start_date', label: 'Start Date', render: (value: unknown) => (value ? String(value) : '-') },
     { key: 'end_date', label: 'End Date', render: (value: unknown) => (value ? String(value) : '-') },
-    { key: 'status', label: 'Status', render: (value: unknown) => <Badge variant="outline">{value ? String(value) : '-'}</Badge> },
+    { key: 'status', label: 'Status', render: (value: unknown) => <Badge variant="outline">{value ? t(String(value)) : '-'}</Badge> },
     { key: 'approved_by_name', label: 'Approver', render: (value: unknown) => (value ? String(value) : '-') },
     { key: 'created_at', label: 'Created At', render: (value: unknown) => formatDate(value) },
   ];
@@ -639,71 +641,27 @@ export default function Index({
 
   return (
     <AppLayout>
-      <Head title="Leave Requests" />
+      <Head title={t('Leave Requests')} />
       <ResourcePageLayout
         title="Leave Requests"
         description="Track leave workflow with the same attendance-style index flow."
         actions={(
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="size-9 p-0" asChild>
-                  <a href={route('leave-requests.export.csv')} aria-label="Export CSV">
-                    <Download className="size-4" />
-                  </a>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Export CSV</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="size-9 p-0" aria-label="Import" onClick={() => importInputRef.current?.click()}>
-                  <Upload className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Import</TooltipContent>
-            </Tooltip>
-            <input ref={importInputRef} type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={handleImportFile} />
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="size-9 p-0" aria-label="Trashed" asChild>
-                  <Link href={route('leave-requests.trashed')}>
-                    <Trash2 className="size-4" />
-                  </Link>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Trashed</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="size-9 p-0" aria-label="Create" onClick={openCreateModal}>
-                  <Plus className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Create</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="size-9 p-0"
-                  aria-label="Batch Create"
-                  onClick={async () => {
-                    const passwordConfirmed = await requirePasswordConfirmation('open batch create leave requests form');
-                    if (!passwordConfirmed) {
-                      return;
-                    }
+          <ResourcePageActions
+            exportHref={route('leave-requests.export.csv')}
+            trashedHref={route('leave-requests.trashed')}
+            importInputRef={importInputRef}
+            onImportFileChange={handleImportFile}
+            onOpenCreate={openCreateModal}
+            onOpenBatchCreate={async () => {
+              const passwordConfirmed = await requirePasswordConfirmation('open batch create leave requests form');
+              if (!passwordConfirmed) {
+                return;
+              }
 
-                    resetBatchCreateForm();
-                    setIsBatchCreateOpen(true);
-                  }}
-                >
-                  <FilePlus2 className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Batch Create</TooltipContent>
-            </Tooltip>
-          </>
+              resetBatchCreateForm();
+              setIsBatchCreateOpen(true);
+            }}
+          />
         )}
       >
         <div className="space-y-4">

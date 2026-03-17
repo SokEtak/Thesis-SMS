@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useTranslate } from '@/lib/i18n';
 import { Info } from 'lucide-react';
 
 import { type SearchAlertState } from './classroom-index-types';
@@ -23,23 +24,25 @@ export default function ClassroomSearchResultActionDialog({
   onOpenChange,
   onSelectMatch,
 }: ClassroomSearchResultActionDialogProps) {
+  const t = useTranslate();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Search Result</DialogTitle>
+          <DialogTitle>{t('Search Result')}</DialogTitle>
           <DialogDescription>
-            Results for "{searchAlert.term}"
+            {t('Results for ":term"', { term: searchAlert.term })}
           </DialogDescription>
         </DialogHeader>
 
         <Alert>
           <Info className="size-4" />
-          <AlertTitle>Matched rows on current page: {searchAlert.count}</AlertTitle>
+          <AlertTitle>{t('Matched rows on current page: :count', { count: searchAlert.count })}</AlertTitle>
           <AlertDescription>
             {searchAlert.matches.length > 0
-              ? 'Top matching suggestions are listed below.'
-              : 'No suggestion matched. Try another keyword.'}
+              ? t('Top matching suggestions are listed below.')
+              : t('No suggestion matched. Try another keyword.')}
           </AlertDescription>
         </Alert>
 

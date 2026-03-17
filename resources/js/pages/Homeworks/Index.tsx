@@ -1,6 +1,7 @@
 import BatchActionBar from '@/components/BatchActionBar';
 import DataTable from '@/components/DataTable';
 import LiveSearchInput, { type SearchSuggestion } from '@/components/LiveSearchInput';
+import ResourcePageActions from '@/components/ResourcePageActions';
 import ResourcePageLayout from '@/components/ResourcePageLayout';
 import SearchableSelect, { type SearchableSelectOption } from '@/components/SearchableSelect';
 import { Badge } from '@/components/ui/badge';
@@ -10,15 +11,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
+import { useTranslate } from '@/lib/i18n';
 import { requirePasswordConfirmation } from '@/lib/password-confirm';
 import { route } from '@/lib/route';
 import { cn } from '@/lib/utils';
 import { type PaginatedData } from '@/types';
 import { type Homework } from '@/types/models';
-import { Head, Link, router } from '@inertiajs/react';
-import { ArrowUpDown, Download, ExternalLink, Eye, FilePlus2, Pencil, Plus, RotateCcw, Search, Trash2, Upload } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { ArrowUpDown, ExternalLink, Eye, FilePlus2, Pencil, Plus, RotateCcw, Search, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 
 interface Option {
@@ -137,6 +138,7 @@ export default function Index({
   teachers,
   query,
 }: Props) {
+  const t = useTranslate();
   const queryFilter = typeof query.filter === 'object' && query.filter !== null ? query.filter as Record<string, unknown> : null;
   const [search, setSearch] = useState(typeof query.q === 'string' ? query.q : String(queryFilter?.q ?? ''));
   const [classId, setClassId] = useState(normalizeFilterValue(query.class_id ?? queryFilter?.class_id));
@@ -263,15 +265,15 @@ export default function Index({
       return options;
     }
 
-    options.push({ value: 'all', label: `All selected (${selectedIds.length})` });
+    options.push({ value: 'all', label: t('All selected (:count)', { count: selectedIds.length }) });
     [5, 10, 20, 50].forEach((size) => {
       if (size < selectedIds.length) {
-        options.push({ value: String(size), label: `First ${size}` });
+        options.push({ value: String(size), label: t('First :count', { count: size }) });
       }
     });
 
     return options;
-  }, [selectedIds.length]);
+  }, [selectedIds.length, t]);
 
   const batchDeleteIds = useMemo(() => {
     if (batchDeleteLimit === 'all') {
@@ -350,7 +352,7 @@ export default function Index({
 
   const closeBatchCreateDialog = (force = false) => {
     if (!force && batchCreateDirty) {
-      const confirmed = confirm('You have unsaved batch homework rows. Discard changes and close?');
+      const confirmed = confirm(t('You have unsaved batch homework rows. Discard changes and close?'));
       if (!confirmed) {
         return;
       }
@@ -416,7 +418,7 @@ export default function Index({
   };
 
   const handleDelete = async (item: Homework) => {
-    if (!confirm(`Delete homework #${item.id}?`)) {
+    if (!confirm(t('Delete homework #:id?', { id: item.id }))) {
       return;
     }
     const passwordConfirmed = await requirePasswordConfirmation(`delete homework #${item.id}`);
@@ -501,7 +503,7 @@ export default function Index({
       file: createFile ?? undefined,
     };
     if (!payload.class_id || !payload.subject_id || !payload.teacher_id || payload.title.length === 0) {
-      alert('Class, subject, teacher, and title are required.');
+      alert(t('Class, subject, teacher, and title are required.'));
       return;
     }
 
@@ -526,7 +528,7 @@ export default function Index({
 
     const payload = buildPayload();
     if (!payload.class_id || !payload.subject_id || !payload.teacher_id || payload.title.length === 0) {
-      alert('Class, subject, teacher, and title are required.');
+      alert(t('Class, subject, teacher, and title are required.'));
       return;
     }
 
@@ -557,7 +559,7 @@ export default function Index({
       .filter((row) => row.class_id && row.subject_id && row.teacher_id && row.title.length > 0);
 
     if (payloadItems.length === 0) {
-      alert('Add at least one valid row with class, subject, teacher, and title.');
+      alert(t('Add at least one valid row with class, subject, teacher, and title.'));
       return;
     }
 
@@ -584,7 +586,7 @@ export default function Index({
     }
 
     if (batchEditDeadline.trim().length === 0) {
-      alert('Choose a deadline to apply.');
+      alert(t('Choose a deadline to apply.'));
       return;
     }
 
@@ -629,7 +631,7 @@ export default function Index({
   const openFilePreview = (fileUrl: string | null | undefined, fileTitle?: string | null) => {
     const normalized = typeof fileUrl === 'string' ? fileUrl.trim() : '';
     if (normalized.length === 0) {
-      alert('No file available for preview.');
+      alert(t('No file available for preview.'));
       return;
     }
 
@@ -690,7 +692,7 @@ export default function Index({
               onClick={() => openFilePreview(row.file_url, row.title)}
             >
               <Eye className="size-4" />
-              Preview
+              {t('Preview')}
             </Button>
           )
           : '-'
@@ -708,97 +710,53 @@ export default function Index({
 
   return (
     <AppLayout>
-      <Head title="Homeworks" />
+      <Head title={t('Homeworks')} />
       <ResourcePageLayout
         title="Homeworks"
         description="Manage homework records with the same attendance-style index flow."
         actions={(
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="size-9 p-0" asChild>
-                  <a href={route('homeworks.export.csv')} aria-label="Export CSV">
-                    <Download className="size-4" />
-                  </a>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Export CSV</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="size-9 p-0" aria-label="Import" onClick={() => importInputRef.current?.click()}>
-                  <Upload className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Import</TooltipContent>
-            </Tooltip>
-            <input ref={importInputRef} type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={handleImportFile} />
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="size-9 p-0" aria-label="Trashed" asChild>
-                  <Link href={route('homeworks.trashed')}>
-                    <Trash2 className="size-4" />
-                  </Link>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Trashed</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="size-9 p-0" aria-label="Create" onClick={openCreateModal}>
-                  <Plus className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Create</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="size-9 p-0"
-                  aria-label="Batch Create"
-                  onClick={async () => {
-                    const passwordConfirmed = await requirePasswordConfirmation('open batch create homeworks form');
-                    if (!passwordConfirmed) {
-                      return;
-                    }
+          <ResourcePageActions
+            exportHref={route('homeworks.export.csv')}
+            trashedHref={route('homeworks.trashed')}
+            importInputRef={importInputRef}
+            onImportFileChange={handleImportFile}
+            onOpenCreate={openCreateModal}
+            onOpenBatchCreate={async () => {
+              const passwordConfirmed = await requirePasswordConfirmation('open batch create homeworks form');
+              if (!passwordConfirmed) {
+                return;
+              }
 
-                    resetBatchCreateForm();
-                    setIsBatchCreateOpen(true);
-                  }}
-                >
-                  <FilePlus2 className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="center">Batch Create</TooltipContent>
-            </Tooltip>
-          </>
+              resetBatchCreateForm();
+              setIsBatchCreateOpen(true);
+            }}
+          />
         )}
       >
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <Card className="gap-0 overflow-hidden border-sky-200/70 bg-gradient-to-br from-sky-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card">
               <CardContent className="p-4">
-                <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Total Homeworks</p>
+                <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('Total Homeworks')}</p>
                 <p className="mt-1 text-2xl font-semibold">{pagination.total}</p>
               </CardContent>
             </Card>
             <Card className="gap-0 overflow-hidden border-emerald-200/70 bg-gradient-to-br from-emerald-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card">
               <CardContent className="p-4">
-                <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">With Deadline</p>
+                <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('With Deadline')}</p>
                 <p className="mt-1 text-2xl font-semibold">{rows.filter((item) => Boolean(item.deadline)).length}</p>
               </CardContent>
             </Card>
             <Card className="gap-0 overflow-hidden border-amber-200/70 bg-gradient-to-br from-amber-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card">
               <CardContent className="p-4">
-                <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">No Deadline</p>
+                <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('No Deadline')}</p>
                 <p className="mt-1 text-2xl font-semibold">{rows.filter((item) => !item.deadline).length}</p>
               </CardContent>
             </Card>
             <Card className="gap-0 overflow-hidden border-violet-200/70 bg-gradient-to-br from-violet-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card">
               <CardContent className="p-4">
-                <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Filter Mode</p>
-                <p className="mt-1 text-2xl font-semibold">{hasActiveFilter ? 'Active' : 'Idle'}</p>
+                <p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('Filter Mode')}</p>
+                <p className="mt-1 text-2xl font-semibold">{hasActiveFilter ? t('Active') : t('Idle')}</p>
               </CardContent>
             </Card>
           </div>
@@ -806,14 +764,14 @@ export default function Index({
           <section className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
             <div className="space-y-3 rounded-2xl border border-sky-200/70 bg-gradient-to-br from-sky-50/80 via-background to-cyan-50/60 p-4 shadow-sm dark:border-border dark:from-background dark:via-background dark:to-background">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold tracking-[0.15em] uppercase text-sky-700 dark:text-muted-foreground">Search & Discover</p>
-                {(search || classId || subjectId || teacherId) && <Badge variant="secondary">Live ({rows.length})</Badge>}
+                <p className="text-xs font-semibold tracking-[0.15em] uppercase text-sky-700 dark:text-muted-foreground">{t('Search & Discover')}</p>
+                {(search || classId || subjectId || teacherId) && <Badge variant="secondary">{t('Live (:count)', { count: rows.length })}</Badge>}
               </div>
               <LiveSearchInput value={search} suggestions={suggestionItems} placeholder="Search title, class, subject, teacher..." onChange={setSearch} onSelectSuggestion={(item) => { setSearch(item.label); applySearch(1); }} onSubmit={() => applySearch(1)} />
               <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-                <SearchableSelect value={classId} options={classOptions} onChange={setClassId} placeholder="Filter class" searchPlaceholder="Search class..." clearLabel="All classes" />
-                <SearchableSelect value={subjectId} options={subjectOptions} onChange={setSubjectId} placeholder="Filter subject" searchPlaceholder="Search subject..." clearLabel="All subjects" />
-                <SearchableSelect value={teacherId} options={teacherOptions} onChange={setTeacherId} placeholder="Filter teacher" searchPlaceholder="Search teacher..." clearLabel="All teachers" />
+                <SearchableSelect value={classId} options={classOptions} onChange={setClassId} placeholder={t('Filter class')} searchPlaceholder={t('Search class...')} clearLabel={t('All classes')} />
+                <SearchableSelect value={subjectId} options={subjectOptions} onChange={setSubjectId} placeholder={t('Filter subject')} searchPlaceholder={t('Search subject...')} clearLabel={t('All subjects')} />
+                <SearchableSelect value={teacherId} options={teacherOptions} onChange={setTeacherId} placeholder={t('Filter teacher')} searchPlaceholder={t('Search teacher...')} clearLabel={t('All teachers')} />
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" className="size-9 p-0" onClick={() => applySearch(1)}><Search className="size-4" /></Button>
@@ -822,34 +780,34 @@ export default function Index({
             </div>
 
             <div className="space-y-3 rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/80 via-background to-teal-50/60 p-4 shadow-sm dark:border-border dark:from-background dark:via-background dark:to-background">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground"><ArrowUpDown className="size-4" />Sort & Scale</div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground"><ArrowUpDown className="size-4" />{t('Sort & Scale')}</div>
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                 <Select value={sortBy} onValueChange={(value) => { const nextSort = normalizeSortBy(value); setSortBy(nextSort); applySearch(1, undefined, nextSort, sortDir); }}>
-                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder="Sort by" /></SelectTrigger>
+                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder={t('Sort by')} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="id">ID</SelectItem>
-                    <SelectItem value="title">Title</SelectItem>
-                    <SelectItem value="deadline">Deadline</SelectItem>
-                    <SelectItem value="created_at">Created At</SelectItem>
+                    <SelectItem value="id">{t('ID')}</SelectItem>
+                    <SelectItem value="title">{t('Title')}</SelectItem>
+                    <SelectItem value="deadline">{t('Deadline')}</SelectItem>
+                    <SelectItem value="created_at">{t('Created At')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={sortDir} onValueChange={(value) => { const nextDir = value === 'desc' ? 'desc' : 'asc'; setSortDir(nextDir); applySearch(1, undefined, sortBy, nextDir); }}>
-                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder="Direction" /></SelectTrigger>
-                  <SelectContent><SelectItem value="asc">Asc</SelectItem><SelectItem value="desc">Desc</SelectItem></SelectContent>
+                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder={t('Direction')} /></SelectTrigger>
+                  <SelectContent><SelectItem value="asc">{t('Asc')}</SelectItem><SelectItem value="desc">{t('Desc')}</SelectItem></SelectContent>
                 </Select>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline">Total {pagination.total}</Badge>
-                <Badge variant="outline">Page {pagination.current_page}/{pagination.last_page}</Badge>
-                <Badge variant="outline">{activePerPage} per page</Badge>
+                <Badge variant="outline">{t('Total :count', { count: pagination.total })}</Badge>
+                <Badge variant="outline">{t('Page :current/:last', { current: pagination.current_page, last: pagination.last_page })}</Badge>
+                <Badge variant="outline">{t(':count per page', { count: activePerPage })}</Badge>
               </div>
             </div>
           </section>
 
           <section className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">Homework Records</h2>
-              <p className="text-sm text-muted-foreground">Range-select and batch actions are aligned with other upgraded tables.</p>
+              <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">{t('Homework Records')}</h2>
+              <p className="text-sm text-muted-foreground">{t('Range-select and batch actions are aligned with other upgraded tables.')}</p>
             </div>
             <BatchActionBar
               selectedCount={selectedIds.length}
@@ -898,18 +856,18 @@ export default function Index({
       >
         <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
-            <DialogTitle>Batch Create Homeworks</DialogTitle>
+            <DialogTitle>{t('Batch Create Homeworks')}</DialogTitle>
             <DialogDescription>
-              Add multiple homework rows at once. Select a number to auto-add rows quickly.
+              {t('Add multiple homework rows at once. Select a number to auto-add rows quickly.')}
             </DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={submitBatchCreate}>
             <div className="rounded-2xl border border-border/70 bg-background/60 p-4 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{batchCreateRows.length} rows</Badge>
-                  <Badge variant="outline">Quick add: {batchCreateAutoAddCount}</Badge>
-                  <Badge variant="outline">Selected: {batchCreateSelectedRowKeys.length}</Badge>
+                  <Badge variant="secondary">{t(':count rows', { count: batchCreateRows.length })}</Badge>
+                  <Badge variant="outline">{t('Quick add: :count', { count: batchCreateAutoAddCount })}</Badge>
+                  <Badge variant="outline">{t('Selected: :count', { count: batchCreateSelectedRowKeys.length })}</Badge>
                 </div>
                 <div className="flex items-center gap-2">
                   <Select
@@ -923,7 +881,7 @@ export default function Index({
                     }}
                   >
                     <SelectTrigger className="h-9 w-28">
-                      <SelectValue placeholder="Rows" />
+                      <SelectValue placeholder={t('Rows')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="1">+1</SelectItem>
@@ -942,7 +900,7 @@ export default function Index({
               </div>
 
               <div className="mt-3 flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Required per row: class, subject, teacher, title.</p>
+                <p className="text-sm text-muted-foreground">{t('Required per row: class, subject, teacher, title.')}</p>
                 <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
                   <input
                     type="checkbox"
@@ -950,7 +908,7 @@ export default function Index({
                     checked={allBatchCreateRowsSelected}
                     onChange={(event) => toggleBatchCreateSelectAll(event.target.checked)}
                   />
-                  Select all
+                  {t('Select all')}
                 </label>
               </div>
 
@@ -971,36 +929,36 @@ export default function Index({
                     </div>
                     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                       <div className="space-y-1">
-                        <Label className="text-xs">Class *</Label>
-                        <SearchableSelect value={row.class_id} options={classOptions} onChange={(value) => updateBatchCreateRow(row.key, { class_id: value })} placeholder="Select class" searchPlaceholder="Search class..." clearable={false} />
+                        <Label className="text-xs">{t('Class *')}</Label>
+                        <SearchableSelect value={row.class_id} options={classOptions} onChange={(value) => updateBatchCreateRow(row.key, { class_id: value })} placeholder={t('Select class')} searchPlaceholder={t('Search class...')} clearable={false} />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Subject *</Label>
-                        <SearchableSelect value={row.subject_id} options={subjectOptions} onChange={(value) => updateBatchCreateRow(row.key, { subject_id: value })} placeholder="Select subject" searchPlaceholder="Search subject..." clearable={false} />
+                        <Label className="text-xs">{t('Subject *')}</Label>
+                        <SearchableSelect value={row.subject_id} options={subjectOptions} onChange={(value) => updateBatchCreateRow(row.key, { subject_id: value })} placeholder={t('Select subject')} searchPlaceholder={t('Search subject...')} clearable={false} />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Teacher *</Label>
-                        <SearchableSelect value={row.teacher_id} options={teacherOptions} onChange={(value) => updateBatchCreateRow(row.key, { teacher_id: value })} placeholder="Select teacher" searchPlaceholder="Search teacher..." clearable={false} />
+                        <Label className="text-xs">{t('Teacher *')}</Label>
+                        <SearchableSelect value={row.teacher_id} options={teacherOptions} onChange={(value) => updateBatchCreateRow(row.key, { teacher_id: value })} placeholder={t('Select teacher')} searchPlaceholder={t('Search teacher...')} clearable={false} />
                       </div>
                       <div className="space-y-1 xl:col-span-2">
-                        <Label className="text-xs">Title *</Label>
-                        <Input value={row.title} onChange={(event) => updateBatchCreateRow(row.key, { title: event.target.value })} placeholder="Homework title" />
+                        <Label className="text-xs">{t('Title *')}</Label>
+                        <Input value={row.title} onChange={(event) => updateBatchCreateRow(row.key, { title: event.target.value })} placeholder={t('Homework title')} />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Deadline</Label>
+                        <Label className="text-xs">{t('Deadline')}</Label>
                         <Input type="date" value={row.deadline} onChange={(event) => updateBatchCreateRow(row.key, { deadline: event.target.value })} />
                       </div>
                       <div className="space-y-1 xl:col-span-2">
-                        <Label className="text-xs">File URL</Label>
-                        <Input value={row.file_url} onChange={(event) => updateBatchCreateRow(row.key, { file_url: event.target.value })} placeholder="Optional file URL" />
+                        <Label className="text-xs">{t('File URL')}</Label>
+                        <Input value={row.file_url} onChange={(event) => updateBatchCreateRow(row.key, { file_url: event.target.value })} placeholder={t('Optional file URL')} />
                       </div>
                       <div className="space-y-1 xl:col-span-3">
-                        <Label className="text-xs">Description</Label>
+                        <Label className="text-xs">{t('Description')}</Label>
                         <textarea
                           value={row.description}
                           onChange={(event) => updateBatchCreateRow(row.key, { description: event.target.value })}
                           className="min-h-[72px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
-                          placeholder="Optional description"
+                          placeholder={t('Optional description')}
                         />
                       </div>
                     </div>
@@ -1019,10 +977,10 @@ export default function Index({
             </div>
 
             <div className="sticky bottom-0 z-30 mt-2 flex justify-end gap-2 bg-gradient-to-t from-background/80 to-transparent p-3">
-              <Button type="button" variant="outline" onClick={() => closeBatchCreateDialog()}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => closeBatchCreateDialog()}>{t('Cancel')}</Button>
               <Button type="submit" disabled={isSubmitting}>
                 <FilePlus2 className="size-4" />
-                Create {batchCreateRows.length}
+                {t('Create :count', { count: batchCreateRows.length })}
               </Button>
             </div>
           </form>
@@ -1040,14 +998,14 @@ export default function Index({
       >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Batch Edit Deadline</DialogTitle>
-            <DialogDescription>Update deadline for selected homework rows.</DialogDescription>
+            <DialogTitle>{t('Batch Edit Deadline')}</DialogTitle>
+            <DialogDescription>{t('Update deadline for selected homework rows.')}</DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={submitBatchEditDeadline}>
             <div className="space-y-4 rounded-xl border border-border/70 bg-muted/20 p-4">
-              <Badge variant="secondary">{selectedIds.length} selected</Badge>
+              <Badge variant="secondary">{t(':count selected', { count: selectedIds.length })}</Badge>
               <div className="space-y-2">
-                <Label>Deadline</Label>
+                <Label>{t('Deadline')}</Label>
                 <Input
                   type="date"
                   value={batchEditDeadline}
@@ -1056,10 +1014,10 @@ export default function Index({
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsBatchEditOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsBatchEditOpen(false)}>{t('Cancel')}</Button>
               <Button type="submit" disabled={isSubmitting || selectedIds.length === 0 || !batchEditDeadline}>
                 <Pencil className="size-4" />
-                Apply
+                {t('Apply')}
               </Button>
             </div>
           </form>
@@ -1077,56 +1035,56 @@ export default function Index({
       >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Create Homework</DialogTitle>
-            <DialogDescription>Add new homework without leaving index.</DialogDescription>
+            <DialogTitle>{t('Create Homework')}</DialogTitle>
+            <DialogDescription>{t('Add new homework without leaving index.')}</DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={submitCreate}>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
-                <Label>Class</Label>
-                <SearchableSelect value={formState.class_id} options={classOptions} onChange={(value) => setFormState((current) => ({ ...current, class_id: value }))} placeholder="Select class" searchPlaceholder="Search class..." clearable={false} />
+                <Label>{t('Class')}</Label>
+                <SearchableSelect value={formState.class_id} options={classOptions} onChange={(value) => setFormState((current) => ({ ...current, class_id: value }))} placeholder={t('Select class')} searchPlaceholder={t('Search class...')} clearable={false} />
               </div>
               <div className="space-y-2">
-                <Label>Subject</Label>
-                <SearchableSelect value={formState.subject_id} options={subjectOptions} onChange={(value) => setFormState((current) => ({ ...current, subject_id: value }))} placeholder="Select subject" searchPlaceholder="Search subject..." clearable={false} />
+                <Label>{t('Subject')}</Label>
+                <SearchableSelect value={formState.subject_id} options={subjectOptions} onChange={(value) => setFormState((current) => ({ ...current, subject_id: value }))} placeholder={t('Select subject')} searchPlaceholder={t('Search subject...')} clearable={false} />
               </div>
               <div className="space-y-2">
-                <Label>Teacher</Label>
-                <SearchableSelect value={formState.teacher_id} options={teacherOptions} onChange={(value) => setFormState((current) => ({ ...current, teacher_id: value }))} placeholder="Select teacher" searchPlaceholder="Search teacher..." clearable={false} />
+                <Label>{t('Teacher')}</Label>
+                <SearchableSelect value={formState.teacher_id} options={teacherOptions} onChange={(value) => setFormState((current) => ({ ...current, teacher_id: value }))} placeholder={t('Select teacher')} searchPlaceholder={t('Search teacher...')} clearable={false} />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Title</Label>
-              <Input value={formState.title} onChange={(event) => setFormState((current) => ({ ...current, title: event.target.value }))} placeholder="Homework title" />
+              <Label>{t('Title')}</Label>
+              <Input value={formState.title} onChange={(event) => setFormState((current) => ({ ...current, title: event.target.value }))} placeholder={t('Homework title')} />
             </div>
             <div className="space-y-2">
-              <Label>Description</Label>
+              <Label>{t('Description')}</Label>
               <textarea
                 value={formState.description}
                 onChange={(event) => setFormState((current) => ({ ...current, description: event.target.value }))}
                 className="min-h-[96px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
-                placeholder="Optional description"
+                placeholder={t('Optional description')}
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Attachment</Label>
+                <Label>{t('Attachment')}</Label>
                 <Input
                   type="file"
                   onChange={(event) => setCreateFile(event.target.files?.[0] ?? null)}
                 />
                 <p className="text-xs text-muted-foreground">
-                  {createFile ? `Selected: ${createFile.name}` : 'Optional file upload'}
+                  {createFile ? t('Selected: :name', { name: createFile.name }) : t('Optional file upload')}
                 </p>
               </div>
               <div className="space-y-2">
-                <Label>Deadline</Label>
+                <Label>{t('Deadline')}</Label>
                 <Input type="date" value={formState.deadline} onChange={(event) => setFormState((current) => ({ ...current, deadline: event.target.value }))} />
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-              <Button type="submit" variant="outline" disabled={isSubmitting}>Create</Button>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>{t('Cancel')}</Button>
+              <Button type="submit" variant="outline" disabled={isSubmitting}>{t('Create')}</Button>
             </div>
           </form>
         </DialogContent>
@@ -1135,18 +1093,18 @@ export default function Index({
       <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>Homework Details</DialogTitle>
-            <DialogDescription>Inline view for selected homework.</DialogDescription>
+            <DialogTitle>{t('Homework Details')}</DialogTitle>
+            <DialogDescription>{t('Inline view for selected homework.')}</DialogDescription>
           </DialogHeader>
           {selectedHomework ? (
             <div className="space-y-2 text-sm">
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3"><span className="font-medium">ID:</span> #{selectedHomework.id}</div>
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3"><span className="font-medium">Title:</span> {selectedHomework.title ?? '-'}</div>
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3"><span className="font-medium">Class:</span> {selectedHomework.class_name ?? '-'}</div>
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3"><span className="font-medium">Subject:</span> {selectedHomework.subject_name ?? '-'}</div>
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3"><span className="font-medium">Teacher:</span> {selectedHomework.teacher_name ?? '-'}</div>
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3"><span className="font-medium">{t('ID')}:</span> #{selectedHomework.id}</div>
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3"><span className="font-medium">{t('Title')}:</span> {selectedHomework.title ?? '-'}</div>
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3"><span className="font-medium">{t('Class')}:</span> {selectedHomework.class_name ?? '-'}</div>
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3"><span className="font-medium">{t('Subject')}:</span> {selectedHomework.subject_name ?? '-'}</div>
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3"><span className="font-medium">{t('Teacher')}:</span> {selectedHomework.teacher_name ?? '-'}</div>
               <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                <span className="font-medium">File:</span>{' '}
+                <span className="font-medium">{t('File')}:</span>{' '}
                 {selectedHomework.file_url ? (
                   <Button
                     type="button"
@@ -1156,56 +1114,56 @@ export default function Index({
                     onClick={() => openFilePreview(selectedHomework.file_url, selectedHomework.title)}
                   >
                     <Eye className="size-4" />
-                    Preview
+                    {t('Preview')}
                   </Button>
                 ) : '-'}
               </div>
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3"><span className="font-medium">Deadline:</span> {selectedHomework.deadline ?? '-'}</div>
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3"><span className="font-medium">Description:</span> {selectedHomework.description ?? '-'}</div>
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3"><span className="font-medium">{t('Deadline')}:</span> {selectedHomework.deadline ?? '-'}</div>
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3"><span className="font-medium">{t('Description')}:</span> {selectedHomework.description ?? '-'}</div>
             </div>
           ) : null}
-          <div className="flex justify-end"><Button type="button" variant="outline" onClick={() => setIsViewOpen(false)}>Close</Button></div>
+          <div className="flex justify-end"><Button type="button" variant="outline" onClick={() => setIsViewOpen(false)}>{t('Close')}</Button></div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Homework</DialogTitle>
-            <DialogDescription>Update selected homework inline.</DialogDescription>
+            <DialogTitle>{t('Edit Homework')}</DialogTitle>
+            <DialogDescription>{t('Update selected homework inline.')}</DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={submitEdit}>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
-                <Label>Class</Label>
-                <SearchableSelect value={formState.class_id} options={classOptions} onChange={(value) => setFormState((current) => ({ ...current, class_id: value }))} placeholder="Select class" searchPlaceholder="Search class..." clearable={false} />
+                <Label>{t('Class')}</Label>
+                <SearchableSelect value={formState.class_id} options={classOptions} onChange={(value) => setFormState((current) => ({ ...current, class_id: value }))} placeholder={t('Select class')} searchPlaceholder={t('Search class...')} clearable={false} />
               </div>
               <div className="space-y-2">
-                <Label>Subject</Label>
-                <SearchableSelect value={formState.subject_id} options={subjectOptions} onChange={(value) => setFormState((current) => ({ ...current, subject_id: value }))} placeholder="Select subject" searchPlaceholder="Search subject..." clearable={false} />
+                <Label>{t('Subject')}</Label>
+                <SearchableSelect value={formState.subject_id} options={subjectOptions} onChange={(value) => setFormState((current) => ({ ...current, subject_id: value }))} placeholder={t('Select subject')} searchPlaceholder={t('Search subject...')} clearable={false} />
               </div>
               <div className="space-y-2">
-                <Label>Teacher</Label>
-                <SearchableSelect value={formState.teacher_id} options={teacherOptions} onChange={(value) => setFormState((current) => ({ ...current, teacher_id: value }))} placeholder="Select teacher" searchPlaceholder="Search teacher..." clearable={false} />
+                <Label>{t('Teacher')}</Label>
+                <SearchableSelect value={formState.teacher_id} options={teacherOptions} onChange={(value) => setFormState((current) => ({ ...current, teacher_id: value }))} placeholder={t('Select teacher')} searchPlaceholder={t('Search teacher...')} clearable={false} />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Title</Label>
-              <Input value={formState.title} onChange={(event) => setFormState((current) => ({ ...current, title: event.target.value }))} placeholder="Homework title" />
+              <Label>{t('Title')}</Label>
+              <Input value={formState.title} onChange={(event) => setFormState((current) => ({ ...current, title: event.target.value }))} placeholder={t('Homework title')} />
             </div>
             <div className="space-y-2">
-              <Label>Description</Label>
+              <Label>{t('Description')}</Label>
               <textarea
                 value={formState.description}
                 onChange={(event) => setFormState((current) => ({ ...current, description: event.target.value }))}
                 className="min-h-[96px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
-                placeholder="Optional description"
+                placeholder={t('Optional description')}
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>File URL</Label>
-                <Input value={formState.file_url} onChange={(event) => setFormState((current) => ({ ...current, file_url: event.target.value }))} placeholder="Optional file URL" />
+                <Label>{t('File URL')}</Label>
+                <Input value={formState.file_url} onChange={(event) => setFormState((current) => ({ ...current, file_url: event.target.value }))} placeholder={t('Optional file URL')} />
                 {formState.file_url.trim().length > 0 ? (
                   <Button
                     type="button"
@@ -1214,18 +1172,18 @@ export default function Index({
                     onClick={() => openFilePreview(formState.file_url, formState.title)}
                   >
                     <Eye className="size-4" />
-                    Preview File
+                    {t('Preview File')}
                   </Button>
                 ) : null}
               </div>
               <div className="space-y-2">
-                <Label>Deadline</Label>
+                <Label>{t('Deadline')}</Label>
                 <Input type="date" value={formState.deadline} onChange={(event) => setFormState((current) => ({ ...current, deadline: event.target.value }))} />
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-              <Button type="submit" variant="outline" disabled={isSubmitting}>Update</Button>
+              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>{t('Cancel')}</Button>
+              <Button type="submit" variant="outline" disabled={isSubmitting}>{t('Update')}</Button>
             </div>
           </form>
         </DialogContent>
@@ -1243,33 +1201,33 @@ export default function Index({
       >
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>File Preview</DialogTitle>
-            <DialogDescription>{previewFileTitle || 'Homework attachment preview card'}</DialogDescription>
+            <DialogTitle>{t('File Preview')}</DialogTitle>
+            <DialogDescription>{previewFileTitle || t('Homework attachment preview card')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             {previewFileType === 'image' ? (
               <div className="overflow-hidden rounded-xl border border-border/70 bg-muted/20 p-2">
-                <img src={previewFileUrl} alt={previewFileTitle || 'Attachment'} className="max-h-[65vh] w-full object-contain" />
+                <img src={previewFileUrl} alt={previewFileTitle || t('Attachment')} className="max-h-[65vh] w-full object-contain" />
               </div>
             ) : null}
             {previewFileType === 'pdf' ? (
               <div className="overflow-hidden rounded-xl border border-border/70 bg-muted/20">
-                <iframe src={previewFileUrl} title={previewFileTitle || 'Attachment preview'} className="h-[65vh] w-full" />
+                <iframe src={previewFileUrl} title={previewFileTitle || t('Attachment preview')} className="h-[65vh] w-full" />
               </div>
             ) : null}
             {previewFileType === 'other' ? (
               <div className="rounded-xl border border-border/70 bg-muted/20 p-4 text-sm text-muted-foreground">
-                Inline preview is not available for this file type. Use Open File.
+                {t('Inline preview is not available for this file type. Use Open File.')}
               </div>
             ) : null}
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" asChild>
                 <a href={previewFileUrl} target="_blank" rel="noreferrer">
                   <ExternalLink className="size-4" />
-                  Open File
+                  {t('Open File')}
                 </a>
               </Button>
-              <Button type="button" variant="outline" onClick={() => setIsFilePreviewOpen(false)}>Close</Button>
+              <Button type="button" variant="outline" onClick={() => setIsFilePreviewOpen(false)}>{t('Close')}</Button>
             </div>
           </div>
         </DialogContent>
@@ -1277,7 +1235,7 @@ export default function Index({
 
       <Dialog open={isBatchPreviewOpen} onOpenChange={setIsBatchPreviewOpen}>
         <DialogContent className="max-w-3xl">
-          <DialogHeader><DialogTitle>Selected Homeworks</DialogTitle><DialogDescription>{selectedRows.length} row(s) selected.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>{t('Selected Homeworks')}</DialogTitle><DialogDescription>{t(':count row(s) selected', { count: selectedRows.length })}</DialogDescription></DialogHeader>
           <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
             {selectedRows.map((item) => (
               <div key={item.id} className="rounded-xl border border-border/70 bg-muted/30 p-3 text-sm">
@@ -1291,17 +1249,17 @@ export default function Index({
       <Dialog open={isBatchDeleteOpen} onOpenChange={setIsBatchDeleteOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Batch Delete Homeworks</DialogTitle>
-            <DialogDescription>{selectedIds.length} row(s) selected. Choose how many rows to delete now.</DialogDescription>
+            <DialogTitle>{t('Batch Delete Homeworks')}</DialogTitle>
+            <DialogDescription>{t(':count row(s) selected. Choose how many rows to delete now.', { count: selectedIds.length })}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid gap-3 rounded-xl border border-border/70 bg-muted/20 p-4 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-center">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{selectedIds.length} row(s) selected</Badge>
-                <Badge variant="outline">{batchDeleteIds.length} row(s) pending delete</Badge>
+                <Badge variant="secondary">{t(':count row(s) selected', { count: selectedIds.length })}</Badge>
+                <Badge variant="outline">{t(':count row(s) pending delete', { count: batchDeleteIds.length })}</Badge>
               </div>
               <Select value={batchDeleteLimit} onValueChange={setBatchDeleteLimit}>
-                <SelectTrigger><SelectValue placeholder="Delete amount" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t('Delete amount')} /></SelectTrigger>
                 <SelectContent>
                   {batchDeleteLimitOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
@@ -1311,7 +1269,7 @@ export default function Index({
             </div>
             <div className="max-h-[42vh] space-y-2 overflow-y-auto rounded-xl border border-border/70 bg-background p-3">
               {batchDeleteRows.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No rows available to delete.</p>
+                <p className="text-sm text-muted-foreground">{t('No rows available to delete.')}</p>
               ) : (
                 batchDeleteRows.map((item) => (
                   <div key={item.id} className="flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm">
@@ -1322,8 +1280,8 @@ export default function Index({
               )}
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsBatchDeleteOpen(false)}>Cancel</Button>
-              <Button type="button" variant="outline" disabled={isSubmitting || batchDeleteIds.length === 0} onClick={submitBatchDelete}><Trash2 className="size-4" />Delete {batchDeleteIds.length}</Button>
+              <Button type="button" variant="outline" onClick={() => setIsBatchDeleteOpen(false)}>{t('Cancel')}</Button>
+              <Button type="button" variant="outline" disabled={isSubmitting || batchDeleteIds.length === 0} onClick={submitBatchDelete}><Trash2 className="size-4" />{t('Delete :count', { count: batchDeleteIds.length })}</Button>
             </div>
           </div>
         </DialogContent>

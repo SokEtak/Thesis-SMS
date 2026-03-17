@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useTranslate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
 import { ArrowLeftRight, Eye, Pencil, Trash2, X } from 'lucide-react';
@@ -56,10 +57,14 @@ export default function BatchActionBar({
   showTip = true,
   className,
 }: BatchActionBarProps) {
+  const t = useTranslate();
   const hasSelection = selectedCount > 0;
   const showShiftControl = typeof onToggleShiftMode === 'function';
   const canRenderEdit = showEditAction && typeof onEditSelected === 'function';
   const canRenderClear = showClearAction && typeof onClearSelection === 'function';
+  const viewActionText = t(viewActionLabel);
+  const editActionText = t(editActionLabel);
+  const deleteActionText = t(deleteActionLabel);
 
   if (!hasSelection && !showShiftControl) {
     return null;
@@ -71,35 +76,35 @@ export default function BatchActionBar({
       className,
     )}
     >
-      {hasSelection && <Badge variant="secondary">{selectedCount} selected</Badge>}
+      {hasSelection && (
+        <Badge variant="secondary">{t(':count selected', { count: selectedCount })}</Badge>
+      )}
       {showShiftControl && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 type="button"
                 variant={shiftModeEnabled ? 'secondary' : 'outline'}
                 size="icon"
-                aria-label={shiftModeEnabled ? 'Shift Range Mode: On' : 'Shift Range Mode: Off'}
+                className="relative overflow-visible"
+                aria-label={shiftModeEnabled ? t('Shift Range Mode: On') : t('Shift Range Mode: Off')}
                 aria-pressed={shiftModeEnabled}
                 onClick={onToggleShiftMode}
               >
                 <ArrowLeftRight className={cn('size-4', ICON_COLORS.shift)} />
+                {shiftModeEnabled && (
+                  <span className="pointer-events-none absolute left-1 top-1 flex size-2.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/70" />
+                    <span className="relative inline-flex size-2.5 rounded-full border border-background bg-emerald-500" />
+                  </span>
+                )}
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" align="center">
-              {shiftModeEnabled ? 'Shift Range Mode: On' : 'Shift Range Mode: Off'}
+              {shiftModeEnabled ? t('Shift Range Mode: On') : t('Shift Range Mode: Off')}
             </TooltipContent>
           </Tooltip>
-          {shiftModeEnabled && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300">
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/70" />
-                <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
-              </span>
-              Shift On
-            </span>
-          )}
         </div>
       )}
       {actionOrder.map((actionKey) => {
@@ -116,7 +121,7 @@ export default function BatchActionBar({
                     type="button"
                     variant="outline"
                     size="icon"
-                    aria-label={viewActionLabel}
+                    aria-label={viewActionText}
                     disabled={!hasSelection}
                     onClick={onViewSelected}
                   >
@@ -125,7 +130,7 @@ export default function BatchActionBar({
                 </span>
               </TooltipTrigger>
               <TooltipContent side="top" align="center">
-                {hasSelection ? viewActionLabel : 'Select rows to view'}
+                {hasSelection ? viewActionText : t('Select rows to view')}
               </TooltipContent>
             </Tooltip>
           );
@@ -144,7 +149,7 @@ export default function BatchActionBar({
                     type="button"
                     variant="outline"
                     size="icon"
-                    aria-label={editActionLabel}
+                    aria-label={editActionText}
                     disabled={!hasSelection}
                     onClick={onEditSelected}
                   >
@@ -153,7 +158,7 @@ export default function BatchActionBar({
                 </span>
               </TooltipTrigger>
               <TooltipContent side="top" align="center">
-                {hasSelection ? editActionLabel : 'Select rows to edit'}
+                {hasSelection ? editActionText : t('Select rows to edit')}
               </TooltipContent>
             </Tooltip>
           );
@@ -172,7 +177,7 @@ export default function BatchActionBar({
                     type="button"
                     variant="outline"
                     size="icon"
-                    aria-label={deleteActionLabel}
+                    aria-label={deleteActionText}
                     disabled={!hasSelection}
                     onClick={onDeleteSelected}
                   >
@@ -181,7 +186,7 @@ export default function BatchActionBar({
                 </span>
               </TooltipTrigger>
               <TooltipContent side="top" align="center">
-                {hasSelection ? deleteActionLabel : 'Select rows to delete'}
+                {hasSelection ? deleteActionText : t('Select rows to delete')}
               </TooltipContent>
             </Tooltip>
           );
@@ -199,7 +204,7 @@ export default function BatchActionBar({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  aria-label="Clear Selection"
+                  aria-label={t('Clear Selection')}
                   disabled={!hasSelection}
                   onClick={onClearSelection}
                 >
@@ -208,14 +213,14 @@ export default function BatchActionBar({
               </span>
             </TooltipTrigger>
             <TooltipContent side="top" align="center">
-              {hasSelection ? 'Clear Selection' : 'No selection to clear'}
+              {hasSelection ? t('Clear Selection') : t('No selection to clear')}
             </TooltipContent>
           </Tooltip>
         );
       })}
       {showTip && (
         <span className="text-xs text-muted-foreground">
-          Tip: Hold Shift and click to select a range.
+          {t('Tip: Hold Shift and click to select a range.')}
         </span>
       )}
     </div>

@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslate } from '@/lib/i18n';
 import { FilePlus2 } from 'lucide-react';
 import type { FormEvent } from 'react';
 
@@ -37,28 +38,30 @@ export default function ClassroomCreateActionDialog({
   onTeacherChange,
   onCancel,
 }: ClassroomCreateActionDialogProps) {
+  const t = useTranslate();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Create Classroom</DialogTitle>
-          <DialogDescription>Add a classroom without leaving the list page.</DialogDescription>
+          <DialogTitle>{t('Create Classroom')}</DialogTitle>
+          <DialogDescription>{t('Add a classroom without leaving the list page.')}</DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={onSubmit}>
           <div className="space-y-4 rounded-xl border border-border/70 bg-muted/20 p-4">
             <div className="space-y-2">
-              <Label htmlFor="classroom-create-name">Class Name</Label>
+              <Label htmlFor="classroom-create-name">{t('Class Name')}</Label>
               <Input
                 id="classroom-create-name"
                 value={formState.name}
                 onChange={(event) => onNameChange(event.target.value)}
-                placeholder="e.g. Grade 10A"
+                placeholder={t('e.g. Grade 10A')}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label>Teacher In Charge</Label>
+              <Label>{t('Teacher In Charge')}</Label>
               <SearchableSelect
                 value={formState.teacher_in_charge_id}
                 options={teacherOptions}
@@ -72,11 +75,11 @@ export default function ClassroomCreateActionDialog({
 
           <div className="flex justify-end gap-2 pt-1">
             <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
+              {t('Cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               <FilePlus2 className="size-4" />
-              Create
+              {t('Create')}
             </Button>
           </div>
         </form>

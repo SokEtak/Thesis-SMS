@@ -18,6 +18,7 @@ export default function Show({ subject }: Props) {
           <h1 className="text-3xl font-bold">{subject.name}</h1>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.get(route('subjects.index'))}>Back</Button>
+            <Button onClick={() => router.get(route('subjects.create'))}>Create</Button>
             <Button onClick={() => router.get(route('subjects.edit', subject.id))}>Edit</Button>
             <Button variant="danger" onClick={() => confirm('Delete?') && router.delete(route('subjects.destroy', subject.id))}>Delete</Button>
           </div>

@@ -2,7 +2,20 @@ import { InertiaLinkProps } from '@inertiajs/react';
 import { LucideIcon } from 'lucide-react';
 
 export interface Auth {
-    user: User;
+    user: User | null;
+}
+
+export interface LocaleOption {
+    code: string;
+    name: string;
+    native: string;
+}
+
+export interface I18nData {
+    locale: string;
+    fallbackLocale: string;
+    availableLocales: LocaleOption[];
+    messages: Record<string, string>;
 }
 
 export interface BreadcrumbItem {
@@ -27,6 +40,7 @@ export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    i18n: I18nData;
     flash?: {
         success?: string | null;
         error?: string | null;
@@ -42,6 +56,7 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
+    locale?: string | null;
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
     created_at: string;

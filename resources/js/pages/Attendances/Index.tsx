@@ -1,6 +1,7 @@
 import BatchActionBar from '@/components/BatchActionBar';
 import DataTable from '@/components/DataTable';
 import LiveSearchInput, { type SearchSuggestion } from '@/components/LiveSearchInput';
+import ResourcePageActions from '@/components/ResourcePageActions';
 import ResourcePageLayout from '@/components/ResourcePageLayout';
 import SearchableSelect, { type SearchableSelectOption } from '@/components/SearchableSelect';
 import { Badge } from '@/components/ui/badge';
@@ -10,15 +11,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/app-layout';
+import { useTranslate } from '@/lib/i18n';
 import { requirePasswordConfirmation } from '@/lib/password-confirm';
 import { route } from '@/lib/route';
 import { cn } from '@/lib/utils';
 import { type PaginatedData } from '@/types';
 import { type Attendance } from '@/types/models';
-import { Head, Link, router } from '@inertiajs/react';
-import { ArrowUpDown, Download, Eye, FilePlus2, Pencil, Plus, RotateCcw, Search, Trash2, Upload } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { ArrowUpDown, Eye, FilePlus2, Pencil, Plus, RotateCcw, Search, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 
 interface Option {
@@ -123,6 +124,7 @@ const resolvePagination = (data: PaginatedData<Attendance>): TablePaginationStat
 };
 
 export default function Index({ attendances, students, classes, recorders, query }: Props) {
+  const t = useTranslate();
   const queryFilter = typeof query.filter === 'object' && query.filter !== null ? query.filter as Record<string, unknown> : null;
   const [search, setSearch] = useState(typeof query.q === 'string' ? query.q : String(queryFilter?.q ?? ''));
   const [studentId, setStudentId] = useState(normalizeFilterValue(query.student_id ?? queryFilter?.student_id));
@@ -232,15 +234,15 @@ export default function Index({ attendances, students, classes, recorders, query
       return options;
     }
 
-    options.push({ value: 'all', label: `All selected (${selectedIds.length})` });
+    options.push({ value: 'all', label: t('All selected (:count)', { count: selectedIds.length }) });
     [5, 10, 20, 50].forEach((size) => {
       if (size < selectedIds.length) {
-        options.push({ value: String(size), label: `First ${size}` });
+        options.push({ value: String(size), label: t('First :count', { count: size }) });
       }
     });
 
     return options;
-  }, [selectedIds.length]);
+  }, [selectedIds.length, t]);
 
   const batchDeleteIds = useMemo(() => {
     if (batchDeleteLimit === 'all') {
@@ -306,7 +308,7 @@ export default function Index({ attendances, students, classes, recorders, query
 
   const closeBatchCreateDialog = (force = false) => {
     if (!force && batchCreateDirty) {
-      const confirmed = confirm('You have unsaved batch attendance rows. Discard changes and close?');
+      const confirmed = confirm(t('You have unsaved batch attendance rows. Discard changes and close?'));
       if (!confirmed) {
         return;
       }
@@ -403,7 +405,7 @@ export default function Index({ attendances, students, classes, recorders, query
   const submitCreate = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const payload = buildPayload();
-    if (!payload.student_id || !payload.class_id || !payload.date) return alert('Student, class, and date are required.');
+    if (!payload.student_id || !payload.class_id || !payload.date) return alert(t('Student, class, and date are required.'));
     setIsSubmitting(true);
     router.post(route('attendances.store'), payload, {
       preserveScroll: true,
@@ -416,7 +418,7 @@ export default function Index({ attendances, students, classes, recorders, query
     event.preventDefault();
     if (!selectedAttendance) return;
     const payload = buildPayload();
-    if (!payload.student_id || !payload.class_id || !payload.date) return alert('Student, class, and date are required.');
+    if (!payload.student_id || !payload.class_id || !payload.date) return alert(t('Student, class, and date are required.'));
     setIsSubmitting(true);
     router.put(route('attendances.update', selectedAttendance.id), payload, {
       preserveScroll: true,
@@ -439,7 +441,7 @@ export default function Index({ attendances, students, classes, recorders, query
       .filter((row) => row.student_id && row.class_id && row.date);
 
     if (payloadItems.length === 0) {
-      alert('Add at least one valid row with student, class, and date.');
+      alert(t('Add at least one valid row with student, class, and date.'));
       return;
     }
 
@@ -466,7 +468,7 @@ export default function Index({ attendances, students, classes, recorders, query
     }
 
     if (!batchEditStatus) {
-      alert('Choose a status to apply.');
+      alert(t('Choose a status to apply.'));
       return;
     }
 
@@ -490,7 +492,7 @@ export default function Index({ attendances, students, classes, recorders, query
   };
 
   const handleDelete = async (attendance: Attendance) => {
-    if (!confirm(`Delete attendance #${attendance.id}?`)) return;
+    if (!confirm(t('Delete attendance #:id?', { id: attendance.id }))) return;
     const passwordConfirmed = await requirePasswordConfirmation(`delete attendance #${attendance.id}`);
     if (!passwordConfirmed) return;
     router.delete(route('attendances.destroy', attendance.id), { preserveScroll: true });
@@ -581,7 +583,7 @@ export default function Index({ attendances, students, classes, recorders, query
     { key: 'student_name', label: 'Student', render: (value: unknown) => (value ? String(value) : '-') },
     { key: 'class_name', label: 'Class', render: (value: unknown) => (value ? String(value) : '-') },
     { key: 'date', label: 'Date', render: (value: unknown) => (value ? String(value) : '-') },
-    { key: 'status', label: 'Status', render: (value: unknown) => <Badge variant="outline">{resolveStatusLabel(value)}</Badge> },
+    { key: 'status', label: 'Status', render: (value: unknown) => <Badge variant="outline">{t(resolveStatusLabel(value))}</Badge> },
     { key: 'recorded_by_name', label: 'Recorded By', render: (value: unknown) => (value ? String(value) : '-') },
     { key: 'created_at', label: 'Created At', render: (value: unknown) => formatDate(value) },
   ];
@@ -593,39 +595,39 @@ export default function Index({ attendances, students, classes, recorders, query
 
   return (
     <AppLayout>
-      <Head title="Attendances" />
+      <Head title={t('Attendances')} />
       <ResourcePageLayout
         title="Attendances"
         description="Manage attendances with the same UI pattern used in Users."
         actions={(
-          <>
-            <Tooltip><TooltipTrigger asChild><Button variant="outline" className="size-9 p-0" asChild><a href={route('attendances.export.csv')}><Download className="size-4" /></a></Button></TooltipTrigger><TooltipContent side="top" align="center">Export CSV</TooltipContent></Tooltip>
-            <Tooltip><TooltipTrigger asChild><Button variant="outline" className="size-9 p-0" onClick={() => importInputRef.current?.click()}><Upload className="size-4" /></Button></TooltipTrigger><TooltipContent side="top" align="center">Import</TooltipContent></Tooltip>
-            <input ref={importInputRef} type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={handleImportFile} />
-            <Tooltip><TooltipTrigger asChild><Button variant="outline" className="size-9 p-0" asChild><Link href={route('attendances.trashed')}><Trash2 className="size-4" /></Link></Button></TooltipTrigger><TooltipContent side="top" align="center">Trashed</TooltipContent></Tooltip>
-            <Tooltip><TooltipTrigger asChild><Button variant="outline" className="size-9 p-0" onClick={openCreateModal}><Plus className="size-4" /></Button></TooltipTrigger><TooltipContent side="top" align="center">Create</TooltipContent></Tooltip>
-            <Tooltip><TooltipTrigger asChild><Button variant="outline" className="size-9 p-0" onClick={async () => {
+          <ResourcePageActions
+            exportHref={route('attendances.export.csv')}
+            trashedHref={route('attendances.trashed')}
+            importInputRef={importInputRef}
+            onImportFileChange={handleImportFile}
+            onOpenCreate={openCreateModal}
+            onOpenBatchCreate={async () => {
               const passwordConfirmed = await requirePasswordConfirmation('open batch create attendances form');
               if (!passwordConfirmed) return;
               resetBatchCreateForm();
               setIsBatchCreateOpen(true);
-            }}><FilePlus2 className="size-4" /></Button></TooltipTrigger><TooltipContent side="top" align="center">Batch Create</TooltipContent></Tooltip>
-          </>
+            }}
+          />
         )}
       >
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <Card className="gap-0 overflow-hidden border-sky-200/70 bg-gradient-to-br from-sky-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Total Records</p><p className="mt-1 text-2xl font-semibold">{pagination.total}</p></CardContent></Card>
-            <Card className="gap-0 overflow-hidden border-emerald-200/70 bg-gradient-to-br from-emerald-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Present On Page</p><p className="mt-1 text-2xl font-semibold">{rows.filter((item) => item.status === 'pre').length}</p></CardContent></Card>
-            <Card className="gap-0 overflow-hidden border-amber-200/70 bg-gradient-to-br from-amber-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Absent On Page</p><p className="mt-1 text-2xl font-semibold">{rows.filter((item) => item.status === 'a').length}</p></CardContent></Card>
-            <Card className="gap-0 overflow-hidden border-violet-200/70 bg-gradient-to-br from-violet-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">Filter Mode</p><p className="mt-1 text-2xl font-semibold">{hasActiveFilter ? 'Active' : 'Idle'}</p></CardContent></Card>
+            <Card className="gap-0 overflow-hidden border-sky-200/70 bg-gradient-to-br from-sky-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('Total Records')}</p><p className="mt-1 text-2xl font-semibold">{pagination.total}</p></CardContent></Card>
+            <Card className="gap-0 overflow-hidden border-emerald-200/70 bg-gradient-to-br from-emerald-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('Present On Page')}</p><p className="mt-1 text-2xl font-semibold">{rows.filter((item) => item.status === 'pre').length}</p></CardContent></Card>
+            <Card className="gap-0 overflow-hidden border-amber-200/70 bg-gradient-to-br from-amber-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('Absent On Page')}</p><p className="mt-1 text-2xl font-semibold">{rows.filter((item) => item.status === 'a').length}</p></CardContent></Card>
+            <Card className="gap-0 overflow-hidden border-violet-200/70 bg-gradient-to-br from-violet-50/90 to-background py-0 dark:border-border dark:from-card dark:to-card"><CardContent className="p-4"><p className="text-xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">{t('Filter Mode')}</p><p className="mt-1 text-2xl font-semibold">{hasActiveFilter ? t('Active') : t('Idle')}</p></CardContent></Card>
           </div>
 
           <section className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
             <div className="space-y-3 rounded-2xl border border-sky-200/70 bg-gradient-to-br from-sky-50/80 via-background to-cyan-50/60 p-4 shadow-sm dark:border-border dark:from-background dark:via-background dark:to-background">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold tracking-[0.15em] uppercase text-sky-700 dark:text-muted-foreground">Search & Discover</p>
-                {(search || studentId || classId || status || date) && <Badge variant="secondary">Live ({rows.length})</Badge>}
+                <p className="text-xs font-semibold tracking-[0.15em] uppercase text-sky-700 dark:text-muted-foreground">{t('Search & Discover')}</p>
+                {(search || studentId || classId || status || date) && <Badge variant="secondary">{t('Live (:count)', { count: rows.length })}</Badge>}
               </div>
               <LiveSearchInput value={search} suggestions={suggestions} loading={loadingSuggestions} onChange={setSearch} onSelectSuggestion={(item) => { setSearch(item.label); applySearch(1); }} onSubmit={() => applySearch(1)} />
               <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
@@ -633,12 +635,12 @@ export default function Index({ attendances, students, classes, recorders, query
                 <SearchableSelect value={classId} options={classOptions} onChange={setClassId} placeholder="Filter class" searchPlaceholder="Search class..." clearLabel="All classes" />
                 <Select value={status || 'all'} onValueChange={(value) => setStatus(value === 'all' ? '' : value as AttendanceStatus)}>
                   <SelectTrigger className="h-10 rounded-xl">
-                    <SelectValue placeholder="Filter status" />
+                    <SelectValue placeholder={t('Filter status')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All status</SelectItem>
+                    <SelectItem value="all">{t('All status')}</SelectItem>
                     {STATUS_OPTIONS.map((item) => (
-                      <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                      <SelectItem key={item.value} value={item.value}>{t(item.label)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -650,29 +652,29 @@ export default function Index({ attendances, students, classes, recorders, query
               </div>
             </div>
             <div className="space-y-3 rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/80 via-background to-teal-50/60 p-4 shadow-sm dark:border-border dark:from-background dark:via-background dark:to-background">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground"><ArrowUpDown className="size-4" />Sort & Status</div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground"><ArrowUpDown className="size-4" />{t('Sort & Status')}</div>
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                 <Select value={sortBy} onValueChange={(value) => { const nextSort = normalizeSortBy(value); setSortBy(nextSort); applySearch(1, undefined, nextSort, sortDir); }}>
-                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder="Sort by" /></SelectTrigger>
-                  <SelectContent><SelectItem value="id">ID</SelectItem><SelectItem value="date">Date</SelectItem><SelectItem value="status">Status</SelectItem><SelectItem value="created_at">Created At</SelectItem></SelectContent>
+                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder={t('Sort by')} /></SelectTrigger>
+                  <SelectContent><SelectItem value="id">{t('ID')}</SelectItem><SelectItem value="date">{t('Date')}</SelectItem><SelectItem value="status">{t('Status')}</SelectItem><SelectItem value="created_at">{t('Created At')}</SelectItem></SelectContent>
                 </Select>
                 <Select value={sortDir} onValueChange={(value) => { const nextDir = value === 'desc' ? 'desc' : 'asc'; setSortDir(nextDir); applySearch(1, undefined, sortBy, nextDir); }}>
-                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder="Direction" /></SelectTrigger>
-                  <SelectContent><SelectItem value="asc">Asc</SelectItem><SelectItem value="desc">Desc</SelectItem></SelectContent>
+                  <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm"><SelectValue placeholder={t('Direction')} /></SelectTrigger>
+                  <SelectContent><SelectItem value="asc">{t('Asc')}</SelectItem><SelectItem value="desc">{t('Desc')}</SelectItem></SelectContent>
                 </Select>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline">Total {pagination.total}</Badge>
-                <Badge variant="outline">Page {pagination.current_page}/{pagination.last_page}</Badge>
-                <Badge variant="outline">{activePerPage} per page</Badge>
+                <Badge variant="outline">{t('Total :count', { count: pagination.total })}</Badge>
+                <Badge variant="outline">{t('Page :current/:last', { current: pagination.current_page, last: pagination.last_page })}</Badge>
+                <Badge variant="outline">{t(':count per page', { count: activePerPage })}</Badge>
               </div>
             </div>
           </section>
 
           <section className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">Attendance Records</h2>
-              <p className="text-sm text-muted-foreground">Range-select and batch actions are available just like Users.</p>
+              <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">{t('Attendance Records')}</h2>
+              <p className="text-sm text-muted-foreground">{t('Range-select and batch actions are available just like Users.')}</p>
             </div>
             <BatchActionBar selectedCount={selectedIds.length} onViewSelected={() => setIsBatchPreviewOpen(true)} onEditSelected={() => setIsBatchEditOpen(true)} editActionLabel="Batch Edit Status" onDeleteSelected={handleBatchDelete} onClearSelection={() => setSelectedKeys([])} shiftModeEnabled={shiftMode} onToggleShiftMode={() => setShiftMode((value) => !value)} />
             <div className="rounded-2xl border border-border/70 bg-card/90 p-3 shadow-sm">
@@ -697,20 +699,20 @@ export default function Index({ attendances, students, classes, recorders, query
           closeBatchCreateDialog();
         }}
       >
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden">
+          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
-            <DialogTitle>Batch Create Attendances</DialogTitle>
+            <DialogTitle>{t('Batch Create Attendances')}</DialogTitle>
             <DialogDescription>
-              Add multiple attendance rows at once. Select a number to auto-add rows quickly.
+              {t('Add multiple attendance rows at once. Select a number to auto-add rows quickly.')}
             </DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={submitBatchCreate}>
             <div className="rounded-2xl border border-border/70 bg-background/60 p-4 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{batchCreateRows.length} rows</Badge>
-                  <Badge variant="outline">Quick add: {batchCreateAutoAddCount}</Badge>
-                  <Badge variant="outline">Selected: {batchCreateSelectedRowKeys.length}</Badge>
+                  <Badge variant="secondary">{t(':count rows', { count: batchCreateRows.length })}</Badge>
+                  <Badge variant="outline">{t('Quick add: :count', { count: batchCreateAutoAddCount })}</Badge>
+                  <Badge variant="outline">{t('Selected: :count', { count: batchCreateSelectedRowKeys.length })}</Badge>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -725,7 +727,7 @@ export default function Index({ attendances, students, classes, recorders, query
                     }}
                   >
                     <SelectTrigger className="h-9 w-28">
-                      <SelectValue placeholder="Rows" />
+                      <SelectValue placeholder={t('Rows')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="1">+1</SelectItem>
@@ -752,7 +754,7 @@ export default function Index({ attendances, students, classes, recorders, query
               </div>
 
               <div className="mt-3 flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Required per row: student, class, date, status.</p>
+                <p className="text-sm text-muted-foreground">{t('Required per row: student, class, date, status.')}</p>
                 <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
                   <input
                     type="checkbox"
@@ -760,7 +762,7 @@ export default function Index({ attendances, students, classes, recorders, query
                     checked={allBatchCreateRowsSelected}
                     onChange={(event) => toggleBatchCreateSelectAll(event.target.checked)}
                   />
-                  Select all
+                  {t('Select all')}
                 </label>
               </div>
 
@@ -781,30 +783,30 @@ export default function Index({ attendances, students, classes, recorders, query
                     </div>
                     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                       <div className="space-y-1">
-                        <Label className="text-xs">Student *</Label>
+                        <Label className="text-xs">{t('Student *')}</Label>
                         <SearchableSelect value={row.student_id} options={studentOptions} onChange={(value) => updateBatchCreateRow(row.key, { student_id: value })} placeholder="Select student" searchPlaceholder="Search student..." clearable={false} />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Class *</Label>
+                        <Label className="text-xs">{t('Class *')}</Label>
                         <SearchableSelect value={row.class_id} options={classOptions} onChange={(value) => updateBatchCreateRow(row.key, { class_id: value })} placeholder="Select class" searchPlaceholder="Search class..." clearable={false} />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Date *</Label>
+                        <Label className="text-xs">{t('Date *')}</Label>
                         <Input type="date" value={row.date} onChange={(event) => updateBatchCreateRow(row.key, { date: event.target.value })} />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Status *</Label>
+                        <Label className="text-xs">{t('Status *')}</Label>
                         <Select value={row.status} onValueChange={(value: 'pre' | 'a' | 'per' | 'l') => updateBatchCreateRow(row.key, { status: value })}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
                             {STATUS_OPTIONS.map((item) => (
-                              <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                              <SelectItem key={item.value} value={item.value}>{t(item.label)}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Recorded By</Label>
+                        <Label className="text-xs">{t('Recorded By')}</Label>
                         <SearchableSelect value={row.recorded_by} options={recorderOptions} onChange={(value) => updateBatchCreateRow(row.key, { recorded_by: value })} placeholder="Optional recorder" searchPlaceholder="Search recorder..." />
                       </div>
                     </div>
@@ -823,10 +825,10 @@ export default function Index({ attendances, students, classes, recorders, query
             </div>
 
             <div className="sticky bottom-0 z-30 mt-2 flex justify-end gap-2 bg-gradient-to-t from-background/80 to-transparent p-3">
-              <Button type="button" variant="outline" onClick={() => closeBatchCreateDialog()}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => closeBatchCreateDialog()}>{t('Cancel')}</Button>
               <Button type="submit" disabled={isSubmitting}>
                 <FilePlus2 className="size-4" />
-                Create {batchCreateRows.length}
+                {t('Create :count', { count: batchCreateRows.length })}
               </Button>
             </div>
           </form>
@@ -844,29 +846,29 @@ export default function Index({ attendances, students, classes, recorders, query
       >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Batch Edit Status</DialogTitle>
-            <DialogDescription>Update status for selected attendance rows.</DialogDescription>
+            <DialogTitle>{t('Batch Edit Status')}</DialogTitle>
+            <DialogDescription>{t('Update status for selected attendance rows.')}</DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={submitBatchEditStatus}>
             <div className="space-y-4 rounded-xl border border-border/70 bg-muted/20 p-4">
-              <Badge variant="secondary">{selectedIds.length} selected</Badge>
+              <Badge variant="secondary">{t(':count selected', { count: selectedIds.length })}</Badge>
               <div className="space-y-2">
-                <Label>Status</Label>
+                <Label>{t('Status')}</Label>
                 <Select value={batchEditStatus} onValueChange={(value: AttendanceStatus) => setBatchEditStatus(value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder={t('Select status')} />
                   </SelectTrigger>
                   <SelectContent>
                     {STATUS_OPTIONS.map((item) => (
-                      <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                      <SelectItem key={item.value} value={item.value}>{t(item.label)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsBatchEditOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={isSubmitting || selectedIds.length === 0 || !batchEditStatus}><Pencil className="size-4" />Apply</Button>
+              <Button type="button" variant="outline" onClick={() => setIsBatchEditOpen(false)}>{t('Cancel')}</Button>
+              <Button type="submit" disabled={isSubmitting || selectedIds.length === 0 || !batchEditStatus}><Pencil className="size-4" />{t('Apply')}</Button>
             </div>
           </form>
         </DialogContent>
@@ -874,31 +876,31 @@ export default function Index({ attendances, students, classes, recorders, query
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>Create Attendance</DialogTitle><DialogDescription>Add an attendance row without leaving the table page.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>{t('Create Attendance')}</DialogTitle><DialogDescription>{t('Add an attendance row without leaving the table page.')}</DialogDescription></DialogHeader>
           <form className="space-y-4" onSubmit={submitCreate}>
             <div className="grid gap-4 rounded-xl border border-border/70 bg-muted/20 p-4 md:grid-cols-2">
-              <div className="space-y-2 md:col-span-2"><Label>Student</Label><SearchableSelect value={formState.student_id} options={studentOptions} onChange={(value) => setFormState((current) => ({ ...current, student_id: value }))} placeholder="Select student" searchPlaceholder="Search student..." clearable={false} /></div>
-              <div className="space-y-2"><Label>Class</Label><SearchableSelect value={formState.class_id} options={classOptions} onChange={(value) => setFormState((current) => ({ ...current, class_id: value }))} placeholder="Select class" searchPlaceholder="Search class..." clearable={false} /></div>
-              <div className="space-y-2"><Label>Date</Label><Input type="date" value={formState.date} onChange={(event) => setFormState((current) => ({ ...current, date: event.target.value }))} required /></div>
-              <div className="space-y-2"><Label>Status</Label><Select value={formState.status} onValueChange={(value: 'pre' | 'a' | 'per' | 'l') => setFormState((current) => ({ ...current, status: value }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{STATUS_OPTIONS.map((item) => (<SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>))}</SelectContent></Select></div>
-              <div className="space-y-2"><Label>Recorded By</Label><SearchableSelect value={formState.recorded_by} options={recorderOptions} onChange={(value) => setFormState((current) => ({ ...current, recorded_by: value }))} placeholder="Optional recorder" searchPlaceholder="Search recorder..." /></div>
+              <div className="space-y-2 md:col-span-2"><Label>{t('Student')}</Label><SearchableSelect value={formState.student_id} options={studentOptions} onChange={(value) => setFormState((current) => ({ ...current, student_id: value }))} placeholder="Select student" searchPlaceholder="Search student..." clearable={false} /></div>
+              <div className="space-y-2"><Label>{t('Class')}</Label><SearchableSelect value={formState.class_id} options={classOptions} onChange={(value) => setFormState((current) => ({ ...current, class_id: value }))} placeholder="Select class" searchPlaceholder="Search class..." clearable={false} /></div>
+              <div className="space-y-2"><Label>{t('Date')}</Label><Input type="date" value={formState.date} onChange={(event) => setFormState((current) => ({ ...current, date: event.target.value }))} required /></div>
+              <div className="space-y-2"><Label>{t('Status')}</Label><Select value={formState.status} onValueChange={(value: 'pre' | 'a' | 'per' | 'l') => setFormState((current) => ({ ...current, status: value }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{STATUS_OPTIONS.map((item) => (<SelectItem key={item.value} value={item.value}>{t(item.label)}</SelectItem>))}</SelectContent></Select></div>
+              <div className="space-y-2"><Label>{t('Recorded By')}</Label><SearchableSelect value={formState.recorded_by} options={recorderOptions} onChange={(value) => setFormState((current) => ({ ...current, recorded_by: value }))} placeholder="Optional recorder" searchPlaceholder="Search recorder..." /></div>
             </div>
-            <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button><Button type="submit" disabled={isSubmitting}><FilePlus2 className="size-4" />Create</Button></div>
+            <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>{t('Cancel')}</Button><Button type="submit" disabled={isSubmitting}><FilePlus2 className="size-4" />{t('Create')}</Button></div>
           </form>
         </DialogContent>
       </Dialog>
 
       <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
         <DialogContent className="sm:max-w-xl">
-          <DialogHeader><DialogTitle>Attendance Details</DialogTitle><DialogDescription>Quick preview directly from the index page.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>{t('Attendance Details')}</DialogTitle><DialogDescription>{t('Quick preview directly from the index page.')}</DialogDescription></DialogHeader>
           {selectedAttendance && (
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">ID</p><p className="font-medium">#{selectedAttendance.id}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Student</p><p className="font-medium">{selectedAttendance.student_name ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Class</p><p className="font-medium">{selectedAttendance.class_name ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Date</p><p className="font-medium">{selectedAttendance.date ?? '-'}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Status</p><p className="font-medium">{resolveStatusLabel(selectedAttendance.status)}</p></div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">Recorded By</p><p className="font-medium">{selectedAttendance.recorded_by_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('ID')}</p><p className="font-medium">#{selectedAttendance.id}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Student')}</p><p className="font-medium">{selectedAttendance.student_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Class')}</p><p className="font-medium">{selectedAttendance.class_name ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Date')}</p><p className="font-medium">{selectedAttendance.date ?? '-'}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Status')}</p><p className="font-medium">{t(resolveStatusLabel(selectedAttendance.status))}</p></div>
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3"><p className="text-xs text-muted-foreground">{t('Recorded By')}</p><p className="font-medium">{selectedAttendance.recorded_by_name ?? '-'}</p></div>
             </div>
           )}
         </DialogContent>
@@ -906,51 +908,51 @@ export default function Index({ attendances, students, classes, recorders, query
 
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>Edit Attendance</DialogTitle><DialogDescription>Update attendance details inline from index.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>{t('Edit Attendance')}</DialogTitle><DialogDescription>{t('Update attendance details inline from index.')}</DialogDescription></DialogHeader>
           <form className="space-y-4" onSubmit={submitEdit}>
             <div className="grid gap-4 rounded-xl border border-border/70 bg-muted/20 p-4 md:grid-cols-2">
-              <div className="space-y-2 md:col-span-2"><Label>Student</Label><SearchableSelect value={formState.student_id} options={studentOptions} onChange={(value) => setFormState((current) => ({ ...current, student_id: value }))} placeholder="Select student" searchPlaceholder="Search student..." clearable={false} /></div>
-              <div className="space-y-2"><Label>Class</Label><SearchableSelect value={formState.class_id} options={classOptions} onChange={(value) => setFormState((current) => ({ ...current, class_id: value }))} placeholder="Select class" searchPlaceholder="Search class..." clearable={false} /></div>
-              <div className="space-y-2"><Label>Date</Label><Input type="date" value={formState.date} onChange={(event) => setFormState((current) => ({ ...current, date: event.target.value }))} required /></div>
-              <div className="space-y-2"><Label>Status</Label><Select value={formState.status} onValueChange={(value: 'pre' | 'a' | 'per' | 'l') => setFormState((current) => ({ ...current, status: value }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{STATUS_OPTIONS.map((item) => (<SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>))}</SelectContent></Select></div>
-              <div className="space-y-2"><Label>Recorded By</Label><SearchableSelect value={formState.recorded_by} options={recorderOptions} onChange={(value) => setFormState((current) => ({ ...current, recorded_by: value }))} placeholder="Optional recorder" searchPlaceholder="Search recorder..." /></div>
+              <div className="space-y-2 md:col-span-2"><Label>{t('Student')}</Label><SearchableSelect value={formState.student_id} options={studentOptions} onChange={(value) => setFormState((current) => ({ ...current, student_id: value }))} placeholder="Select student" searchPlaceholder="Search student..." clearable={false} /></div>
+              <div className="space-y-2"><Label>{t('Class')}</Label><SearchableSelect value={formState.class_id} options={classOptions} onChange={(value) => setFormState((current) => ({ ...current, class_id: value }))} placeholder="Select class" searchPlaceholder="Search class..." clearable={false} /></div>
+              <div className="space-y-2"><Label>{t('Date')}</Label><Input type="date" value={formState.date} onChange={(event) => setFormState((current) => ({ ...current, date: event.target.value }))} required /></div>
+              <div className="space-y-2"><Label>{t('Status')}</Label><Select value={formState.status} onValueChange={(value: 'pre' | 'a' | 'per' | 'l') => setFormState((current) => ({ ...current, status: value }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{STATUS_OPTIONS.map((item) => (<SelectItem key={item.value} value={item.value}>{t(item.label)}</SelectItem>))}</SelectContent></Select></div>
+              <div className="space-y-2"><Label>{t('Recorded By')}</Label><SearchableSelect value={formState.recorded_by} options={recorderOptions} onChange={(value) => setFormState((current) => ({ ...current, recorded_by: value }))} placeholder="Optional recorder" searchPlaceholder="Search recorder..." /></div>
             </div>
-            <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button><Button type="submit" disabled={isSubmitting || !selectedAttendance}><Pencil className="size-4" />Save Changes</Button></div>
+            <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>{t('Cancel')}</Button><Button type="submit" disabled={isSubmitting || !selectedAttendance}><Pencil className="size-4" />{t('Save Changes')}</Button></div>
           </form>
         </DialogContent>
       </Dialog>
 
       <Dialog open={isBatchPreviewOpen} onOpenChange={setIsBatchPreviewOpen}>
         <DialogContent className="max-w-3xl">
-          <DialogHeader><DialogTitle>Batch Preview</DialogTitle><DialogDescription>Showing {selectedRows.length} selected attendance record(s).</DialogDescription></DialogHeader>
-          <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">{selectedRows.map((item) => (<div key={item.id} className="rounded-xl border border-border/70 bg-muted/30 p-3 text-sm"><span className="font-medium">#{item.id}</span> {item.student_name ?? '-'} - {item.class_name ?? '-'} - {item.date ?? '-'} - {resolveStatusLabel(item.status)}</div>))}</div>
+          <DialogHeader><DialogTitle>{t('Batch Preview')}</DialogTitle><DialogDescription>{t('Showing :count selected attendance record(s).', { count: selectedRows.length })}</DialogDescription></DialogHeader>
+          <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">{selectedRows.map((item) => (<div key={item.id} className="rounded-xl border border-border/70 bg-muted/30 p-3 text-sm"><span className="font-medium">#{item.id}</span> {item.student_name ?? '-'} - {item.class_name ?? '-'} - {item.date ?? '-'} - {t(resolveStatusLabel(item.status))}</div>))}</div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={isBatchDeleteOpen} onOpenChange={setIsBatchDeleteOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Batch Delete Attendances</DialogTitle>
-            <DialogDescription>{selectedIds.length} row(s) selected. Choose how many rows to delete now.</DialogDescription>
+            <DialogTitle>{t('Batch Delete Attendances')}</DialogTitle>
+            <DialogDescription>{t(':count row(s) selected. Choose how many rows to delete now.', { count: selectedIds.length })}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid gap-3 rounded-xl border border-border/70 bg-muted/20 p-4 sm:grid-cols-[minmax(0,1fr)_180px] sm:items-center">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{selectedIds.length} row(s) selected</Badge>
-                <Badge variant="outline">{batchDeleteIds.length} row(s) pending delete</Badge>
+                <Badge variant="secondary">{t(':count row(s) selected', { count: selectedIds.length })}</Badge>
+                <Badge variant="outline">{t(':count row(s) pending delete', { count: batchDeleteIds.length })}</Badge>
               </div>
               <Select value={batchDeleteLimit} onValueChange={setBatchDeleteLimit}>
-                <SelectTrigger><SelectValue placeholder="Delete amount" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t('Delete amount')} /></SelectTrigger>
                 <SelectContent>
                   {batchDeleteLimitOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    <SelectItem key={option.value} value={option.value}>{t(option.label)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="max-h-[42vh] space-y-2 overflow-y-auto rounded-xl border border-border/70 bg-background p-3">
               {batchDeleteRows.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No rows available to delete.</p>
+                <p className="text-sm text-muted-foreground">{t('No rows available to delete.')}</p>
               ) : (
                 batchDeleteRows.map((item) => (
                   <div key={item.id} className="flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm">
@@ -961,8 +963,8 @@ export default function Index({ attendances, students, classes, recorders, query
               )}
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsBatchDeleteOpen(false)}>Cancel</Button>
-              <Button type="button" variant="outline" disabled={isSubmitting || batchDeleteIds.length === 0} onClick={submitBatchDelete}><Trash2 className="size-4" />Delete {batchDeleteIds.length}</Button>
+              <Button type="button" variant="outline" onClick={() => setIsBatchDeleteOpen(false)}>{t('Cancel')}</Button>
+              <Button type="button" variant="outline" disabled={isSubmitting || batchDeleteIds.length === 0} onClick={submitBatchDelete}><Trash2 className="size-4" />{t('Delete :count', { count: batchDeleteIds.length })}</Button>
             </div>
           </div>
         </DialogContent>

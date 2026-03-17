@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useTranslate } from '@/lib/i18n';
 import { ArrowUpDown, RotateCcw, Search } from 'lucide-react';
 import { type SortBy, type TablePaginationState } from './classroom-index-types';
 
@@ -56,16 +57,18 @@ export default function ClassroomFilterActionPanel({
   onSortByChange,
   onSortDirChange,
 }: ClassroomFilterActionPanelProps) {
+  const t = useTranslate();
+
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
       <div className="space-y-3 rounded-2xl border border-sky-200/70 bg-gradient-to-br from-sky-50/80 via-background to-cyan-50/60 p-4 shadow-sm dark:border-border dark:from-background dark:via-background dark:to-background">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold tracking-[0.15em] uppercase text-sky-700 dark:text-muted-foreground">
-            Search & Discover
+            {t('Search & Discover')}
           </p>
           {(searchValue.trim().length > 0 || teacherFilterValue.trim().length > 0) && (
             <Badge variant="secondary">
-              Live ({liveMatchCount})
+              {t('Live (:count)', { count: liveMatchCount })}
             </Badge>
           )}
         </div>
@@ -93,26 +96,26 @@ export default function ClassroomFilterActionPanel({
               <Button
                 variant="outline"
                 className="size-9 border-sky-200/70 bg-white/80 p-0 hover:bg-sky-100/70 dark:border-border dark:bg-background dark:hover:bg-accent"
-                aria-label="Search"
+                aria-label={t('Search')}
                 onClick={onSearchSubmit}
               >
                 <Search className="size-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="top" align="center">Search</TooltipContent>
+            <TooltipContent side="top" align="center">{t('Search')}</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
                 className="size-9 border-sky-200/70 bg-white/80 p-0 hover:bg-sky-100/70 dark:border-border dark:bg-background dark:hover:bg-accent"
-                aria-label="Reset"
+                aria-label={t('Reset')}
                 onClick={onReset}
               >
                 <RotateCcw className="size-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="top" align="center">Reset</TooltipContent>
+            <TooltipContent side="top" align="center">{t('Reset')}</TooltipContent>
           </Tooltip>
         </div>
       </div>
@@ -120,7 +123,7 @@ export default function ClassroomFilterActionPanel({
       <div className="space-y-3 rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/80 via-background to-teal-50/60 p-4 shadow-sm dark:border-border dark:from-background dark:via-background dark:to-background">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <ArrowUpDown className="size-4" />
-          Sort & Status
+          {t('Sort & Status')}
         </div>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
           <Select
@@ -128,12 +131,12 @@ export default function ClassroomFilterActionPanel({
             onValueChange={(nextValue) => onSortByChange(nextValue as SortBy)}
           >
             <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm">
-              <SelectValue placeholder="Sort by" />
+              <SelectValue placeholder={t('Sort by')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="id">ID</SelectItem>
-              <SelectItem value="name">Name</SelectItem>
-              <SelectItem value="created_at">Created At</SelectItem>
+              <SelectItem value="id">{t('ID')}</SelectItem>
+              <SelectItem value="name">{t('Name')}</SelectItem>
+              <SelectItem value="created_at">{t('Created At')}</SelectItem>
             </SelectContent>
           </Select>
           <Select
@@ -141,20 +144,20 @@ export default function ClassroomFilterActionPanel({
             onValueChange={(nextValue) => onSortDirChange(nextValue === 'desc' ? 'desc' : 'asc')}
           >
             <SelectTrigger className="h-9 rounded-lg border border-input/80 bg-background/90 px-3 text-sm shadow-sm">
-              <SelectValue placeholder="Direction" />
+              <SelectValue placeholder={t('Direction')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="asc">Asc</SelectItem>
-              <SelectItem value="desc">Desc</SelectItem>
+              <SelectItem value="asc">{t('Asc')}</SelectItem>
+              <SelectItem value="desc">{t('Desc')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline">Total {pagination.total}</Badge>
-          <Badge variant="outline">Page {pagination.current_page}/{pagination.last_page}</Badge>
-          <Badge variant="outline">{activePerPage} per page</Badge>
-          <Badge variant="outline">Teachers {activeTeacherCount}</Badge>
-          <Badge variant="outline">{hasActiveFilter ? 'Filtered' : 'Default'}</Badge>
+          <Badge variant="outline">{t('Total :count', { count: pagination.total })}</Badge>
+          <Badge variant="outline">{t('Page :current/:last', { current: pagination.current_page, last: pagination.last_page })}</Badge>
+          <Badge variant="outline">{t(':count per page', { count: activePerPage })}</Badge>
+          <Badge variant="outline">{t('Teachers :count', { count: activeTeacherCount })}</Badge>
+          <Badge variant="outline">{hasActiveFilter ? t('Filtered') : t('Default')}</Badge>
         </div>
       </div>
     </div>

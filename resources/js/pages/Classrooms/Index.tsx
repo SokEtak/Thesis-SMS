@@ -2,6 +2,7 @@ import { type SearchSuggestion } from '@/components/LiveSearchInput';
 import { type SearchableSelectOption } from '@/components/SearchableSelect';
 import ResourcePageLayout from '@/components/ResourcePageLayout';
 import AppLayout from '@/layouts/app-layout';
+import { useTranslate } from '@/lib/i18n';
 import { requirePasswordConfirmation } from '@/lib/password-confirm';
 import { route } from '@/lib/route';
 import { type PaginatedData } from '@/types';
@@ -48,6 +49,7 @@ interface ClassroomSuggestionApiResponse {
 }
 
 export default function Index({ classrooms, teachers, query }: Props) {
+  const t = useTranslate();
   const queryFilter = typeof query.filter === 'object' && query.filter !== null
     ? (query.filter as Record<string, unknown>)
     : null;
@@ -830,7 +832,7 @@ export default function Index({ classrooms, teachers, query }: Props) {
 
   return (
     <AppLayout>
-      <Head title="Classrooms" />
+      <Head title={t('Classrooms')} />
 
       <ResourcePageLayout
         title="Classrooms"
@@ -839,6 +841,10 @@ export default function Index({ classrooms, teachers, query }: Props) {
           <ClassroomPageActionToolbar
             importInputRef={importInputRef}
             onImportFileChange={handleImportFile}
+            onOpenCreate={() => {
+              resetForm();
+              setIsCreateOpen(true);
+            }}
             onOpenBatchCreate={async () => {
               const passwordConfirmed = await requirePasswordConfirmation('open batch create classrooms form');
               if (!passwordConfirmed) {

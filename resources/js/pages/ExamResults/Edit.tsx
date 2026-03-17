@@ -12,7 +12,13 @@ export default function Edit({ examResult }: any) {
     <AppLayout>
       <Head title="Edit Exam Result" />
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Edit Exam Result</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-3xl font-bold">Edit Exam Result</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={() => router.get(route('exam-results.index'))}>Back</Button>
+            <Button onClick={() => router.get(route('exam-results.create'))}>Create</Button>
+          </div>
+        </div>
         <form onSubmit={(e) => { e.preventDefault(); router.put(route('exam-results.update', examResult.id), formData); }} className="bg-white rounded-lg shadow p-6 space-y-6">
           <TextInput label="Student ID" value={formData.student_id} onChange={(e) => setFormData({ ...formData, student_id: e.target.value })} />
           <TextInput label="Exam ID" value={formData.exam_id} onChange={(e) => setFormData({ ...formData, exam_id: e.target.value })} />
